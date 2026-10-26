@@ -1,0 +1,15 @@
+/* Sales By Article — toolbar filters (parity Total Sales header) */
+.rsa-toolbar .rsa-toolbar-article {
+  width: 160px;
+}
+
+.rsa-toolbar .rsa-toolbar-article .form-control {
+  height: 32px;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 991px) {
+  .rsa-toolbar .rsa-toolbar-article {
+    width: 100%;
+  }
+}

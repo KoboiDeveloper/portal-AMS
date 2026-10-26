@@ -1,0 +1,702 @@
+[
+  {
+    "nomor": "001",
+    "judul": "Dashboard",
+    "file": "png/001_Dashboard.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "002",
+    "judul": "Beranda",
+    "file": "png/002_Beranda.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "003",
+    "judul": "Pengajuan",
+    "file": "png/003_Pengajuan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "004",
+    "judul": "Approval",
+    "file": "png/004_Approval.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "005",
+    "judul": "Laporan",
+    "file": "png/005_Laporan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "006",
+    "judul": "Pengaturan",
+    "file": "png/006_Pengaturan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "007",
+    "judul": "Profil",
+    "file": "png/007_Profil.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "008",
+    "judul": "Pengguna",
+    "file": "png/008_Pengguna.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "009",
+    "judul": "Departemen",
+    "file": "png/009_Departemen.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "010",
+    "judul": "Perusahaan",
+    "file": "png/010_Perusahaan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "011",
+    "judul": "Notifikasi",
+    "file": "png/011_Notifikasi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "012",
+    "judul": "Pesan",
+    "file": "png/012_Pesan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "013",
+    "judul": "Email",
+    "file": "png/013_Email.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "014",
+    "judul": "Kalender",
+    "file": "png/014_Kalender.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "015",
+    "judul": "Pencarian",
+    "file": "png/015_Pencarian.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "016",
+    "judul": "Folder",
+    "file": "png/016_Folder.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "017",
+    "judul": "Dokumen",
+    "file": "png/017_Dokumen.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "018",
+    "judul": "Arsip",
+    "file": "png/018_Arsip.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "019",
+    "judul": "Unggah",
+    "file": "png/019_Unggah.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "020",
+    "judul": "Unduh",
+    "file": "png/020_Unduh.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "021",
+    "judul": "Tambah",
+    "file": "png/021_Tambah.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "022",
+    "judul": "Edit",
+    "file": "png/022_Edit.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "023",
+    "judul": "Hapus",
+    "file": "png/023_Hapus.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "024",
+    "judul": "Simpan",
+    "file": "png/024_Simpan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "025",
+    "judul": "Cetak",
+    "file": "png/025_Cetak.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "026",
+    "judul": "Refresh",
+    "file": "png/026_Refresh.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "027",
+    "judul": "Filter",
+    "file": "png/027_Filter.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "028",
+    "judul": "Urutkan",
+    "file": "png/028_Urutkan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "029",
+    "judul": "Bagikan",
+    "file": "png/029_Bagikan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "030",
+    "judul": "Tautan",
+    "file": "png/030_Tautan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "031",
+    "judul": "Kunci",
+    "file": "png/031_Kunci.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "032",
+    "judul": "Keamanan",
+    "file": "png/032_Keamanan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "033",
+    "judul": "Kata Sandi",
+    "file": "png/033_Kata_Sandi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "034",
+    "judul": "Akses",
+    "file": "png/034_Akses.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "035",
+    "judul": "Keluar",
+    "file": "png/035_Keluar.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "036",
+    "judul": "Masuk",
+    "file": "png/036_Masuk.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "037",
+    "judul": "Bantuan",
+    "file": "png/037_Bantuan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "038",
+    "judul": "Informasi",
+    "file": "png/038_Informasi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "039",
+    "judul": "Peringatan",
+    "file": "png/039_Peringatan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "040",
+    "judul": "Error",
+    "file": "png/040_Error.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "041",
+    "judul": "Keuangan",
+    "file": "png/041_Keuangan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "042",
+    "judul": "Kas",
+    "file": "png/042_Kas.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "043",
+    "judul": "Bank",
+    "file": "png/043_Bank.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "044",
+    "judul": "Pembayaran",
+    "file": "png/044_Pembayaran.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "045",
+    "judul": "Tagihan",
+    "file": "png/045_Tagihan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "046",
+    "judul": "Anggaran",
+    "file": "png/046_Anggaran.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "047",
+    "judul": "Pajak",
+    "file": "png/047_Pajak.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "048",
+    "judul": "Laba Rugi",
+    "file": "png/048_Laba_Rugi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "049",
+    "judul": "Transfer",
+    "file": "png/049_Transfer.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "050",
+    "judul": "Rekonsiliasi",
+    "file": "png/050_Rekonsiliasi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "051",
+    "judul": "Penjualan",
+    "file": "png/051_Penjualan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "052",
+    "judul": "Pembelian",
+    "file": "png/052_Pembelian.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "053",
+    "judul": "Produk",
+    "file": "png/053_Produk.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "054",
+    "judul": "Stok",
+    "file": "png/054_Stok.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "055",
+    "judul": "Gudang",
+    "file": "png/055_Gudang.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "056",
+    "judul": "Supplier",
+    "file": "png/056_Supplier.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "057",
+    "judul": "Pelanggan",
+    "file": "png/057_Pelanggan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "058",
+    "judul": "Toko",
+    "file": "png/058_Toko.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "059",
+    "judul": "Barcode",
+    "file": "png/059_Barcode.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "060",
+    "judul": "Harga",
+    "file": "png/060_Harga.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "061",
+    "judul": "Diskon",
+    "file": "png/061_Diskon.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "062",
+    "judul": "Retur",
+    "file": "png/062_Retur.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "063",
+    "judul": "Pengiriman",
+    "file": "png/063_Pengiriman.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "064",
+    "judul": "Kurir",
+    "file": "png/064_Kurir.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "065",
+    "judul": "Lokasi",
+    "file": "png/065_Lokasi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "066",
+    "judul": "Peta",
+    "file": "png/066_Peta.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "067",
+    "judul": "Rute",
+    "file": "png/067_Rute.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "068",
+    "judul": "Pelacakan",
+    "file": "png/068_Pelacakan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "069",
+    "judul": "Penerimaan",
+    "file": "png/069_Penerimaan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "070",
+    "judul": "Distribusi",
+    "file": "png/070_Distribusi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "071",
+    "judul": "Karyawan",
+    "file": "png/071_Karyawan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "072",
+    "judul": "Absensi",
+    "file": "png/072_Absensi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "073",
+    "judul": "Cuti",
+    "file": "png/073_Cuti.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "074",
+    "judul": "Izin",
+    "file": "png/074_Izin.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "075",
+    "judul": "Lembur",
+    "file": "png/075_Lembur.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "076",
+    "judul": "Payroll",
+    "file": "png/076_Payroll.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "077",
+    "judul": "Rekrutmen",
+    "file": "png/077_Rekrutmen.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "078",
+    "judul": "Pelatihan",
+    "file": "png/078_Pelatihan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "079",
+    "judul": "Kinerja",
+    "file": "png/079_Kinerja.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "080",
+    "judul": "Tim",
+    "file": "png/080_Tim.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "081",
+    "judul": "Audit",
+    "file": "png/081_Audit.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "082",
+    "judul": "Checklist",
+    "file": "png/082_Checklist.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "083",
+    "judul": "Temuan",
+    "file": "png/083_Temuan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "084",
+    "judul": "Risiko",
+    "file": "png/084_Risiko.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "085",
+    "judul": "SOP",
+    "file": "png/085_SOP.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "086",
+    "judul": "Alur Kerja",
+    "file": "png/086_Alur_Kerja.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "087",
+    "judul": "Tugas",
+    "file": "png/087_Tugas.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "088",
+    "judul": "Proyek",
+    "file": "png/088_Proyek.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "089",
+    "judul": "Deadline",
+    "file": "png/089_Deadline.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "090",
+    "judul": "Persetujuan Bertingkat",
+    "file": "png/090_Persetujuan_Bertingkat.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "091",
+    "judul": "Analitik",
+    "file": "png/091_Analitik.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "092",
+    "judul": "Target",
+    "file": "png/092_Target.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "093",
+    "judul": "Pertumbuhan",
+    "file": "png/093_Pertumbuhan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "094",
+    "judul": "Perbandingan",
+    "file": "png/094_Perbandingan.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "095",
+    "judul": "Database",
+    "file": "png/095_Database.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "096",
+    "judul": "Server",
+    "file": "png/096_Server.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "097",
+    "judul": "Cloud",
+    "file": "png/097_Cloud.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "098",
+    "judul": "Integrasi",
+    "file": "png/098_Integrasi.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "099",
+    "judul": "Backup",
+    "file": "png/099_Backup.png",
+    "width": 1254,
+    "height": 1254
+  },
+  {
+    "nomor": "100",
+    "judul": "Sinkronisasi",
+    "file": "png/100_Sinkronisasi.png",
+    "width": 1254,
+    "height": 1254
+  }
+]

@@ -1,0 +1,136 @@
+.rsd-msg {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+
+.rsd-msg.err {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.rsd-msg.ok {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.rsd-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+/* Match Absen List DataTable shell; keep wide slip/settlement cells usable */
+.rsd-page {
+  overflow-x: auto;
+}
+
+.rsd-page .card,
+.rsd-page .card-inner,
+.rsd-page .nk-tb-list {
+  min-width: 960px;
+}
+
+/* Keep all tb-col-* visible; scroll instead of collapsing like Absen List desktop */
+.rsd-page .tb-col-sm,
+.rsd-page .tb-col-md,
+.rsd-page .tb-col-lg,
+.rsd-page .tb-col-xl,
+.rsd-page .tb-col-xxl {
+  display: table-cell !important;
+}
+
+.rsd-page .rsd-col-no {
+  width: 3.25rem;
+  min-width: 3.25rem;
+  max-width: 3.25rem;
+}
+
+.rsd-page .rsd-col-slip,
+.rsd-page .rsd-col-settle {
+  min-width: 15rem;
+}
+
+.rsd-page .nk-tb-item {
+  align-items: flex-start; /* keep thumbs top-aligned across columns */
+}
+
+.rsd-page .nk-tb-head {
+  align-items: center;
+}
+
+.rsd-bank-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.rsd-bank-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22rem;
+  width: 76px;
+  flex: 0 0 76px;
+}
+
+.rsd-bank-amt {
+  font-size: 0.72rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  line-height: 1.2;
+  min-height: 1.2em; /* reserve line so settlement thumbs don't shift up */
+  text-align: center;
+}
+
+.rsd-bank-lbl {
+  font-size: 0.65rem;
+  color: #8091a7;
+  white-space: nowrap;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.rsd-batch {
+  font-variant-numeric: tabular-nums;
+}
+
+.rsd-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e9f2;
+  background: #fff;
+  cursor: zoom-in;
+  display: block;
+}
+
+.rsd-thumb--empty,
+.rsd-thumb--loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 1px dashed #dbdfea;
+  background: #f5f6fa;
+  color: #b7c2d0;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+.rsd-thumb--empty .icon {
+  font-size: 1rem;
+}

@@ -1,0 +1,652 @@
+.kas-tabs {
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.kas-tabs__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid #e5e9f2;
+  background: #fff;
+}
+
+.kas-tabs__nav li {
+  margin: 0;
+}
+
+.kas-tabs__nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.8rem 1.1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #8094ae;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kas-tabs__nav li.active button {
+  color: #364a63;
+  border-bottom-color: #364a63;
+}
+
+.kas-tabs__nav button:hover {
+  color: #364a63;
+}
+
+.kas-tabs__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 3px;
+  background: #eef2f7;
+  color: #526484;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.kas-list-page .kas-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.kas-list-page .kas-sort-trigger.is-end {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.kas-list-page .kas-sort-trigger .icon {
+  font-size: 0.85rem;
+  opacity: 0.45;
+}
+
+.kas-list-page .kas-sort-trigger.is-active .icon {
+  opacity: 1;
+  color: #364a63;
+}
+
+.kas-list-page .kas-remarks {
+  display: inline-block;
+  max-width: 22rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.kas-list-page .kas-photo-thumb {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e3e9f2;
+  cursor: zoom-in;
+}
+
+.kas-list-page .kas-photo-empty {
+  color: #8094ae;
+  font-size: 0.85rem;
+}
+
+.kas-list-page .kas-photo-spinner {
+  width: 1rem;
+  height: 1rem;
+}
+
+.kas-form-modal .modal-content,
+.kas-form-content {
+  border: 0;
+  border-radius: 4px;
+  overflow: visible;
+  box-shadow: 0 12px 28px rgba(21, 32, 51, 0.12);
+}
+
+.kas-form-modal .modal-body {
+  overflow: visible;
+}
+
+.kas-form-modal .react-datepicker-popper {
+  z-index: 2000 !important;
+}
+
+.kas-form-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem 1.5rem 1.15rem;
+  background:
+    linear-gradient(135deg, rgba(247, 249, 252, 0.96), rgba(238, 242, 247, 0.92)),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(54, 74, 99, 0.035),
+      rgba(54, 74, 99, 0.035) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+  border-bottom: 1px solid #e8eef5;
+}
+
+.kas-form-kicker {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8094ae;
+}
+
+.kas-form-hero h4 {
+  margin: 0;
+  color: #152033;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.kas-form-hero p {
+  margin: 0.35rem 0 0;
+  color: #8094ae;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  max-width: 34rem;
+}
+
+.kas-form-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #526484;
+  cursor: pointer;
+}
+
+.kas-form-close:hover {
+  background: #fff;
+  color: #152033;
+}
+
+.kas-form-body {
+  padding: 1.25rem 1.5rem 0.35rem;
+  overflow: visible;
+}
+
+.kas-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+}
+
+.kas-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.kas-field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.kas-field-label span {
+  color: #364a63;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.kas-field-label em {
+  margin-left: 0.2rem;
+  color: #e85347;
+  font-style: normal;
+}
+
+.kas-field-label small {
+  color: #93a4ba;
+  font-size: 0.72rem;
+}
+
+.kas-field-meta {
+  margin-top: 0.25rem;
+  text-align: right;
+  color: #93a4ba;
+  font-size: 0.72rem;
+}
+
+.kas-form-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+}
+
+.kas-coa-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.kas-coa-option__deskripsi {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #364a63;
+}
+
+.kas-coa-option__ket {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #8094ae;
+}
+
+.kas-form-control,
+.kas-form-body .form-control {
+  min-height: 42px;
+  border-radius: 4px;
+  border-color: #dbdfea;
+  box-shadow: none;
+}
+
+.kas-form-body textarea.form-control {
+  min-height: 96px;
+  padding-top: 0.75rem;
+  resize: vertical;
+}
+
+.kas-form-control:focus,
+.kas-form-body .form-control:focus {
+  border-color: #b7c2d0;
+  box-shadow: none;
+}
+
+.kas-amount-wrap {
+  position: relative;
+}
+
+.kas-amount-prefix {
+  position: absolute;
+  top: 50%;
+  left: 0.95rem;
+  transform: translateY(-50%);
+  color: #8094ae;
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.kas-amount-input {
+  padding-left: 2.4rem !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.kas-form-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.65rem 0.85rem;
+  border: 1px dashed #c5d1e2;
+  border-radius: 4px;
+  background: #f7f9fc;
+  color: #8094ae;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.kas-form-dropzone .icon {
+  font-size: 1.1rem;
+}
+
+.kas-form-dropzone.is-active {
+  border-color: #8094ae;
+  background: #eef2f7;
+  color: #364a63;
+}
+
+.kas-form-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #e3e9f2;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.kas-form-photo-thumb {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid #e3e9f2;
+  border-radius: 4px;
+  background: #f7f9fc;
+  cursor: zoom-in;
+}
+
+.kas-form-photo-row [data-rmiz-content="found"] {
+  flex: 0 0 56px;
+}
+
+.kas-form-photo-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.kas-form-photo-meta strong {
+  color: #152033;
+  font-size: 0.86rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kas-form-photo-meta span {
+  color: #8094ae;
+  font-size: 0.75rem;
+}
+
+.kas-form-photo-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+
+.kas-form-photo-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 4px;
+}
+
+.kas-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid #eef2f7;
+  background: #fff;
+}
+
+.kas-form-submit {
+  min-width: 9.5rem;
+}
+
+.kas-confirm-modal .modal-content {
+  border-radius: 4px;
+}
+
+.kas-confirm-modal .modal-footer {
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+@media (max-width: 767.98px) {
+  .kas-form-hero,
+  .kas-form-body,
+  .kas-form-footer {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+
+  .kas-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .kas-form-photo-row {
+    flex-wrap: wrap;
+  }
+
+  .kas-form-photo-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.kas-detail-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.25rem;
+}
+
+.kas-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.kas-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.kas-detail-row span {
+  color: #8094ae;
+  font-size: 0.82rem;
+}
+
+.kas-detail-row strong {
+  text-align: right;
+  color: #152033;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.kas-detail-row--block {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.kas-detail-row--block strong {
+  text-align: left;
+  margin-top: 0.25rem;
+}
+
+.kas-detail-photo-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8094ae;
+}
+
+.kas-detail-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid #e3e9f2;
+  background: #f7f9fc;
+  cursor: zoom-in;
+}
+
+.kas-detail-img--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 180px;
+  color: #93a4ba;
+  font-size: 0.85rem;
+  cursor: default;
+}
+
+.kas-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 1.25rem;
+}
+
+.kas-detail-hint {
+  font-size: 0.82rem;
+}
+
+.kas-realisasi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  border-bottom: 1px solid #e5e9f2;
+}
+
+.kas-realisasi-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kas-realisasi-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.95rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  color: #8094ae;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kas-realisasi-tabs li.active button {
+  color: #364a63;
+  border-bottom-color: #364a63;
+}
+
+.kas-realisasi-tabs button:hover {
+  color: #364a63;
+}
+
+.kas-realisasi-meta {
+  flex-shrink: 0;
+  padding-right: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #8094ae;
+}
+
+.kas-realisasi-row.is-clickable {
+  cursor: pointer;
+}
+
+.kas-realisasi-row.is-clickable:hover {
+  background: #f5f8fc;
+}
+
+.kas-realisasi-detail-modal .modal-body {
+  overflow-x: hidden;
+}
+
+.kas-realisasi-detail-modal .kas-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.kas-realisasi-detail-modal .kas-sort-trigger.is-end {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.kas-realisasi-detail-modal .kas-sort-trigger .icon {
+  font-size: 0.85rem;
+  opacity: 0.45;
+}
+
+.kas-realisasi-detail-modal .kas-sort-trigger.is-active .icon {
+  opacity: 1;
+  color: #364a63;
+}
+
+.kas-realisasi-detail-modal .kas-realisasi-detail-table.nk-tb-list,
+.kas-realisasi-detail-modal .nk-tb-list {
+  min-width: 0 !important;
+  width: 100%;
+}
+
+.kas-realisasi-detail-modal .nk-tb-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.kas-realisasi-detail-modal .kas-rd-col-no {
+  flex: 0 0 3rem;
+  width: 3rem;
+  max-width: 3rem;
+}
+
+.kas-realisasi-detail-modal .kas-rd-col-ket {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.kas-realisasi-detail-modal .kas-rd-col-ket span {
+  display: block;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.kas-realisasi-detail-modal .kas-rd-col-amount {
+  flex: 0 0 7.5rem;
+  width: 7.5rem;
+  max-width: 7.5rem;
+  text-align: right;
+}
+
+@media (max-width: 767.98px) {
+  .kas-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kas-list-page .kas-remarks {
+    max-width: 10rem;
+  }
+}

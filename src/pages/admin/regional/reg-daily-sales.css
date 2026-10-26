@@ -1,0 +1,108 @@
+/* REG2 Daily Sales Summary - legacy Daily_s_sales.aspx */
+.rsa-card .rsa-filter--action {
+  flex: 0 0 auto;
+}
+
+.rsa-card .rsa-filters--opts {
+  margin-top: 8px;
+}
+
+.rsa-card .rsa-filter--check {
+  width: auto;
+  min-width: 96px;
+}
+
+.rsa-card .rsa-filter--check .custom-control {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.rds-select {
+  height: 32px;
+  font-size: 0.8125rem;
+  padding: 0 8px;
+  min-width: 120px;
+}
+
+.rds-table-wrap {
+  max-height: 68vh;
+  overflow: auto;
+  border: 1px solid #e5e9f2;
+  border-radius: 4px;
+}
+
+.rds-table {
+  width: 100%;
+  min-width: 960px;
+  font-size: 0.8125rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.rds-table th,
+.rds-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e9f2;
+  white-space: nowrap;
+  background: #fff;
+}
+
+.rds-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #f5f6fa;
+  font-weight: 600;
+  text-align: left;
+}
+
+.rds-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: #f5f6fa;
+  font-weight: 700;
+  border-top: 2px solid #dbdfea;
+}
+
+.rds-table th.num,
+.rds-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rds-table td.ctr {
+  text-align: center;
+}
+
+.rds-table .rds-no {
+  width: 48px;
+  text-align: center;
+}
+
+.rds-table tbody tr:hover td {
+  background: #eef4fb;
+}
+
+.rds-empty {
+  text-align: center;
+  color: #8094ae;
+  padding: 18px 10px !important;
+}
+
+.rds-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: #8094ae;
+}
+
+.rds-more {
+  display: inline-flex;
+  gap: 8px;
+}

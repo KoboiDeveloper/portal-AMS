@@ -1,0 +1,45 @@
+/*! DashLite - main stylesheet entry (reconstructed) */
+
+// 01. Variables
+@import "dashlite_variables";
+
+// 02. Bootstrap (variables + extended components)
+@import "extend/bootstrap/variables";
+@import "extend/bootstrap/bootstrap";
+@import "extend/bootstrap/extend";
+
+// 03. App specific partials loaded before vendors
+@import "apps/messages";
+@import "apps/attach";
+
+// 04. Vendors
+@import "vendors/bundle";
+
+// 05. Core
+@import "core/style";
+
+// 06. Apps
+@import "apps/chats";
+
+// 07. Global widgets
+@import "global/style";
+
+// 08. Invest
+@import "invest/style";
+
+// 09. Apps (cont.)
+@import "apps/asterisk";
+@import "apps/reply-comment";
+@import "apps/inbox";
+@import "apps/file-manager";
+
+// 10. Preview, dark skin and theme skin
+@import "core/preview";
+@import "core/dark-skin";
+@import "skins/theme-blue";
+
+// 11. Dark mode / overrides
+@import "core/mode-override";
+
+// 12. Custom admin overrides
+@import "custom/admin";

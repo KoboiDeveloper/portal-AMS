@@ -1,0 +1,89 @@
+/* Payment Detail — finance table, sticky store/date/total */
+.rpd-table {
+  min-width: 720px;
+}
+
+.rpd-table--group {
+  min-width: 640px;
+}
+
+.rpd-table .rpd-sticky {
+  position: sticky;
+  z-index: 1;
+  background: #fff;
+}
+
+.rpd-table thead .rpd-sticky,
+.rpd-table tfoot .rpd-sticky {
+  z-index: 4;
+  background: #f5f6fa;
+}
+
+.rpd-table .rpd-sticky--store {
+  left: 0;
+  min-width: 72px;
+}
+
+.rpd-table .rpd-sticky--date {
+  left: 72px;
+  min-width: 92px;
+  box-shadow: 1px 0 0 #e5e9f2;
+}
+
+.rpd-table .rpd-sticky--total {
+  right: 0;
+  min-width: 100px;
+  box-shadow: -1px 0 0 #e5e9f2;
+  font-weight: 600;
+}
+
+.rpd-table tbody tr.rpd-weekend td {
+  background: #fff1f2;
+}
+
+.rpd-table tbody tr.rpd-weekend .rpd-sticky {
+  background: #fff1f2;
+}
+
+.rpd-table tbody tr:hover td,
+.rpd-table tbody tr:hover .rpd-sticky {
+  background: #eef4fb;
+}
+
+.rpd-table tbody tr.rpd-weekend:hover td,
+.rpd-table tbody tr.rpd-weekend:hover .rpd-sticky {
+  background: #ffe4e6;
+}
+
+.rpd-table td.rpd-zero {
+  color: #c1c9d6;
+}
+
+.rpd-table td.rpd-total {
+  font-weight: 600;
+}
+
+.rpd-sort {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rpd-sort .icon {
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.rpd-sort:hover .icon {
+  opacity: 1;
+}

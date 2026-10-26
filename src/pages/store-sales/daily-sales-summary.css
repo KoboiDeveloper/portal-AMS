@@ -1,0 +1,338 @@
+.dss-page {
+  --dss-ink: #152033;
+  --dss-muted: #7b8da6;
+  --dss-line: #e3e9f2;
+  --dss-surface: #f4f7fb;
+  --dss-accent: #2b5cff;
+  padding-bottom: 2rem;
+}
+
+.page-smooth-scroll {
+  position: relative;
+  min-height: 100%;
+}
+
+.page-smooth-scroll.is-native {
+  overflow: visible;
+}
+
+.page-smooth-scroll__section {
+  padding-bottom: 5rem;
+}
+
+.dss-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.dss-filter-range {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dss-filter-date {
+  min-width: 9.5rem;
+  max-width: 11rem;
+  padding-left: 2.4rem !important;
+}
+
+.dss-filter-to {
+  color: var(--dss-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.dss-filter-select {
+  min-width: 7.5rem;
+  max-width: 9.5rem;
+  height: calc(1.5em + 0.875rem + 2px);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--dss-ink);
+  border-color: var(--dss-line);
+}
+
+.dss-filter-load {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dss-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.dss-store-badge,
+.dss-period-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--dss-line);
+  box-shadow: 0 4px 14px rgba(21, 32, 51, 0.03);
+}
+
+.dss-store-badge .icon,
+.dss-period-badge .icon {
+  color: var(--dss-accent);
+  font-size: 1.05rem;
+}
+
+.dss-badge-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--dss-muted);
+  line-height: 1.2;
+}
+
+.dss-store-badge strong,
+.dss-period-badge strong {
+  display: block;
+  color: var(--dss-ink);
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.dss-table .dss-col-no {
+  max-width: 4rem;
+}
+
+.dss-table .dss-col-num {
+  justify-content: flex-end;
+}
+
+.dss-table .nk-tb-item .dss-col-num {
+  text-align: right;
+}
+
+.dss-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  line-height: inherit;
+}
+
+.dss-sort-trigger.is-end {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.dss-sort-trigger:hover,
+.dss-sort-trigger.is-active {
+  color: var(--dss-accent);
+}
+
+.dss-sort-trigger .icon {
+  font-size: 0.875rem;
+}
+
+.dss-plu {
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+/* Detail group: No/Store/Date look rowspan — no horizontal lines inside group */
+.dss-table .dss-group-start:has(+ .dss-group-cont) .dss-col-no,
+.dss-table .dss-group-start:has(+ .dss-group-cont) .dss-col-store,
+.dss-table .dss-group-start:has(+ .dss-group-cont) .dss-col-date {
+  border-bottom: none !important;
+}
+
+.dss-table .dss-group-cont .dss-cell-merged {
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.dss-table .dss-group-cont:has(+ .dss-group-start) .dss-cell-merged,
+.dss-table .dss-group-cont:has(+ .dss-total-row) .dss-cell-merged {
+  border-bottom: 1px solid var(--dss-line) !important;
+}
+
+.dss-table .dss-col-date,
+.dss-table .dss-col-store,
+.dss-table .dss-col-no {
+  vertical-align: top;
+  align-items: flex-start;
+}
+
+.dss-total-row {
+  background: var(--dss-surface);
+}
+
+.dss-total-row .nk-tb-col {
+  border-top: 1px solid var(--dss-line);
+  font-weight: 700;
+}
+
+.dss-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.45rem;
+  padding: 2.5rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--dss-line);
+  background: linear-gradient(180deg, #fbfcfe 0%, #f3f6fb 100%);
+  color: var(--dss-muted);
+}
+
+.dss-empty.is-soft {
+  padding: 1.5rem;
+  box-shadow: none;
+}
+
+.dss-empty.is-error {
+  color: #c2410c;
+  background: linear-gradient(180deg, #fffbfb 0%, #fff5f4 100%);
+  border-color: #f3d0cd;
+}
+
+.dss-empty h5 {
+  margin: 0;
+  color: var(--dss-ink);
+  font-size: 1.1rem;
+  font-weight: 750;
+}
+
+.dss-empty p {
+  margin: 0;
+  max-width: 26rem;
+}
+
+.dss-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dss-table-scroll .dss-table {
+  min-width: 920px;
+}
+
+/* Force all columns visible on mobile (Dashlite tb-col-* hides them by default) */
+.dss-table .tb-col-sm,
+.dss-table .tb-col-md,
+.dss-table .tb-col-lg,
+.dss-table .tb-col-xl,
+.dss-table .tb-col-xxl {
+  display: table-cell !important;
+}
+
+@media (max-width: 991.98px) {
+  .dss-head-between {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.85rem;
+  }
+
+  .dss-head-title {
+    width: 100%;
+  }
+
+  .dss-head-filters {
+    width: 100%;
+  }
+
+  .dss-filter {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .dss-filter-range {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .dss-filter-date {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .dss-filter-range .react-datepicker-wrapper {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .dss-filter-range .react-datepicker-wrapper input {
+    width: 100%;
+  }
+
+  .dss-filter-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .dss-filter-load {
+    flex: 0 0 auto;
+  }
+
+  .dss-toolbar {
+    gap: 0.4rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .dss-mobile-hide {
+    display: none !important;
+  }
+
+  .dss-store-badge,
+  .dss-period-badge {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 0.35rem 0.55rem;
+    border-radius: 8px;
+    gap: 0.4rem;
+  }
+
+  .dss-store-badge .icon,
+  .dss-period-badge .icon {
+    font-size: 0.9rem;
+  }
+
+  .dss-badge-label {
+    font-size: 0.58rem;
+  }
+
+  .dss-store-badge strong,
+  .dss-period-badge strong {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .dss-filter-select {
+    flex: 1 1 calc(50% - 0.25rem);
+  }
+
+  .dss-filter-load {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .dss-filter .btn-icon {
+    flex: 0 0 auto;
+  }
+}

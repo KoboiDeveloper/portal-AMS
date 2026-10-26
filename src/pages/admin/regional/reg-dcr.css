@@ -1,0 +1,213 @@
+/* REG2 DCR - legacy Dcr_rpt.aspx */
+.rdc-card .rdc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.rdc-report {
+  margin-top: 1rem;
+}
+
+.rdc-print-title {
+  display: none;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.rdc-batch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.rdc-batch-item {
+  width: 220px;
+}
+
+.rdc-batch-item--sm {
+  width: 140px;
+}
+
+.rdc-batch-val {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #dbdfea;
+  border-radius: 4px;
+  background: #f5f6fa;
+  font-size: 0.875rem;
+}
+
+.rdc-help {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: #8094ae;
+}
+
+.rdc-section {
+  margin-top: 1.25rem;
+  border-top: 1px solid #e5e9f2;
+  padding-top: 0.75rem;
+}
+
+.rdc-section-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #526484;
+  margin-bottom: 0.5rem;
+}
+
+.rdc-table-wrap {
+  overflow-x: auto;
+}
+
+.rdc-table {
+  width: 100%;
+  font-size: 0.8125rem;
+  border-collapse: collapse;
+}
+
+.rdc-table th,
+.rdc-table td {
+  padding: 6px 10px;
+  border: 1px solid #e5e9f2;
+  white-space: nowrap;
+}
+
+.rdc-table thead th {
+  background: #f5f6fa;
+  font-weight: 600;
+}
+
+.rdc-table tfoot td {
+  background: #f5f6fa;
+  font-weight: 700;
+}
+
+.rdc-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rdc-table .ctr {
+  text-align: center;
+}
+
+.rdc-empty {
+  text-align: center;
+  color: #8094ae;
+}
+
+.rdc-photo img {
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid #dbdfea;
+}
+
+.rdc-nophoto {
+  color: #8094ae;
+}
+
+/* payment panels */
+.rdc-pay {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.rdc-pay-group {
+  border: 1px solid #e5e9f2;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rdc-pay-head,
+.rdc-pay-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}
+
+.rdc-pay-head {
+  background: #f5f6fa;
+  font-weight: 700;
+}
+
+.rdc-pay-row {
+  border-top: 1px solid #eef0f6;
+}
+
+.rdc-pay-row .num {
+  font-variant-numeric: tabular-nums;
+}
+
+.rdc-pay-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: #99c262;
+  color: #fff;
+  font-size: 1rem;
+}
+
+@media (max-width: 991px) {
+  .rdc-pay {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .no-print,
+  .no-print *,
+  .nk-sidebar,
+  .nk-header,
+  .nk-footer,
+  .nk-sidebar-overlay {
+    display: none !important;
+  }
+
+  .nk-wrap,
+  .nk-content,
+  .nk-content-body,
+  .container-fluid {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .rdc-card,
+  .rdc-card .card-inner {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .rdc-print-title {
+    display: block;
+  }
+
+  .rdc-table th,
+  .rdc-table td {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .rdc-pay-total {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000;
+  }
+
+  .rdc-section {
+    page-break-inside: avoid;
+  }
+}

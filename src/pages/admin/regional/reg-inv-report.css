@@ -1,0 +1,1219 @@
+/* REG2 inventory reports — Outstanding filters below title; Tr St In keeps toolbar */
+
+.riv-filters {
+  margin: 0 0 16px;
+}
+
+.riv-filters ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.riv-filters .hrd-filter-select,
+.riv-filters .hrd-filter-daterange,
+.riv-filters .hrd-filter-article {
+  margin: 0;
+}
+
+.riv-filters .hrd-filter-select--sm {
+  min-width: 110px;
+}
+
+.riv-filters .hrd-filter-article {
+  min-width: 120px;
+}
+
+.riv-filters .hrd-filter-article input {
+  height: 32px;
+  min-width: 120px;
+}
+
+/* Full-width table — no card wrapper */
+.riv-bleed {
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+
+/* List: page scrolls only — no nested scrollbar (sticky needs visible overflow). */
+.riv-table-wrap {
+  max-height: none;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid #e5e9f2;
+  border-bottom: 1px solid #e5e9f2;
+  background: #fff;
+}
+
+.riv-table-wrap--wide {
+  overflow: visible;
+}
+
+.riv-table-wrap--wide .riv-table {
+  table-layout: auto;
+  min-width: 980px !important;
+}
+
+.riv-table-wrap--wide .riv-table--stlist {
+  table-layout: fixed;
+  min-width: 1100px !important;
+}
+
+.riv-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+  font-size: 0.8125rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.riv-table th,
+.riv-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #e5e9f2;
+  background: #fff;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Outstanding list — stable columns, no wrap mess */
+/* St List — NO TR ST (GUID) needs room; other cols stay compact */
+.riv-table--stlist {
+  table-layout: fixed;
+  min-width: 960px !important;
+  width: 100%;
+}
+
+.riv-table--stlist th:nth-child(1),
+.riv-table--stlist td:nth-child(1) {
+  width: 48px;
+}
+
+.riv-table--stlist th.riv-col-tr,
+.riv-table--stlist td.riv-col-tr {
+  width: 34%;
+  min-width: 280px;
+  max-width: none;
+  white-space: nowrap;
+  overflow: visible;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.riv-table--stlist th:nth-child(3),
+.riv-table--stlist td:nth-child(3),
+.riv-table--stlist th:nth-child(5),
+.riv-table--stlist td:nth-child(5) {
+  width: 110px;
+}
+
+.riv-table--stlist th:nth-child(4),
+.riv-table--stlist td:nth-child(4),
+.riv-table--stlist th:nth-child(6),
+.riv-table--stlist td:nth-child(6) {
+  width: 100px;
+}
+
+.riv-table--stlist th:nth-child(7),
+.riv-table--stlist td:nth-child(7) {
+  width: 72px;
+}
+
+.riv-table--stlist th:nth-child(8),
+.riv-table--stlist td:nth-child(8) {
+  width: 110px;
+}
+
+.riv-table--out {
+  table-layout: fixed;
+}
+
+.riv-table--out th:nth-child(1),
+.riv-table--out td:nth-child(1) {
+  width: 44px;
+}
+
+.riv-table--out th:nth-child(2),
+.riv-table--out td:nth-child(2) {
+  width: 32%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.riv-table--out th:nth-child(3),
+.riv-table--out td:nth-child(3) {
+  width: 100px;
+}
+
+.riv-table--out th:nth-child(4),
+.riv-table--out td:nth-child(4),
+.riv-table--out th:nth-child(5),
+.riv-table--out td:nth-child(5) {
+  width: 22%;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.riv-table--out th:nth-child(6),
+.riv-table--out td:nth-child(6) {
+  width: 72px;
+}
+
+.riv-table--out tr.riv-age-yellow > td {
+  background: #fff6c8;
+}
+
+.riv-table--out tr.riv-age-orange > td {
+  background: #f4a460;
+  color: #333;
+}
+
+.riv-table--out tr.riv-age-red > td {
+  background: #e85347;
+  color: #e6e8ed;
+}
+
+.riv-table--out tr.riv-age-yellow:hover > td {
+  background: #fff0a8;
+}
+
+.riv-table--out tr.riv-age-orange:hover > td {
+  background: #e8944f;
+  color: #111;
+}
+
+.riv-table--out tr.riv-age-red:hover > td {
+  background: #d9483d;
+  color: #111 !important;
+}
+
+/* Match Dashlite nk-tb-head / overline-title (white bar, muted uppercase) */
+.riv-table thead th {
+  background: #fff !important;
+  color: #8094ae;
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1.25rem;
+  border-bottom: 1px solid #dbdfea;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/*
+  List sticky head uses RivStickyThead portal (Locomotive transforms break CSS sticky,
+  and rowspan multi-row sticky th misalign). Keep thead styles only — no position:sticky.
+*/
+
+/* Fixed clone outside [data-scroll-container] — stays under admin header, columns aligned */
+.riv-sticky-clone {
+  position: fixed;
+  z-index: 1040;
+  overflow: hidden;
+  pointer-events: none;
+  background: #fff;
+  box-shadow: 0 1px 0 #dbdfea, 0 2px 8px rgba(22, 38, 68, 0.06);
+  will-change: top, left, width;
+  contain: layout style;
+}
+
+.riv-sticky-clone__table {
+  margin: 0;
+  background: #fff;
+}
+
+.riv-sticky-clone__table thead th {
+  background: #f8f9fc !important;
+}
+
+/* Tr SO sticky clone — keep group colors + full 2-row header */
+.riv-sticky-clone__table.riv-table--trso thead th.riv-trso-grp--date {
+  background: #d4e3fc !important;
+  color: #1e3a5f;
+}
+
+.riv-sticky-clone__table.riv-table--trso thead th.riv-trso-grp--data {
+  background: #cdead8 !important;
+  color: #1b4332;
+}
+
+.riv-sticky-clone__table.riv-table--trso thead th.riv-trso-grp--so {
+  background: #ffe0b8 !important;
+  color: #7a3e00;
+}
+
+.riv-sticky-clone__table.riv-table--trso thead th.riv-trso-grp--diff {
+  background: #f8c9c9 !important;
+  color: #7a1f1f;
+}
+
+.riv-sticky-clone__table.riv-table--trso thead .riv-trso-pin-no,
+.riv-sticky-clone__table.riv-table--trso thead .riv-trso-pin-so,
+.riv-sticky-clone__table.riv-table--trso thead .riv-trso-act {
+  background: #f8f9fc !important;
+}
+
+.riv-page-scroll {
+  min-height: 100%;
+}
+
+/* Locomotive often under-reads tall tables — keep TOTAL + rds-meta fully reachable */
+.riv-page-scroll .page-smooth-scroll__section {
+  padding-bottom: 12rem !important;
+}
+
+.riv-page-scroll .rds-meta {
+  margin-top: 12px;
+  margin-bottom: 2rem;
+  padding-bottom: 0.25rem;
+}
+
+.riv-table tfoot td {
+  position: static;
+  background: #f5f6fa;
+  font-weight: 700;
+  border-top: 2px solid #dbdfea;
+}
+
+.riv-table th.num,
+.riv-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.riv-table td.ctr,
+.riv-table th.ctr {
+  text-align: center;
+}
+
+.riv-table .rds-no {
+  width: 40px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.riv-table tbody tr.rsd-row-click:hover td {
+  background: #eef4fb;
+}
+
+/* Aging rows keep their tint on hover (override generic blue hover) */
+.riv-table--out tbody tr.riv-age-yellow.rsd-row-click:hover > td {
+  background: #fff0a8;
+}
+
+.riv-table--out tbody tr.riv-age-orange.rsd-row-click:hover > td {
+  background: #e8944f;
+  color: #111;
+}
+
+.riv-table--out tbody tr.riv-age-red.rsd-row-click:hover > td {
+  background: #d9483d;
+  color: #111 !important;
+}
+
+/* Detail modal: width follows content (no ellipsis / no H-scroll)
+   reactstrap puts className on .modal-dialog */
+.modal-dialog.riv-detail-modal {
+  width: max-content !important;
+  max-width: calc(100vw - 32px) !important;
+  margin: 1.25rem auto;
+}
+
+.modal-dialog.riv-detail-modal .modal-content {
+  border: 0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  min-width: min(480px, calc(100vw - 32px));
+  max-height: 85vh !important;
+  overflow: hidden !important;
+}
+
+/* Title bar stays put; only body scrolls */
+.modal-dialog.riv-detail-modal .rsd-detail-hero {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 6;
+  min-width: 0;
+  background: #f8f9fc;
+}
+
+.modal-dialog.riv-detail-modal .rsd-detail-sub {
+  word-break: break-all;
+  max-width: 100%;
+}
+
+.modal-dialog.riv-detail-modal .rsd-detail-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column;
+}
+
+/*
+  Scroll area: fixed max height so long tables always overflow.
+  Native overflow-y (Locomotive di dalam modal sering mengunci scroll).
+*/
+.riv-modal-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-height: calc(85vh - 88px) !important;
+  height: calc(85vh - 88px) !important;
+  overflow-x: auto !important;
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.riv-modal-scroll__section {
+  padding: 12px 16px 20px;
+}
+
+.riv-detail-wrap {
+  overflow: visible;
+  border: 0;
+  max-height: none;
+  width: max-content;
+  max-width: 100%;
+  padding-top: 0;
+}
+
+.riv-detail-table {
+  width: auto !important;
+  min-width: 0 !important;
+  table-layout: auto;
+  margin: 0;
+  /* separate required for sticky thead to work correctly */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.modal-dialog.riv-detail-modal .riv-detail-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 5 !important;
+  background: #f5f6fa !important;
+  box-shadow: inset 0 -1px 0 #e5e9f2;
+}
+
+/* SO Partial detail — wide modal + compact 2-row grouped grid */
+.modal-dialog.riv-detail-modal--sopartial {
+  width: calc(100vw - 24px) !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+.modal-dialog.riv-detail-modal--sopartial .modal-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.modal-dialog.riv-detail-modal--sopartial .riv-detail-wrap {
+  width: 100%;
+  max-width: 100%;
+}
+
+.modal-dialog.riv-detail-modal--sopartial .riv-modal-scroll__section {
+  padding: 8px 10px 14px;
+}
+
+.riv-detail-table--sopartial {
+  --riv-sop-h1: 24px;
+  width: 100% !important;
+  table-layout: fixed !important;
+  /* separate required for CSS sticky thead */
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  font-size: 0.68rem !important;
+}
+
+/* Sticky 2-row header — no rowspan (rowspan breaks sticky alignment) */
+.modal-dialog.riv-detail-modal .riv-detail-table--sopartial thead th {
+  position: sticky !important;
+  background: #f5f6fa !important;
+  box-shadow: inset 0 -1px 0 #e5e9f2;
+}
+
+.modal-dialog.riv-detail-modal .riv-detail-table--sopartial thead tr:first-child th {
+  top: 0 !important;
+  z-index: 6 !important;
+}
+
+.modal-dialog.riv-detail-modal .riv-detail-table--sopartial thead tr:nth-child(2) th {
+  top: var(--riv-sop-h1) !important;
+  z-index: 5 !important;
+}
+
+/* NO / PLU / DESKRIPSI: label + pad cells stack as one sticky block */
+.modal-dialog.riv-detail-modal .riv-detail-table--sopartial thead th.riv-sop-pin {
+  z-index: 8 !important;
+  background: #f5f6fa !important;
+}
+
+.modal-dialog.riv-detail-modal .riv-detail-table--sopartial thead th.riv-sop-pin--label {
+  top: 0 !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+  vertical-align: bottom;
+  padding-bottom: 2px !important;
+}
+
+.modal-dialog.riv-detail-modal .riv-detail-table--sopartial thead th.riv-sop-pin--pad {
+  top: var(--riv-sop-h1) !important;
+  border-top: 0 !important;
+  box-shadow: inset 0 -1px 0 #e5e9f2;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 20px;
+  line-height: 0;
+  font-size: 0 !important;
+}
+
+.riv-detail-table--sopartial th,
+.riv-detail-table--sopartial td {
+  padding: 3px 4px !important;
+  white-space: nowrap;
+  line-height: 1.25;
+  vertical-align: middle;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.riv-detail-table--sopartial th.num,
+.riv-detail-table--sopartial td.num {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.riv-detail-table--sopartial col.riv-sop-col-no {
+  width: 32px;
+}
+
+.riv-detail-table--sopartial col.riv-sop-col-plu {
+  width: 72px;
+}
+
+.riv-detail-table--sopartial col.riv-sop-col-desc {
+  width: 18%;
+}
+
+.riv-detail-table--sopartial col.riv-sop-col-num {
+  width: auto;
+}
+
+.riv-detail-table--sopartial .rds-no {
+  width: 32px;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.riv-detail-table--sopartial thead th {
+  font-size: 0.62rem !important;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.riv-detail-table--sopartial th.riv-trso-grp--data,
+.riv-detail-table--sopartial td.riv-trso-grp--data {
+  background: #e7f6ed;
+}
+
+.riv-detail-table--sopartial th.riv-trso-grp--so,
+.riv-detail-table--sopartial td.riv-trso-grp--so {
+  background: #fff4e5;
+}
+
+.riv-detail-table--sopartial th.riv-trso-grp--diff,
+.riv-detail-table--sopartial td.riv-trso-grp--diff {
+  background: #fde8e8;
+}
+
+.riv-detail-table--sopartial thead th.riv-trso-grp--data {
+  background: #cdead8 !important;
+  color: #1b4332;
+}
+
+.riv-detail-table--sopartial thead th.riv-trso-grp--so {
+  background: #ffe0b8 !important;
+  color: #7a3e00;
+}
+
+.riv-detail-table--sopartial thead th.riv-trso-grp--diff {
+  background: #f8c9c9 !important;
+  color: #7a1f1f;
+}
+
+.riv-detail-table--sopartial tfoot td.riv-trso-grp--data {
+  background: #e7f6ed !important;
+}
+
+.riv-detail-table--sopartial tfoot td.riv-trso-grp--so {
+  background: #fff4e5 !important;
+}
+
+.riv-detail-table--sopartial tfoot td.riv-trso-grp--diff {
+  background: #fde8e8 !important;
+}
+
+.riv-detail-table--sopartial tbody tr:hover > td {
+  filter: brightness(0.96);
+}
+
+.riv-detail-table--sopartial tbody tr:hover > td:not([class*="riv-trso-grp"]) {
+  background: #f0f3f9;
+}
+
+.riv-detail-table--sopartial tbody tr:hover > td.riv-trso-grp--data {
+  background: #d9f0e3;
+}
+
+.riv-detail-table--sopartial tbody tr:hover > td.riv-trso-grp--so {
+  background: #ffe8cc;
+}
+
+.riv-detail-table--sopartial tbody tr:hover > td.riv-trso-grp--diff {
+  background: #fadada;
+}
+
+/* Footer TOTAL: no sticky — sticky bottom overlaps rows while scrolling */
+.modal-dialog.riv-detail-modal .riv-detail-table tfoot td {
+  position: static !important;
+  bottom: auto !important;
+  z-index: auto !important;
+  background: #f5f6fa !important;
+  border-top: 2px solid #dbdfea;
+  font-weight: 700;
+}
+
+.riv-detail-table th,
+.riv-detail-table td {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  padding: 7px 12px;
+}
+
+.riv-detail-table th.num,
+.riv-detail-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding-left: 16px;
+}
+
+.riv-detail-table .rds-no {
+  width: 40px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.rds-empty {
+  text-align: center;
+  color: #8094ae;
+  padding: 24px 12px !important;
+}
+
+.rds-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: #8094ae;
+}
+
+/* Client list search — underline only, top-right above table (Tr SO, etc.) */
+.riv-list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin: 0 0 0.55rem;
+  padding-right: 0.15rem;
+}
+
+.riv-list-search {
+  display: block;
+  width: min(260px, 100%);
+  border: 0;
+  border-bottom: 1px solid #d1d5db;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  padding: 0.35rem 0.15rem;
+  font-size: 0.8125rem;
+  color: #111827;
+  line-height: 1.35;
+}
+
+.riv-list-search::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.riv-list-search:focus {
+  border-bottom-color: #6b7280;
+  box-shadow: none;
+  outline: none;
+}
+
+.riv-list-search::-webkit-search-decoration,
+.riv-list-search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.rds-more {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Last Stock filter row — Brand / Store / Date / Filter on one baseline */
+.nk-block-tools.riv-laststock-filters {
+  align-items: center !important;
+}
+
+.nk-block-tools.riv-laststock-filters > li {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+/* Last Stock — AppDatePicker + change date (unlock select)
+   Date input stays in-flow (same height as Brand/Store/Filter).
+   "change date" is absolute so it doesn't throw off vertical align. */
+.nk-block-tools .hrd-filter-lastdate {
+  position: relative;
+  margin: 0;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.nk-block-tools .hrd-filter-lastdate .form-control-wrap {
+  min-width: 150px;
+  width: 100%;
+  margin: 0;
+}
+
+.nk-block-tools .hrd-filter-lastdate .react-datepicker-wrapper,
+.nk-block-tools .hrd-filter-lastdate .react-datepicker__input-container {
+  display: block;
+  width: 100%;
+}
+
+.nk-block-tools .hrd-filter-lastdate input {
+  height: 32px;
+  min-width: 150px;
+  width: 100%;
+}
+
+.nk-block-tools .hrd-filter-lastdate input.riv-lastdate-locked,
+.nk-block-tools .hrd-filter-lastdate input:disabled {
+  background: #f5f6fa;
+  color: #526484;
+  cursor: default;
+  opacity: 1;
+}
+
+.nk-block-tools .riv-change-date {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  color: #6576ff;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.nk-block-tools .riv-change-date:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.nk-block-tools .riv-change-date:disabled {
+  color: #b6c0d1;
+  cursor: default;
+}
+
+/* Match Filter btn height to RSelect / date (32px) */
+.nk-block-tools .hrd-filter-lastdate + li .btn {
+  height: 32px;
+  min-height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* SALES block: label kiri + Article kanan, sejajar lebar tabel */
+.riv-sales-block {
+  width: max-content;
+  max-width: 100%;
+}
+
+.riv-section-bar--sales {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: auto;
+}
+
+.riv-section-bar--sales .riv-article-input {
+  width: 180px;
+  flex: 0 0 auto;
+}
+
+.riv-section-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #526484;
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
+}
+
+/* Last Stock — padat ke kiri (bukan full width), data utuh */
+.riv-laststock-page .riv-bleed {
+  width: max-content;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+  overflow-x: visible;
+}
+
+.riv-table-wrap--laststock {
+  overflow-x: visible !important;
+  overflow-y: visible;
+  width: max-content;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Cek Mutasi — Chk_Mutasi.aspx BAD rows; full-bleed width */
+.riv-table-wrap--cekmutasi {
+  overflow-x: auto !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+.riv-table.riv-table--cekmutasi {
+  table-layout: fixed !important;
+  width: 100% !important;
+  min-width: 960px !important;
+  font-size: 0.8125rem;
+}
+
+.riv-table--cekmutasi th,
+.riv-table--cekmutasi td {
+  padding: 0.35rem 0.55rem;
+  white-space: nowrap;
+}
+
+.riv-table--cekmutasi th:nth-child(1),
+.riv-table--cekmutasi td:nth-child(1) {
+  width: 48px;
+}
+
+.riv-table--cekmutasi th:nth-child(2),
+.riv-table--cekmutasi td:nth-child(2) {
+  width: 28%;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.riv-table--cekmutasi tr.riv-row-bad td {
+  background-color: #c5d8f0 !important;
+  color: #1a1a2e;
+  font-weight: 600;
+}
+
+/* Daily Stock Summary 2 */
+.riv-table-wrap--dailystock {
+  overflow-x: auto !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+.riv-table.riv-table--dailystock {
+  table-layout: auto !important;
+  width: max-content !important;
+  min-width: 100%;
+  font-size: 0.75rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.riv-table--dailystock th,
+.riv-table--dailystock td {
+  padding: 0.3rem 0.45rem;
+  white-space: nowrap;
+}
+
+.nk-block-tools .hrd-filter-article {
+  margin: 0;
+  min-width: 120px;
+}
+
+.nk-block-tools .hrd-filter-article input {
+  height: 32px;
+  min-width: 120px;
+}
+
+.nk-block-tools .hrd-filter-select--sm {
+  min-width: 110px;
+}
+
+/* Last Stock All Store — stockALlS.aspx (compact half-width grid) */
+.riv-table-wrap--stockall {
+  overflow-x: visible !important;
+  width: max-content;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.riv-table.riv-table--stockall {
+  table-layout: auto !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  font-size: 0.8125rem;
+}
+
+.riv-table--stockall th,
+.riv-table--stockall td {
+  padding: 0.35rem 0.55rem;
+  white-space: nowrap;
+}
+
+.riv-table.riv-table--laststock-total,
+.riv-table.riv-table--laststock-sales {
+  table-layout: auto !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: none;
+  font-size: 0.75rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.riv-table--laststock-total th,
+.riv-table--laststock-total td,
+.riv-table--laststock-sales th,
+.riv-table--laststock-sales td {
+  padding: 4px 5px !important;
+  white-space: nowrap;
+  vertical-align: middle;
+  overflow: visible;
+  text-overflow: unset;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.riv-table--laststock-total thead th,
+.riv-table--laststock-sales thead th {
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: #eef2f7;
+  padding: 4px 5px !important;
+  line-height: 1.2;
+  border-bottom: 1px solid #e5e9f2;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.riv-table--laststock-total .num,
+.riv-table--laststock-sales .num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.riv-table--laststock-total .rds-no,
+.riv-table--laststock-sales .rds-no {
+  width: 26px;
+  min-width: 26px;
+  text-align: center;
+  padding: 3px 2px !important;
+}
+
+.riv-table--laststock-total .ls-meta,
+.riv-table--laststock-sales .ls-meta {
+  background: #fff;
+  font-weight: 600;
+}
+
+.riv-table--laststock-total thead .ls-meta,
+.riv-table--laststock-sales thead .ls-meta {
+  background: #e8eef6;
+}
+
+/* Pemisah grup — tipis & soft */
+.riv-table--laststock-total .ls-sep,
+.riv-table--laststock-sales .ls-sep {
+  border-left: 1px solid #e8ecf3 !important;
+}
+
+/* Alternating group tint */
+.riv-table--laststock-total .ls-grp--a,
+.riv-table--laststock-sales .ls-grp--a {
+  background: #f7f9fc;
+}
+
+.riv-table--laststock-total .ls-grp--b,
+.riv-table--laststock-sales .ls-grp--b {
+  background: #eef6f3;
+}
+
+.riv-table--laststock-total .ls-grp--end,
+.riv-table--laststock-sales .ls-grp--end {
+  background: #f3f0fa;
+  font-weight: 600;
+}
+
+.riv-table--laststock-total thead .ls-grp--a,
+.riv-table--laststock-sales thead .ls-grp--a {
+  background: #e8eef8;
+}
+
+.riv-table--laststock-total thead .ls-grp--b,
+.riv-table--laststock-sales thead .ls-grp--b {
+  background: #dff0ea;
+}
+
+.riv-table--laststock-total thead .ls-grp--end,
+.riv-table--laststock-sales thead .ls-grp--end {
+  background: #ebe6f7;
+}
+
+.riv-table--laststock-total tbody tr:hover td,
+.riv-table--laststock-sales tbody tr:hover td {
+  filter: brightness(0.97);
+}
+
+.riv-filters .hrd-filter-date {
+  margin: 0;
+  min-width: 160px;
+}
+
+/* Tr So — interactive scroll grid: full values, never truncate */
+.riv-table-wrap--trso {
+  overflow-x: auto !important;
+  overflow-y: visible;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.riv-table.riv-table--trso {
+  table-layout: auto !important;
+  width: max-content !important;
+  min-width: 100%;
+  font-size: 0.75rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.riv-table--trso th,
+.riv-table--trso td {
+  padding: 0.3rem 0.5rem !important;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Group tints: DATE / DATA / STOCK OPNAME / DIFFERENT — distinct hues */
+.riv-table--trso th.riv-trso-grp--date,
+.riv-table--trso td.riv-trso-grp--date {
+  background: #e8f0fe;
+}
+
+.riv-table--trso th.riv-trso-grp--data,
+.riv-table--trso td.riv-trso-grp--data {
+  background: #e7f6ed;
+}
+
+.riv-table--trso th.riv-trso-grp--so,
+.riv-table--trso td.riv-trso-grp--so {
+  background: #fff4e5;
+}
+
+.riv-table--trso th.riv-trso-grp--diff,
+.riv-table--trso td.riv-trso-grp--diff {
+  background: #fde8e8;
+}
+
+.riv-table--trso thead th.riv-trso-grp--date {
+  background: #d4e3fc;
+  color: #1e3a5f;
+}
+
+.riv-table--trso thead th.riv-trso-grp--data {
+  background: #cdead8;
+  color: #1b4332;
+}
+
+.riv-table--trso thead th.riv-trso-grp--so {
+  background: #ffe0b8;
+  color: #7a3e00;
+}
+
+.riv-table--trso thead th.riv-trso-grp--diff {
+  background: #f8c9c9;
+  color: #7a1f1f;
+}
+
+.riv-table--trso .riv-trso-so {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
+}
+
+/* Sticky pins for interactive horizontal scroll */
+.riv-table--trso .riv-trso-pin-no {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #fff;
+  box-shadow: 1px 0 0 #e5e9f2;
+}
+
+.riv-table--trso .riv-trso-pin-so {
+  position: sticky;
+  left: 36px;
+  z-index: 3;
+  background: #fff;
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
+}
+
+.riv-table--trso thead .riv-trso-pin-no,
+.riv-table--trso thead .riv-trso-pin-so {
+  z-index: 4;
+  background: #f8f9fc;
+}
+
+.riv-table--trso .riv-trso-act {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background: #fff;
+  box-shadow: -2px 0 4px rgba(15, 23, 42, 0.06);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.riv-table--trso thead .riv-trso-act {
+  z-index: 4;
+  background: #f8f9fc;
+}
+
+.riv-table--trso tbody tr.riv-trso-selected > td {
+  outline: none;
+  filter: brightness(0.96);
+}
+
+.riv-table--trso tbody tr.riv-trso-selected > td.riv-trso-pin-no,
+.riv-table--trso tbody tr.riv-trso-selected > td.riv-trso-pin-so,
+.riv-table--trso tbody tr.riv-trso-selected > td.riv-trso-act {
+  background: #dbe7ff !important;
+  filter: none;
+}
+
+.riv-table--trso tbody tr.rsd-row-click {
+  cursor: pointer;
+}
+
+.riv-trso-dd-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.riv-trso-dd-menu {
+  min-width: 150px;
+  font-size: 0.75rem;
+  z-index: 2100 !important;
+}
+
+.riv-trso-dd-menu .dropdown-item {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.riv-trso-modal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* So Adjustment — Rpt_SO_Adjusment.aspx */
+.riv-table--soadj {
+  width: 100%;
+  font-size: 0.8125rem;
+}
+
+.riv-table--soadj th,
+.riv-table--soadj td {
+  padding: 0.35rem 0.55rem;
+  white-space: nowrap;
+}
+
+.riv-table--soadj tfoot td {
+  font-weight: 600;
+  background: #f4f6fa;
+}
+
+.riv-trso-modal-fitem {
+  min-width: 140px;
+  max-width: 220px;
+}
+
+.reg-rpt-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  color: #9ca3af;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}

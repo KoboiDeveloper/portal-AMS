@@ -1,0 +1,32 @@
+/* REG2 ASBC by QTY - legacy ASBC.aspx (builds on reg-daily-sales.css .rds-* table) */
+.rasq-table {
+  min-width: 1080px;
+}
+
+/* Sub Total rows: legacy #eff952 / black */
+.rds-table tbody tr.rasq-sub td {
+  background: #eff952;
+  color: #000;
+}
+
+/* GRAND TOTAL row: legacy white / black / bold */
+.rds-table tbody tr.rasq-grand td {
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+}
+
+.rds-table tbody tr.rasq-sub:hover td {
+  background: #e6ef3f;
+}
+
+/* KETERANGAN: STOP = red, KIRIM = blue (legacy Grid_HtmlDataCellPrepared) */
+.rds-table td.rasq-stop {
+  color: #ff0000;
+  font-weight: 600;
+}
+
+.rds-table td.rasq-kirim {
+  color: #0000ff;
+  font-weight: 600;
+}

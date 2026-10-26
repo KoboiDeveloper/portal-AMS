@@ -1,0 +1,161 @@
+.rsi-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #111827;
+}
+
+.rsi-msg {
+  margin: 10px 0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+
+.rsi-msg.err {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.rsi-msg.ok {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.rsi-summary {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px;
+  margin: 0 0 10px;
+}
+
+.rsi-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rsi-summary-title {
+  font-weight: 700;
+}
+
+.rsi-summary-value {
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+  min-width: 120px;
+  font-size: 16px;
+}
+
+.rsi-tree {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.rsi-group-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  font-weight: 700;
+}
+
+.rsi-group-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rsi-toggle {
+  width: 16px;
+  height: 16px;
+  line-height: 14px;
+  text-align: center;
+  border: 1px solid #9ca3af;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #111827;
+  cursor: pointer;
+  user-select: none;
+  flex: 0 0 auto;
+  padding: 0;
+  background: #fff;
+}
+
+.rsi-group-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rsi-group-total,
+.rsi-store-total {
+  text-align: right;
+  white-space: nowrap;
+  flex: 0 0 160px;
+}
+
+.rsi-group-items {
+  padding: 0 0 6px;
+}
+
+.rsi-store-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 10px 6px 42px;
+}
+
+.rsi-store-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rsi-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 2px 0;
+}
+
+.rsi-loading {
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+@media (max-width: 520px) {
+  .rsi-group-total,
+  .rsi-store-total {
+    flex-basis: 120px;
+    font-size: 12px;
+  }
+
+  .rsi-summary-value {
+    min-width: 110px;
+    font-size: 14px;
+  }
+}
+
+.reg-rpt-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  color: #9ca3af;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}

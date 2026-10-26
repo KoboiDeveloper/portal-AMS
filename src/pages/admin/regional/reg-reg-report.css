@@ -1,0 +1,108 @@
+.rsa-card .rsa-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+}
+
+.rsa-card .rsa-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rsa-card .rsa-filter .form-label {
+  margin-bottom: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.rsa-card .rsa-filter--select {
+  width: 220px;
+}
+
+.rsa-card .rsa-filter--text {
+  width: 160px;
+}
+
+.rsa-card .rsa-filter--text .form-control {
+  height: 32px;
+  font-size: 0.8125rem;
+}
+
+.rsa-card .rsa-filter--action {
+  flex: 0 0 auto;
+}
+
+.rsa-card .rsa-export-btn,
+.rsa-card .rsa-load-btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 0.8125rem;
+}
+
+.rrd-section {
+  margin-top: 1.25rem;
+}
+
+.rrd-section-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.rrd-msg.err {
+  color: #e85347;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.reg-rpt-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  color: #9ca3af;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.rrd-table-wrap {
+  overflow-x: auto;
+}
+
+.rrd-table {
+  width: 100%;
+  font-size: 0.8125rem;
+  border-collapse: collapse;
+}
+
+.rrd-table th,
+.rrd-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e9f2;
+  white-space: nowrap;
+}
+
+.rrd-table th {
+  background: #f5f6fa;
+  font-weight: 600;
+}
+
+.rrd-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  .rsa-card .rsa-filter--select,
+  .rsa-card .rsa-filter--text,
+  .rsa-card .rsa-filter--action {
+    width: 100%;
+  }
+}

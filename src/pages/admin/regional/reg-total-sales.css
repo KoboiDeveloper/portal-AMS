@@ -1,0 +1,272 @@
+/* Total Sales — AMS navy / steel (selaras live dashboard) */
+.reg-ts-wrap {
+  --ams-navy: #0f2e57;
+  --ams-steel: #526484;
+  --ams-hair: #dbdfea;
+  --ams-paper: #f5f6fa;
+  --ams-ink: #1c2b41;
+  --ams-muted: #8094ae;
+  --ams-line: rgba(15, 46, 87, 0.12);
+  max-width: 1300px;
+  margin: 0 auto;
+  font-family: "Segoe UI", "DM Sans", sans-serif;
+  color: var(--ams-ink);
+}
+
+.reg-ts-filter {
+  background: #fff;
+  border: 1px solid var(--ams-hair);
+  border-radius: 0;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.reg-ts-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.reg-ts-f-item label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ams-steel);
+  margin-bottom: 4px;
+}
+
+.reg-ts-ctl,
+.reg-ts-f-item .form-control,
+.reg-ts-f-item input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--ams-hair);
+  border-radius: 0;
+  font-size: 0.8125rem;
+  background: #fff;
+  color: var(--ams-ink);
+}
+
+.reg-ts-ctl:focus,
+.reg-ts-f-item .form-control:focus,
+.reg-ts-f-item input:focus {
+  outline: none;
+  border-color: var(--ams-navy);
+}
+
+.reg-ts-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--ams-navy);
+  border-radius: 0;
+  cursor: pointer;
+  background: var(--ams-navy);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reg-ts-btn:hover:not(:disabled) {
+  background: #0a2345;
+  border-color: #0a2345;
+}
+
+.reg-ts-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.reg-ts-msg {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 0;
+  border: 1px solid transparent;
+  font-size: 0.8125rem;
+}
+
+.reg-ts-msg.err {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.reg-ts-msg.ok {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.reg-ts-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  color: var(--ams-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  background: var(--ams-paper);
+  border: 1px solid var(--ams-hair);
+}
+
+.reg-ts-scroll {
+  width: 100%;
+  /* overflow-x:auto creates a scrollport and kills page-level sticky —
+     use clip so wide table doesn't trap vertical sticky */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.reg-ts-totbar {
+  border: 1px solid var(--ams-hair);
+  border-radius: 0;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.reg-ts-tot-head {
+  background: var(--ams-paper);
+  border-bottom: 1px solid var(--ams-hair);
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ams-navy);
+}
+
+.reg-ts-table-card {
+  border: 1px solid var(--ams-hair);
+  border-radius: 0;
+  background: #fff;
+  overflow: visible; /* required for sticky under top menu */
+}
+
+.reg-ts-table-card .reg-ts-scroll {
+  max-height: none;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.reg-ts-tot-tbl,
+.reg-ts-tbl {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.reg-ts-tot-tbl thead th,
+.reg-ts-tbl thead th {
+  background: var(--ams-paper);
+  font-weight: 700;
+  color: var(--ams-navy);
+  border-bottom: 1px solid var(--ams-hair);
+  border-right: 1px solid var(--ams-hair);
+  padding: 10px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/*
+  Sticky under fixed top menu (page scroll — no inner table scroll).
+  --ams-header-h synced from AdminHeader if set; fallback ~65px.
+*/
+.reg-ts-tbl thead th {
+  position: sticky;
+  z-index: 30;
+  background: var(--ams-paper);
+  box-shadow: 0 1px 0 var(--ams-hair);
+}
+
+.reg-ts-tbl thead tr:first-child th {
+  top: var(--ams-header-h, 65px);
+}
+
+.reg-ts-tbl thead tr:nth-child(2) th {
+  top: calc(var(--ams-header-h, 65px) + 38px);
+  z-index: 29;
+}
+
+.reg-ts-tbl thead th.grp {
+  background: #eef1f6;
+  z-index: 31;
+}
+
+.reg-ts-tot-tbl thead th:last-child,
+.reg-ts-tbl thead th:last-child {
+  border-right: 0;
+}
+
+.reg-ts-tot-tbl thead th.grp,
+.reg-ts-tbl thead th.grp {
+  background: #eef1f6;
+}
+
+.reg-ts-tot-tbl tbody td,
+.reg-ts-tbl tbody td {
+  border-bottom: 1px solid var(--ams-line);
+  border-right: 1px solid var(--ams-line);
+  padding: 10px;
+  font-size: 0.8125rem;
+  color: var(--ams-ink);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.reg-ts-tot-tbl tbody td:last-child,
+.reg-ts-tbl tbody td:last-child {
+  border-right: 0;
+}
+
+.reg-ts-tot-tbl tbody tr:hover td,
+.reg-ts-tbl tbody tr:hover td {
+  background: var(--ams-paper);
+}
+
+.reg-ts-tot-tbl td.num,
+.reg-ts-tbl td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ams-navy);
+  font-weight: 600;
+}
+
+.reg-ts-tot-tbl td.emph,
+.reg-ts-tbl td.emph {
+  color: var(--ams-navy);
+  font-weight: 700;
+}
+
+.reg-ts-tot-tbl td.soft {
+  color: var(--ams-steel);
+  font-weight: 600;
+}
+
+.reg-ts-tbl td.center {
+  text-align: center;
+  color: var(--ams-muted);
+}
+
+.reg-ts-tbl td.store {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ams-ink);
+}
+
+@media (max-width: 720px) {
+  .reg-ts-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}

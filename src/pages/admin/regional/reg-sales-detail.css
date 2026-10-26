@@ -1,0 +1,180 @@
+/* REG2 Daily Sales Detail — legacy Seles_Detail.aspx tabs */
+.rsd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  border-bottom: 1px solid #e5e9f2;
+}
+
+.rsd-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 8px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8094ae;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.rsd-tab:hover {
+  color: #364a63;
+}
+
+.rsd-tab.active {
+  color: #0971fe;
+  border-bottom-color: #0971fe;
+}
+
+.rsd-tab.disabled,
+.rsd-tab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: #8094ae;
+}
+
+.rsd-all-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f5f6fa;
+  border-radius: 4px;
+  border: 1px solid #e5e9f2;
+}
+
+.rsd-tot-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8094ae;
+}
+
+.rsd-tot-val {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #364a63;
+}
+
+.rsd-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fff;
+  background: #8094ae;
+}
+
+.rsd-badge--ok {
+  background: #1ee0ac;
+  color: #0b3d2e;
+}
+
+.rsd-badge--warn {
+  background: #f4bd0e;
+  color: #3d3200;
+}
+
+.rsd-badge--info {
+  background: #09c2de;
+  color: #043a42;
+}
+
+.rsd-badge--pos {
+  background: #e85347;
+}
+
+.rsd-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+}
+
+.rsd-ecr {
+  color: #008b8b;
+  font-weight: 600;
+}
+
+.rsd-non-ecr {
+  color: #364a63;
+  font-weight: 600;
+}
+
+.rsd-nik {
+  color: #526484;
+}
+
+.rsd-table {
+  min-width: 1100px;
+}
+
+.rsd-row-click {
+  cursor: pointer;
+}
+
+.rsd-row-click:hover {
+  background: #f0f3f9;
+}
+
+.rsd-detail-modal .modal-content {
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rsd-detail-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e5e9f2;
+  background: #f8f9fc;
+}
+
+.rsd-detail-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #364a63;
+}
+
+.rsd-detail-sub {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: #526484;
+}
+
+.rsd-detail-body {
+  padding: 16px 18px 20px;
+  max-height: min(70vh, 640px);
+  overflow: auto;
+}
+
+.rsd-detail-section-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #8094ae;
+}
+
+.rsd-detail-table {
+  min-width: 860px;
+}
+
+.rsd-detail-pay-table {
+  min-width: 320px;
+  max-width: 480px;
+}
