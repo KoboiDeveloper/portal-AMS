@@ -43,7 +43,12 @@ const RbacLogin = () => {
       <Head title="Login" />
       <div className="ams-login">
         <div className="ams-login__bg" aria-hidden="true" />
-        <div className="ams-login__noise" aria-hidden="true" />
+        <div className="ams-login__particles" aria-hidden="true">
+          <span /><span /><span /><span /><span />
+          <span /><span /><span /><span /><span />
+          <span /><span /><span /><span /><span />
+          <span /><span /><span /><span /><span />
+        </div>
 
         <div className="ams-login__shell">
           <div className="ams-login__mark" aria-hidden="true">
