@@ -278,6 +278,32 @@
   font-variant-numeric: tabular-nums;
 }
 
+.reg-ar-note-cell {
+  white-space: normal;
+  max-width: 280px;
+  line-height: 1.35;
+}
+
+.reg-ar-expand-note {
+  display: inline;
+}
+
+.reg-ar-expand-btn {
+  border: 0;
+  background: transparent;
+  color: var(--ams-navy);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.reg-ar-expand-btn:hover {
+  color: #0a2345;
+}
+
 .reg-ar-toolbar-row {
   display: flex;
   flex-wrap: wrap;
