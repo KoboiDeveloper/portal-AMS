@@ -105,22 +105,6 @@ const fmtNum = (n) =>
     ? "—"
     : Number(n).toLocaleString("id-ID", { maximumFractionDigits: 0 });
 
-const ADMIN_NOTE_LIMIT = 40;
-
-const ExpandableNote = ({ text, expanded, onToggle }) => {
-  const full = String(text ?? "");
-  if (!full) return "—";
-  if (full.length <= ADMIN_NOTE_LIMIT) return full;
-  return (
-    <span className="reg-ar-expand-note">
-      {expanded ? full : `${full.slice(0, ADMIN_NOTE_LIMIT)}…`}{" "}
-      <button type="button" className="reg-ar-expand-btn" onClick={onToggle}>
-        {expanded ? "Sembunyikan" : "Selengkapnya"}
-      </button>
-    </span>
-  );
-};
-
 const monthStartYmd = () => {
   const d = new Date();
   const p = (n) => String(n).padStart(2, "0");
@@ -156,23 +140,12 @@ const RegMpReturPage = () => {
   const [error, setError] = useState("");
   const [quick, setQuick] = useState("");
   const [loaded, setLoaded] = useState(false);
-  const [expandedAdmin, setExpandedAdmin] = useState(() => new Set());
 
   const clearResult = () => {
     setRows([]);
     setBadge(null);
     setLoaded(false);
     setError("");
-    setExpandedAdmin(new Set());
-  };
-
-  const toggleAdminNote = (rowKey) => {
-    setExpandedAdmin((prev) => {
-      const next = new Set(prev);
-      if (next.has(rowKey)) next.delete(rowKey);
-      else next.add(rowKey);
-      return next;
-    });
   };
 
   const baseParams = useCallback(
@@ -429,33 +402,25 @@ const RegMpReturPage = () => {
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((r, i) => {
-                      const rowKey = `${cell(r, "NO_INVOICE")}|${cell(r, "PLU")}|${i}`;
-                      return (
-                        <tr key={rowKey}>
-                          <td className="col-no">{i + 1}</td>
-                          {COLS.map((c) => {
-                            const v = cell(r, c.key);
-                            if (c.key === "KETERANGAN_ADMIN") {
-                              return (
-                                <td key={c.key} className="reg-ar-note-cell">
-                                  <ExpandableNote
-                                    text={v}
-                                    expanded={expandedAdmin.has(rowKey)}
-                                    onToggle={() => toggleAdminNote(rowKey)}
-                                  />
-                                </td>
-                              );
-                            }
-                            return (
-                              <td key={c.key} className={c.num ? "num" : undefined}>
-                                {c.num ? fmtNum(v) : v === "" || v == null ? "—" : String(v)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })
+                    filtered.map((r, i) => (
+                      <tr key={i}>
+                        <td className="col-no">{i + 1}</td>
+                        {COLS.map((c) => {
+                          const v = cell(r, c.key);
+                          const isNote = c.key === "KETERANGAN_ADMIN" || c.key === "KETERANGAN_GUDANG";
+                          return (
+                            <td
+                              key={c.key}
+                              className={[c.num ? "num" : "", isNote ? "reg-ar-note-cell" : ""]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              {c.num ? fmtNum(v) : v === "" || v == null ? "—" : String(v)}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
