@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { appPath } from "../../lib/paths";
 import { toast } from "react-toastify";
+import AmsMark from "../../images/ams-mark.png";
 import "./rbac-login.css";
 
 const RbacLogin = () => {
@@ -43,19 +44,21 @@ const RbacLogin = () => {
       <Head title="Login" />
       <div className="ams-login">
         <div className="ams-login__bg" aria-hidden="true" />
-        <div className="ams-login__particles" aria-hidden="true">
-          <span /><span /><span /><span /><span />
-          <span /><span /><span /><span /><span />
-          <span /><span /><span /><span /><span />
-          <span /><span /><span /><span /><span />
-        </div>
+        <svg className="ams-login__lines" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path className="ams-login__line ams-login__line--a" d="M-40 180 C 220 40, 420 320, 680 210 S 1100 40, 1500 160" />
+            <path className="ams-login__line ams-login__line--b" d="M-60 420 C 180 520, 360 280, 620 390 S 980 560, 1480 360" />
+            <path className="ams-login__line ams-login__line--c" d="M-20 700 C 260 580, 480 780, 760 660 S 1120 500, 1500 720" />
+            <path className="ams-login__line ams-login__line--d" d="M200 -20 C 260 160, 180 340, 340 520 S 520 760, 480 940" />
+            <path className="ams-login__line ams-login__line--e" d="M1180 -40 C 1080 180, 1280 320, 1120 520 S 1240 760, 1160 960" />
+            <path className="ams-login__line ams-login__line--f" d="M40 860 C 280 780, 520 900, 760 820 S 1100 700, 1400 860" />
+            <path className="ams-login__line ams-login__line--g" d="M900 40 C 820 200, 980 280, 860 440 S 1000 620, 920 820" />
+          </g>
+        </svg>
 
         <div className="ams-login__shell">
-          <div className="ams-login__mark" aria-hidden="true">
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="6" y="8" width="24" height="20" rx="2.5" stroke="currentColor" strokeWidth="2" />
-              <path d="M6 14h24M14 14v14M22 14v14" stroke="currentColor" strokeWidth="2" />
-            </svg>
+          <div className="ams-login__mark">
+            <img src={AmsMark} alt="AMS Group" width={56} height={56} />
           </div>
 
           <h1 className="ams-login__title">AMS Group</h1>

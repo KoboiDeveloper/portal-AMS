@@ -28,53 +28,37 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 42% 36% at 8% 12%, rgba(15, 46, 87, 0.07), transparent 70%),
-    radial-gradient(ellipse 38% 32% at 92% 88%, rgba(82, 100, 132, 0.08), transparent 68%),
-    radial-gradient(ellipse 28% 24% at 78% 18%, rgba(15, 46, 87, 0.04), transparent 70%),
+    radial-gradient(ellipse 40% 34% at 10% 14%, rgba(15, 46, 87, 0.05), transparent 72%),
+    radial-gradient(ellipse 36% 30% at 90% 86%, rgba(82, 100, 132, 0.06), transparent 70%),
     #f8fafc;
 }
 
-.ams-login__particles {
+.ams-login__lines {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  overflow: hidden;
   z-index: 0;
 }
 
-.ams-login__particles span {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(15, 46, 87, 0.22);
-  box-shadow: 0 0 0 1px rgba(15, 46, 87, 0.04);
-  animation: ams-particle-drift 18s ease-in-out infinite;
+.ams-login__line {
+  fill: none;
+  stroke: rgba(15, 46, 87, 0.14);
+  stroke-dasharray: 10 14;
+  animation: ams-line-flow 22s linear infinite;
 }
 
-.ams-login__particles span:nth-child(1)  { width: 5px; height: 5px; top: 12%; left: 8%;  animation-delay: 0s; opacity: 0.55; }
-.ams-login__particles span:nth-child(2)  { width: 3px; height: 3px; top: 22%; left: 18%; animation-delay: -2s; opacity: 0.35; }
-.ams-login__particles span:nth-child(3)  { width: 7px; height: 7px; top: 18%; left: 86%; animation-delay: -4s; opacity: 0.4; }
-.ams-login__particles span:nth-child(4)  { width: 4px; height: 4px; top: 8%;  left: 72%; animation-delay: -1s; opacity: 0.3; }
-.ams-login__particles span:nth-child(5)  { width: 3px; height: 3px; top: 35%; left: 4%;  animation-delay: -6s; opacity: 0.45; }
-.ams-login__particles span:nth-child(6)  { width: 6px; height: 6px; top: 42%; left: 92%; animation-delay: -3s; opacity: 0.5; }
-.ams-login__particles span:nth-child(7)  { width: 2px; height: 2px; top: 48%; left: 12%; animation-delay: -8s; opacity: 0.28; }
-.ams-login__particles span:nth-child(8)  { width: 5px; height: 5px; top: 58%; left: 6%;  animation-delay: -5s; opacity: 0.4; }
-.ams-login__particles span:nth-child(9)  { width: 3px; height: 3px; top: 62%; left: 88%; animation-delay: -7s; opacity: 0.35; }
-.ams-login__particles span:nth-child(10) { width: 8px; height: 8px; top: 78%; left: 14%; animation-delay: -2.5s; opacity: 0.32; }
-.ams-login__particles span:nth-child(11) { width: 4px; height: 4px; top: 82%; left: 78%; animation-delay: -9s; opacity: 0.45; }
-.ams-login__particles span:nth-child(12) { width: 3px; height: 3px; top: 88%; left: 28%; animation-delay: -4.5s; opacity: 0.3; }
-.ams-login__particles span:nth-child(13) { width: 5px; height: 5px; top: 70%; left: 95%; animation-delay: -1.5s; opacity: 0.38; }
-.ams-login__particles span:nth-child(14) { width: 2px; height: 2px; top: 28%; left: 96%; animation-delay: -10s; opacity: 0.25; }
-.ams-login__particles span:nth-child(15) { width: 6px; height: 6px; top: 94%; left: 58%; animation-delay: -6.5s; opacity: 0.35; }
-.ams-login__particles span:nth-child(16) { width: 3px; height: 3px; top: 14%; left: 42%; animation-delay: -3.5s; opacity: 0.22; }
-.ams-login__particles span:nth-child(17) { width: 4px; height: 4px; top: 52%; left: 2%;  animation-delay: -11s; opacity: 0.4; }
-.ams-login__particles span:nth-child(18) { width: 2px; height: 2px; top: 40%; left: 78%; animation-delay: -7.5s; opacity: 0.28; }
-.ams-login__particles span:nth-child(19) { width: 5px; height: 5px; top: 6%;  left: 55%; animation-delay: -12s; opacity: 0.3; }
-.ams-login__particles span:nth-child(20) { width: 3px; height: 3px; top: 90%; left: 90%; animation-delay: -0.5s; opacity: 0.42; }
+.ams-login__line--a { stroke-width: 1.4; opacity: 0.9; }
+.ams-login__line--b { stroke-width: 1.1; opacity: 0.7; stroke-dasharray: 4 12; animation-duration: 28s; animation-direction: reverse; }
+.ams-login__line--c { stroke-width: 1.6; opacity: 0.55; stroke-dasharray: 16 18; animation-duration: 32s; }
+.ams-login__line--d { stroke-width: 1.2; opacity: 0.5; stroke-dasharray: 2 10; animation-duration: 26s; animation-direction: reverse; }
+.ams-login__line--e { stroke-width: 1.3; opacity: 0.45; stroke-dasharray: 8 16; animation-duration: 30s; }
+.ams-login__line--f { stroke-width: 1.1; opacity: 0.4; stroke-dasharray: 6 14; animation-duration: 34s; animation-direction: reverse; }
+.ams-login__line--g { stroke-width: 1; opacity: 0.35; stroke-dasharray: 3 11; animation-duration: 24s; }
 
-@keyframes ams-particle-drift {
-  0%, 100% { transform: translate(0, 0); }
-  33% { transform: translate(6px, -10px); }
-  66% { transform: translate(-8px, 6px); }
+@keyframes ams-line-flow {
+  to { stroke-dashoffset: -220; }
 }
 
 .ams-login__shell {
@@ -89,8 +73,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.15rem;
-  color: var(--ams-navy);
+  margin-bottom: 1rem;
+}
+
+.ams-login__mark img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
 }
 
 .ams-login__title {
