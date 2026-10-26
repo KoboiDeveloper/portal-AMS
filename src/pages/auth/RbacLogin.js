@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { appPath } from "../../lib/paths";
 import { toast } from "react-toastify";
-import AmsMark from "../../images/ams-mark.png";
+import AmsLogo from "../../images/logo2x.png";
 import "./rbac-login.css";
 
 const RbacLogin = () => {
@@ -58,10 +58,10 @@ const RbacLogin = () => {
 
         <div className="ams-login__shell">
           <div className="ams-login__mark">
-            <img src={AmsMark} alt="AMS Group" width={56} height={56} />
+            <img src={AmsLogo} alt="Ams group portal" width={120} height={48} />
           </div>
 
-          <h1 className="ams-login__title">AMS Group</h1>
+          <h1 className="ams-login__title">Ams group portal</h1>
           <p className="ams-login__sub">Welcome to AMS Group by PT Aditya Mandiri Sejahtera.</p>
 
           {errorVal ? (

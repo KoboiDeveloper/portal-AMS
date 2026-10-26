@@ -78,8 +78,9 @@
 
 .ams-login__mark img {
   display: block;
-  width: 56px;
-  height: 56px;
+  width: auto;
+  max-width: 140px;
+  height: 48px;
   object-fit: contain;
 }
 
