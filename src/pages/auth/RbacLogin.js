@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import Logo from "../../images/logo.png";
-import LogoDark from "../../images/logo-dark.png";
+import { useNavigate } from "react-router-dom";
 import Head from "../../layout/head/Head";
-import AuthFooter from "../auth/AuthFooter";
-import { Block, BlockContent, BlockDes, BlockHead, BlockTitle, Button, Icon, PreviewCard } from "../../components/Component";
-import { Form, Spinner, Alert } from "reactstrap";
+import { Icon } from "../../components/Component";
+import { Spinner } from "reactstrap";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { appPath } from "../../lib/paths";
@@ -44,83 +41,75 @@ const RbacLogin = () => {
   return (
     <>
       <Head title="Login" />
-      <Block className="nk-block-middle nk-auth-body wide-xs ams-login-page">
-        <div className="brand-logo pb-3 text-center">
-          <Link to={appPath("/login")} className="logo-link">
-            <img className="logo-light logo-img logo-img-lg" src={Logo} alt="AMS Group" />
-            <img className="logo-dark logo-img logo-img-lg" src={LogoDark} alt="AMS Group" />
-          </Link>
-          <div className="ams-login-brand">AMS Group</div>
-        </div>
+      <div className="ams-login">
+        <div className="ams-login__bg" aria-hidden="true" />
+        <div className="ams-login__noise" aria-hidden="true" />
 
-        <PreviewCard className="card-bordered ams-login-card" bodyClass="card-inner-lg">
-          <BlockHead>
-            <BlockContent>
-              <BlockTitle tag="h4">Sign-In</BlockTitle>
-              <BlockDes>
-                <p>Masuk dengan akun AMS RBAC Anda.</p>
-              </BlockDes>
-            </BlockContent>
-          </BlockHead>
+        <div className="ams-login__shell">
+          <div className="ams-login__mark" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="8" width="24" height="20" rx="2.5" stroke="currentColor" strokeWidth="2" />
+              <path d="M6 14h24M14 14v14M22 14v14" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </div>
 
-          {errorVal && (
-            <div className="mb-3">
-              <Alert color="danger" className="alert-icon">
-                <Icon name="alert-circle" /> {errorVal}
-              </Alert>
+          <h1 className="ams-login__title">AMS Group</h1>
+          <p className="ams-login__sub">Welcome to AMS Group by PT Aditya Mandiri Sejahtera.</p>
+
+          {errorVal ? (
+            <div className="ams-login__alert" role="alert">
+              <Icon name="alert-circle" />
+              <span>{errorVal}</span>
             </div>
-          )}
+          ) : null}
 
-          <Form className="is-alter" onSubmit={handleSubmit(onFormSubmit)}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="username">
+          <form className="ams-login__form" onSubmit={handleSubmit(onFormSubmit)} noValidate>
+            <div className="ams-login__field">
+              <label className="ams-login__label" htmlFor="username">
                 Username
               </label>
               <input
                 type="text"
                 id="username"
                 autoComplete="username"
-                {...register("username", { required: "Username required" })}
-                className="form-control-lg form-control"
+                className={`ams-login__input${errors.username ? " is-invalid" : ""}`}
                 placeholder="Username"
+                {...register("username", { required: "Username required" })}
               />
-              {errors.username && <span className="invalid">{errors.username.message}</span>}
+              {errors.username ? <span className="ams-login__error">{errors.username.message}</span> : null}
             </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="password">
+
+            <div className="ams-login__field">
+              <label className="ams-login__label" htmlFor="password">
                 Password
               </label>
-              <div className="form-control-wrap">
+              <div className="ams-login__pass-wrap">
                 <input
                   type={passState ? "text" : "password"}
                   id="password"
                   autoComplete="current-password"
-                  {...register("password", { required: "Password required" })}
-                  className="form-control-lg form-control"
+                  className={`ams-login__input ams-login__input--pass${errors.password ? " is-invalid" : ""}`}
                   placeholder="Password"
+                  {...register("password", { required: "Password required" })}
                 />
-                <a
-                  href="#password"
-                  className="form-icon lg form-icon-right passcode-switch"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPassState(!passState);
-                  }}
+                <button
+                  type="button"
+                  className="ams-login__eye"
+                  aria-label={passState ? "Hide password" : "Show password"}
+                  onClick={() => setPassState((v) => !v)}
                 >
                   <Icon name={passState ? "eye-off" : "eye"} />
-                </a>
+                </button>
               </div>
-              {errors.password && <span className="invalid">{errors.password.message}</span>}
+              {errors.password ? <span className="ams-login__error">{errors.password.message}</span> : null}
             </div>
-            <div className="form-group">
-              <Button size="lg" className="btn-block" type="submit" color="primary" disabled={loading}>
-                {loading ? <Spinner size="sm" color="light" /> : "Sign in"}
-              </Button>
-            </div>
-          </Form>
-        </PreviewCard>
-      </Block>
-      <AuthFooter />
+
+            <button type="submit" className="ams-login__btn" disabled={loading}>
+              {loading ? <Spinner size="sm" color="light" /> : "Login"}
+            </button>
+          </form>
+        </div>
+      </div>
     </>
   );
 };
