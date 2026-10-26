@@ -657,6 +657,15 @@ const RegDashboardPage = () => {
     loadWarm();
   }, [loadWarm]);
 
+  /* While cache warming, poll until snapshot ready (SSE may miss notify if Redis flaky) */
+  useEffect(() => {
+    if (!warming) return undefined;
+    const id = setInterval(() => {
+      loadWarm();
+    }, 2500);
+    return () => clearInterval(id);
+  }, [warming, loadWarm]);
+
   /* SSE live stream — keep LIVE while socket open; warming ≠ disconnect */
   useEffect(() => {
     if (esRef.current) {
