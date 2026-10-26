@@ -200,6 +200,21 @@
   background: var(--ams-tiktok);
 }
 
+.reg-ar-badge.is-ok {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.reg-ar-badge.is-warn {
+  background: #fff8e1;
+  color: #8d6e00;
+}
+
+.reg-ar-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .reg-ar-toolbar-row {
   display: flex;
   flex-wrap: wrap;

@@ -60,6 +60,17 @@ export const getRegMpArListTransaksiDetail = (params = {}) =>
 export const getRegMpArListDetail = (id) =>
   api.get(`/regional/mp/ar-list/${encodeURIComponent(id)}/info`);
 
+/** Legacy Ar_Realisasi.aspx — view-only */
+export const getRegMpArRealisasiList = (params = {}) =>
+  api.get("/regional/mp/ar-realisasi/list", { params });
+
+/** Legacy MP_gudang.aspx — view-only list + badge */
+export const getRegMpReturList = (params = {}) =>
+  api.get("/regional/mp/retur/list", { params });
+
+export const getRegMpReturBadge = (params = {}) =>
+  api.get("/regional/mp/retur/badge", { params });
+
 /** Legacy Rpt_Last_stock.aspx BindTglBatchAkhir — xsp_rpt_last_tanggal_batch_getrow */
 export const getLastStockBatchDate = (storeId) =>
   api.get(`/regional/rpt/inv/last-stock/${encodeURIComponent(storeId)}/batch-date`);
