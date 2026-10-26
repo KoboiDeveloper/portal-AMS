@@ -6,7 +6,6 @@ import { Spinner } from "reactstrap";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { appPath } from "../../lib/paths";
-import { toast } from "react-toastify";
 import AmsLogo from "../../images/logo2x.png";
 import "./rbac-login.css";
 
@@ -15,6 +14,7 @@ const RbacLogin = () => {
   const navigate = useNavigate();
   const [passState, setPassState] = useState(false);
   const [errorVal, setError] = useState("");
+  const [successVal, setSuccess] = useState("");
 
   const {
     register,
@@ -30,10 +30,13 @@ const RbacLogin = () => {
 
   const onFormSubmit = async (formData) => {
     setError("");
+    setSuccess("");
     try {
       const { homePath: nextHome } = await login(formData.username, formData.password);
-      toast.success("Login successful");
-      navigate(appPath(nextHome || "/dashboard"), { replace: true });
+      setSuccess("Berhasil masuk. Mengalihkan…");
+      window.setTimeout(() => {
+        navigate(appPath(nextHome || "/dashboard"), { replace: true });
+      }, 700);
     } catch (err) {
       setError(err?.responseMessage || err?.message || "Login failed");
     }
@@ -82,6 +85,7 @@ const RbacLogin = () => {
                 autoComplete="username"
                 className={`ams-login__input${errors.username ? " is-invalid" : ""}`}
                 placeholder="Username"
+                disabled={Boolean(successVal)}
                 {...register("username", { required: "Username required" })}
               />
               {errors.username ? <span className="ams-login__error">{errors.username.message}</span> : null}
@@ -98,6 +102,7 @@ const RbacLogin = () => {
                   autoComplete="current-password"
                   className={`ams-login__input ams-login__input--pass${errors.password ? " is-invalid" : ""}`}
                   placeholder="Password"
+                  disabled={Boolean(successVal)}
                   {...register("password", { required: "Password required" })}
                 />
                 <button
@@ -112,8 +117,15 @@ const RbacLogin = () => {
               {errors.password ? <span className="ams-login__error">{errors.password.message}</span> : null}
             </div>
 
-            <button type="submit" className="ams-login__btn" disabled={loading}>
-              {loading ? <Spinner size="sm" color="light" /> : "Login"}
+            {successVal ? (
+              <div className="ams-login__success" role="status">
+                <Icon name="check-circle" />
+                <span>{successVal}</span>
+              </div>
+            ) : null}
+
+            <button type="submit" className="ams-login__btn" disabled={loading || Boolean(successVal)}>
+              {loading ? <Spinner size="sm" color="light" /> : successVal ? "Masuk…" : "Login"}
             </button>
           </form>
         </div>
