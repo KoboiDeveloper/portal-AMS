@@ -40,16 +40,16 @@ const BRAND_OPTS = [
   { value: "IWAN FASHION", label: "IWAN FASHION" },
   { value: "FLIES", label: "FLIES" },
   { value: "DIRECT SELLING", label: "DIRECT SELLING" },
-  { value: "TIKTOK - CELCIUSMEN 08E", label: "TIKTOK - CELCIUSMEN 08E" },
-  { value: "TIKTOK - CELCIUS WOMAN 09E", label: "TIKTOK - CELCIUS WOMAN 09E" },
-  { value: "TIKTOK - MISSISSIPPI 10E", label: "TIKTOK - MISSISSIPPI 10E" },
-  { value: "TIKTOK - QUEENSLAND 11E", label: "TIKTOK - QUEENSLAND 11E" },
+  { value: "TIKTOK - CELCIUSMEN 08E", label: "TIKTOK · 08E" },
+  { value: "TIKTOK - CELCIUS WOMAN 09E", label: "TIKTOK · 09E" },
+  { value: "TIKTOK - MISSISSIPPI 10E", label: "TIKTOK · 10E" },
+  { value: "TIKTOK - QUEENSLAND 11E", label: "TIKTOK · 11E" },
 ];
 
 const DATE_BY_OPTS = [
-  { value: "Tanggal Transaksi", label: "Tanggal Transaksi" },
-  { value: "Tanggal Retur", label: "Tanggal Retur" },
-  { value: "Tanggal Kembali", label: "Tanggal Kembali" },
+  { value: "Tanggal Transaksi", label: "Tgl Transaksi" },
+  { value: "Tanggal Retur", label: "Tgl Retur" },
+  { value: "Tanggal Kembali", label: "Tgl Kembali" },
 ];
 
 const KET_GUDANG_OPTS = [
@@ -57,8 +57,8 @@ const KET_GUDANG_OPTS = [
   { value: "Outstanding", label: "Outstanding" },
   { value: "Barang Layak Jual", label: "Siap Dijual Kembali" },
   { value: "Barang Tidak Layak Jual", label: "Tidak Layak Jual" },
-  { value: "Barang Tidak Sesuai", label: "Barang Tidak Sesuai" },
-  { value: "Barang Tidak Kembali", label: "Barang Tidak Kembali" },
+  { value: "Barang Tidak Sesuai", label: "Tidak Sesuai" },
+  { value: "Barang Tidak Kembali", label: "Tidak Kembali" },
 ];
 
 const COLS = [
@@ -78,15 +78,20 @@ const COLS = [
 const filterSelectStyles = {
   control: (base) => ({
     ...base,
-    minHeight: 32,
-    height: 32,
+    minHeight: 38,
+    height: 38,
     fontSize: "0.8125rem",
     borderColor: "#dbdfea",
     borderRadius: 0,
+    background: "#eef2f8",
   }),
-  valueContainer: (base) => ({ ...base, padding: "0 8px", height: 30 }),
-  indicatorsContainer: (base) => ({ ...base, height: 30 }),
+  valueContainer: (base) => ({ ...base, padding: "0 10px", height: 36 }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  indicatorsContainer: (base) => ({ ...base, height: 36 }),
+  dropdownIndicator: (base) => ({ ...base, padding: "0 8px" }),
+  clearIndicator: (base) => ({ ...base, padding: "0 4px" }),
   menu: (base) => ({ ...base, zIndex: 30, fontSize: "0.8125rem", borderRadius: 0 }),
+  option: (base) => ({ ...base, fontSize: "0.8125rem", padding: "8px 12px" }),
 };
 
 const cell = (row, key) => {
@@ -112,6 +117,15 @@ const todayYmd = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 
+const pickBadge = (badge, keys) => {
+  for (const key of keys) {
+    if (badge?.[key] != null && String(badge[key]).trim() !== "") return badge[key];
+    const found = Object.keys(badge || {}).find((x) => x.toLowerCase() === String(key).toLowerCase());
+    if (found != null && badge[found] != null && String(badge[found]).trim() !== "") return badge[found];
+  }
+  return "—";
+};
+
 const RegMpReturPage = () => {
   const [marketplace, setMarketplace] = useState("0");
   const [brand, setBrand] = useState("ALL");
@@ -125,6 +139,14 @@ const RegMpReturPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [quick, setQuick] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  const clearResult = () => {
+    setRows([]);
+    setBadge(null);
+    setLoaded(false);
+    setError("");
+  };
 
   const baseParams = useCallback(
     () => ({
@@ -160,10 +182,12 @@ const RegMpReturPage = () => {
       } else {
         setBadge(null);
       }
+      setLoaded(true);
     } catch (e) {
       setError(e?.message || e?.responseMessage || "Gagal memuat data");
       setRows([]);
       setBadge(null);
+      setLoaded(true);
     } finally {
       setLoading(false);
     }
@@ -185,69 +209,35 @@ const RegMpReturPage = () => {
     await saveXlsxFile(wb, `MP_RETUR_${todayYmd()}.xlsx`);
   };
 
-  const b = (k, alts = []) => {
-    for (const key of [k, ...alts]) {
-      const v = badge?.[key] ?? badge?.[String(key).toLowerCase()];
-      if (v != null && String(v).trim() !== "") return v;
-    }
-    return "—";
-  };
-
   return (
     <AccessGuard moduleCode="REG_MP_RETUR">
       <Head title="MP Retur" />
       <Content>
-        <BlockHead size="sm">
-          <BlockBetween>
-            <BlockHeadContent>
-              <BlockTitle page>MP Retur</BlockTitle>
-              <BlockDes>
-                <p>View-only · retur gudang marketplace</p>
-              </BlockDes>
-            </BlockHeadContent>
-          </BlockBetween>
-        </BlockHead>
+        <div className="reg-ar-wrap">
+          <BlockHead size="sm">
+            <BlockBetween>
+              <BlockHeadContent>
+                <BlockTitle page tag="h3">
+                  MP Retur
+                </BlockTitle>
+                <BlockDes className="text-soft">View-only · retur gudang marketplace</BlockDes>
+              </BlockHeadContent>
+            </BlockBetween>
+          </BlockHead>
 
-        <Block>
-          <div className="reg-ar-page">
-            {badge ? (
-              <div className="reg-ar-toolbar" style={{ marginBottom: 12 }}>
-                <div className="reg-ar-toolbar-grid" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
-                  <div className="reg-ar-f-item">
-                    <label>Retur (periode)</label>
-                    <strong>{b("retur_total", ["retur_Total"])}</strong>
-                  </div>
-                  <div className="reg-ar-f-item">
-                    <label>Retur all-time</label>
-                    <strong>{b("retur_all_time_total", ["retur_all_time_total"])}</strong>
-                  </div>
-                  <div className="reg-ar-f-item">
-                    <label>Barang balik</label>
-                    <strong>
-                      {b("barang_balik_total", ["barang_balik_Total"])}{" "}
-                      <span className="text-soft">({b("prev_barang_balik_total_presentase")})</span>
-                    </strong>
-                  </div>
-                  <div className="reg-ar-f-item">
-                    <label>Belum balik</label>
-                    <strong>
-                      {b("barang_belum_balik_total", ["barang_belum_balik_Total"])}{" "}
-                      <span className="text-soft">({b("prev_barang_belum_balik_total_presentase")})</span>
-                    </strong>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
+          <Block>
             <div className="reg-ar-toolbar">
-              <div className="reg-ar-toolbar-grid">
+              <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
                 <div className="reg-ar-f-item">
                   <label>Marketplace</label>
                   <RSelect
                     styles={filterSelectStyles}
                     options={MP_OPTS}
                     value={MP_OPTS.find((o) => o.value === marketplace) || MP_OPTS[0]}
-                    onChange={(o) => setMarketplace(o?.value || "0")}
+                    onChange={(o) => {
+                      setMarketplace(o?.value || "0");
+                      clearResult();
+                    }}
                     isSearchable
                   />
                 </div>
@@ -257,7 +247,10 @@ const RegMpReturPage = () => {
                     styles={filterSelectStyles}
                     options={BRAND_OPTS}
                     value={BRAND_OPTS.find((o) => o.value === brand) || BRAND_OPTS[0]}
-                    onChange={(o) => setBrand(o?.value || "ALL")}
+                    onChange={(o) => {
+                      setBrand(o?.value || "ALL");
+                      clearResult();
+                    }}
                     isSearchable
                   />
                 </div>
@@ -270,6 +263,7 @@ const RegMpReturPage = () => {
                     onChange={(f, t) => {
                       setFromDate(f || "");
                       setToDate(t || "");
+                      clearResult();
                     }}
                   />
                 </div>
@@ -279,16 +273,25 @@ const RegMpReturPage = () => {
                     styles={filterSelectStyles}
                     options={DATE_BY_OPTS}
                     value={DATE_BY_OPTS.find((o) => o.value === dateBy)}
-                    onChange={(o) => setDateBy(o?.value || "Tanggal Transaksi")}
+                    onChange={(o) => {
+                      setDateBy(o?.value || "Tanggal Transaksi");
+                      clearResult();
+                    }}
                   />
                 </div>
+              </div>
+
+              <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--3">
                 <div className="reg-ar-f-item">
                   <label>Ket. Gudang</label>
                   <RSelect
                     styles={filterSelectStyles}
                     options={KET_GUDANG_OPTS}
                     value={KET_GUDANG_OPTS.find((o) => o.value === ketGudang)}
-                    onChange={(o) => setKetGudang(o?.value || "Semua Barang")}
+                    onChange={(o) => {
+                      setKetGudang(o?.value || "Semua Barang");
+                      clearResult();
+                    }}
                   />
                 </div>
                 <div className="reg-ar-f-item">
@@ -296,24 +299,28 @@ const RegMpReturPage = () => {
                   <input
                     className="form-control form-control-sm reg-ar-ctl"
                     value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                    placeholder="Search by Invoice/PLU"
+                    onChange={(e) => {
+                      setKeywords(e.target.value);
+                      clearResult();
+                    }}
+                    placeholder="Search invoice / PLU"
                   />
                 </div>
               </div>
 
               <div className="reg-ar-toolbar-row">
-                <div className="reg-ar-quick">
-                  <input
-                    className="reg-ar-quick-input"
-                    value={quick}
-                    onChange={(e) => setQuick(e.target.value)}
-                    placeholder="Cari cepat di hasil…"
-                  />
+                <div className="reg-ar-chips-active">
+                  <span className="reg-ar-chips-active-label">Filter</span>
+                  <span className="reg-ar-chip is-active">
+                    {MP_OPTS.find((o) => o.value === marketplace)?.label || marketplace}
+                  </span>
+                  <span className="reg-ar-chip">{BRAND_OPTS.find((o) => o.value === brand)?.label || brand}</span>
+                  <span className="reg-ar-chip">{DATE_BY_OPTS.find((o) => o.value === dateBy)?.label || dateBy}</span>
                 </div>
                 <div className="reg-ar-actions">
-                  <button type="button" className="reg-ar-btn reg-ar-btn--ghost" disabled={loading} onClick={loadData}>
-                    <Icon name="search" /> Cari
+                  <button type="button" className="reg-ar-btn" disabled={loading} onClick={loadData}>
+                    <Icon name="search" />
+                    Cari
                   </button>
                   <button
                     type="button"
@@ -321,16 +328,60 @@ const RegMpReturPage = () => {
                     disabled={!filtered.length}
                     onClick={exportExcel}
                   >
-                    <Icon name="download" /> Excel
+                    <Icon name="download" />
+                    Excel
                   </button>
                 </div>
               </div>
             </div>
 
+            {badge ? (
+              <div className="reg-ar-stats">
+                <div className="reg-ar-stat">
+                  <span className="reg-ar-stat-label">Retur periode</span>
+                  <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_total", "retur_Total"])}</span>
+                  <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_retur_total_presentase"])}</span>
+                </div>
+                <div className="reg-ar-stat">
+                  <span className="reg-ar-stat-label">Retur all-time</span>
+                  <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_all_time_total"])}</span>
+                </div>
+                <div className="reg-ar-stat">
+                  <span className="reg-ar-stat-label">Barang balik</span>
+                  <span className="reg-ar-stat-val">{pickBadge(badge, ["barang_balik_total", "barang_balik_Total"])}</span>
+                  <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_balik_total_presentase"])}</span>
+                </div>
+                <div className="reg-ar-stat">
+                  <span className="reg-ar-stat-label">Belum balik</span>
+                  <span className="reg-ar-stat-val">
+                    {pickBadge(badge, ["barang_belum_balik_total", "barang_belum_balik_Total"])}
+                  </span>
+                  <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_belum_balik_total_presentase"])}</span>
+                </div>
+              </div>
+            ) : null}
+
+            {loaded ? (
+              <div className="reg-ar-quick">
+                <Icon name="search" className="reg-ar-quick-ico" />
+                <input
+                  className="reg-ar-quick-input"
+                  value={quick}
+                  onChange={(e) => setQuick(e.target.value)}
+                  placeholder="Cari cepat di hasil…"
+                />
+                {quick ? (
+                  <button type="button" className="reg-ar-quick-clear" onClick={() => setQuick("")} aria-label="Clear">
+                    ×
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
             {error ? <div className="reg-ar-error">{error}</div> : null}
 
             <div className="reg-ar-meta">
-              {loading ? "Memuat…" : `${filtered.length.toLocaleString("id-ID")} baris`}
+              {loading ? "Memuat…" : loaded ? `${filtered.length.toLocaleString("id-ID")} baris` : "Atur filter lalu Cari"}
             </div>
 
             <div className="reg-ar-table-wrap">
@@ -347,7 +398,7 @@ const RegMpReturPage = () => {
                   {!loading && filtered.length === 0 ? (
                     <tr>
                       <td colSpan={COLS.length + 1} className="reg-ar-empty">
-                        Belum ada data. Atur filter lalu Cari.
+                        {loaded ? "Tidak ada data untuk filter ini." : "Belum ada data. Atur filter lalu Cari."}
                       </td>
                     </tr>
                   ) : (
@@ -368,8 +419,8 @@ const RegMpReturPage = () => {
                 </tbody>
               </table>
             </div>
-          </div>
-        </Block>
+          </Block>
+        </div>
       </Content>
     </AccessGuard>
   );

@@ -27,6 +27,7 @@ const MP_OPTS = [
   { value: "LAZADA", label: "LAZADA" },
   { value: "BUKALAPAK", label: "BUKALAPAK" },
   { value: "BLIBLI", label: "BLIBLI" },
+  { value: "ZALORA", label: "ZALORA" },
 ];
 
 const BRAND_OPTS = [
@@ -58,15 +59,20 @@ const COLS = [
 const filterSelectStyles = {
   control: (base) => ({
     ...base,
-    minHeight: 32,
-    height: 32,
+    minHeight: 38,
+    height: 38,
     fontSize: "0.8125rem",
     borderColor: "#dbdfea",
     borderRadius: 0,
+    background: "#eef2f8",
   }),
-  valueContainer: (base) => ({ ...base, padding: "0 8px", height: 30 }),
-  indicatorsContainer: (base) => ({ ...base, height: 30 }),
+  valueContainer: (base) => ({ ...base, padding: "0 10px", height: 36 }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  indicatorsContainer: (base) => ({ ...base, height: 36 }),
+  dropdownIndicator: (base) => ({ ...base, padding: "0 8px" }),
+  clearIndicator: (base) => ({ ...base, padding: "0 4px" }),
   menu: (base) => ({ ...base, zIndex: 30, fontSize: "0.8125rem", borderRadius: 0 }),
+  option: (base) => ({ ...base, fontSize: "0.8125rem", padding: "8px 12px" }),
 };
 
 const cell = (row, key, alts = []) => {
@@ -101,8 +107,15 @@ const RegMpArRealisasiPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [quick, setQuick] = useState("");
+  const [loaded, setLoaded] = useState(false);
 
   const isSudah = status === "sudah";
+
+  const clearResult = () => {
+    setRows([]);
+    setLoaded(false);
+    setError("");
+  };
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -122,12 +135,15 @@ const RegMpArRealisasiPage = () => {
       if (!isSuccess(res)) {
         setError(res?.responseMessage || "Gagal memuat data");
         setRows([]);
+        setLoaded(true);
         return;
       }
       setRows(extractRows(res) || []);
+      setLoaded(true);
     } catch (e) {
       setError(e?.message || e?.responseMessage || "Gagal memuat data");
       setRows([]);
+      setLoaded(true);
     } finally {
       setLoading(false);
     }
@@ -151,32 +167,39 @@ const RegMpArRealisasiPage = () => {
     await saveXlsxFile(wb, `AR_REALISASI_${todayYmd()}.xlsx`);
   };
 
+  const mpLabel = MP_OPTS.find((o) => o.value === marketplace)?.label || "ALL";
+  const brandLabel = BRAND_OPTS.find((o) => o.value === brand)?.label || "ALL Brand";
+  const statusLabel = STATUS_OPTS.find((o) => o.value === status)?.label || status;
+
   return (
     <AccessGuard moduleCode="REG_MP_AR_REALISASI">
       <Head title="AR Realisasi" />
       <Content>
-        <BlockHead size="sm">
-          <BlockBetween>
-            <BlockHeadContent>
-              <BlockTitle page>AR Realisasi</BlockTitle>
-              <BlockDes>
-                <p>View-only · pelunasan AR marketplace</p>
-              </BlockDes>
-            </BlockHeadContent>
-          </BlockBetween>
-        </BlockHead>
+        <div className="reg-ar-wrap">
+          <BlockHead size="sm">
+            <BlockBetween>
+              <BlockHeadContent>
+                <BlockTitle page tag="h3">
+                  AR Realisasi
+                </BlockTitle>
+                <BlockDes className="text-soft">View-only · pelunasan AR marketplace</BlockDes>
+              </BlockHeadContent>
+            </BlockBetween>
+          </BlockHead>
 
-        <Block>
-          <div className="reg-ar-page">
+          <Block>
             <div className="reg-ar-toolbar">
-              <div className="reg-ar-toolbar-grid">
+              <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
                 <div className="reg-ar-f-item">
                   <label>Status</label>
                   <RSelect
                     styles={filterSelectStyles}
                     options={STATUS_OPTS}
                     value={STATUS_OPTS.find((o) => o.value === status)}
-                    onChange={(o) => setStatus(o?.value || "belum")}
+                    onChange={(o) => {
+                      setStatus(o?.value || "belum");
+                      clearResult();
+                    }}
                   />
                 </div>
                 <div className="reg-ar-f-item">
@@ -185,7 +208,10 @@ const RegMpArRealisasiPage = () => {
                     styles={filterSelectStyles}
                     options={MP_OPTS}
                     value={MP_OPTS.find((o) => o.value === marketplace) || MP_OPTS[0]}
-                    onChange={(o) => setMarketplace(o?.value ?? "")}
+                    onChange={(o) => {
+                      setMarketplace(o?.value ?? "");
+                      clearResult();
+                    }}
                     isSearchable
                   />
                 </div>
@@ -195,7 +221,10 @@ const RegMpArRealisasiPage = () => {
                     styles={filterSelectStyles}
                     options={BRAND_OPTS}
                     value={BRAND_OPTS.find((o) => o.value === brand) || BRAND_OPTS[0]}
-                    onChange={(o) => setBrand(o?.value ?? "")}
+                    onChange={(o) => {
+                      setBrand(o?.value ?? "");
+                      clearResult();
+                    }}
                     isSearchable
                   />
                 </div>
@@ -204,11 +233,17 @@ const RegMpArRealisasiPage = () => {
                   <input
                     className="form-control form-control-sm reg-ar-ctl"
                     value={invoice}
-                    onChange={(e) => setInvoice(e.target.value)}
+                    onChange={(e) => {
+                      setInvoice(e.target.value);
+                      clearResult();
+                    }}
                     placeholder="Opsional"
                   />
                 </div>
-                {isSudah ? (
+              </div>
+
+              {isSudah ? (
+                <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--3">
                   <div className="reg-ar-f-item">
                     <label>Periode Pelunasan</label>
                     <AppDateRangePicker
@@ -218,24 +253,25 @@ const RegMpArRealisasiPage = () => {
                       onChange={(f, t) => {
                         setFromDate(f || "");
                         setToDate(t || "");
+                        clearResult();
                       }}
                     />
                   </div>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
 
               <div className="reg-ar-toolbar-row">
-                <div className="reg-ar-quick">
-                  <input
-                    className="reg-ar-quick-input"
-                    value={quick}
-                    onChange={(e) => setQuick(e.target.value)}
-                    placeholder="Cari cepat di hasil…"
-                  />
+                <div className="reg-ar-chips-active">
+                  <span className="reg-ar-chips-active-label">Filter</span>
+                  <span className="reg-ar-chip is-active">{statusLabel}</span>
+                  <span className="reg-ar-chip">{mpLabel}</span>
+                  <span className="reg-ar-chip">{brandLabel}</span>
+                  {invoice.trim() ? <span className="reg-ar-chip">{invoice.trim()}</span> : null}
                 </div>
                 <div className="reg-ar-actions">
-                  <button type="button" className="reg-ar-btn reg-ar-btn--ghost" disabled={loading} onClick={loadData}>
-                    <Icon name="search" /> Cari
+                  <button type="button" className="reg-ar-btn" disabled={loading} onClick={loadData}>
+                    <Icon name="search" />
+                    Cari
                   </button>
                   <button
                     type="button"
@@ -243,16 +279,34 @@ const RegMpArRealisasiPage = () => {
                     disabled={!filtered.length}
                     onClick={exportExcel}
                   >
-                    <Icon name="download" /> Excel
+                    <Icon name="download" />
+                    Excel
                   </button>
                 </div>
               </div>
             </div>
 
+            {loaded ? (
+              <div className="reg-ar-quick">
+                <Icon name="search" className="reg-ar-quick-ico" />
+                <input
+                  className="reg-ar-quick-input"
+                  value={quick}
+                  onChange={(e) => setQuick(e.target.value)}
+                  placeholder="Cari cepat di hasil…"
+                />
+                {quick ? (
+                  <button type="button" className="reg-ar-quick-clear" onClick={() => setQuick("")} aria-label="Clear">
+                    ×
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
             {error ? <div className="reg-ar-error">{error}</div> : null}
 
             <div className="reg-ar-meta">
-              {loading ? "Memuat…" : `${filtered.length.toLocaleString("id-ID")} baris · status ${status}`}
+              {loading ? "Memuat…" : loaded ? `${filtered.length.toLocaleString("id-ID")} baris` : "Atur filter lalu Cari"}
             </div>
 
             <div className="reg-ar-table-wrap">
@@ -269,7 +323,7 @@ const RegMpArRealisasiPage = () => {
                   {!loading && filtered.length === 0 ? (
                     <tr>
                       <td colSpan={COLS.length + 1} className="reg-ar-empty">
-                        Belum ada data. Atur filter lalu Cari.
+                        {loaded ? "Tidak ada data untuk filter ini." : "Belum ada data. Atur filter lalu Cari."}
                       </td>
                     </tr>
                   ) : (
@@ -284,7 +338,7 @@ const RegMpArRealisasiPage = () => {
                               return (
                                 <td key={c.key}>
                                   <span className={`reg-ar-badge ${st.includes("sudah") ? "is-ok" : "is-warn"}`}>
-                                    {v || st || "—"}
+                                    {v || "—"}
                                   </span>
                                 </td>
                               );
@@ -298,8 +352,8 @@ const RegMpArRealisasiPage = () => {
                 </tbody>
               </table>
             </div>
-          </div>
-        </Block>
+          </Block>
+        </div>
       </Content>
     </AccessGuard>
   );
