@@ -104,73 +104,99 @@ const PRESETS = [
   },
 ];
 
-/** Independent month/year header (each calendar owns its own view). */
-function MonthYearHeader({
+/**
+ * Linked dual-month header:
+ * - Left (From): only ‹ + month/year selects
+ * - Right (To): only › + read-only month/year (always left+1)
+ * Inner arrows removed so months stay adjacent and never overlap.
+ */
+function LinkedMonthHeader({
   monthDate,
+  customHeaderCount = 0,
   decreaseMonth,
   increaseMonth,
   prevMonthButtonDisabled,
   nextMonthButtonDisabled,
   changeMonth,
   changeYear,
-  label,
 }) {
+  const isLeft = customHeaderCount === 0;
+  const isRight = customHeaderCount === 1;
+  const label = isLeft ? "From" : "To";
+
   return (
     <div className="app-daterange-header">
-      <button
-        type="button"
-        className="app-daterange-nav"
-        onClick={decreaseMonth}
-        disabled={prevMonthButtonDisabled}
-        aria-label={`${label} previous month`}
-      >
-        ‹
-      </button>
+      {isLeft ? (
+        <button
+          type="button"
+          className="app-daterange-nav"
+          onClick={decreaseMonth}
+          disabled={prevMonthButtonDisabled}
+          aria-label={`${label} previous month`}
+        >
+          ‹
+        </button>
+      ) : (
+        <span className="app-daterange-nav-spacer" aria-hidden="true" />
+      )}
       <div className="app-daterange-header-selects">
-        <select
-          className="react-datepicker__month-select"
-          value={monthDate.getMonth()}
-          aria-label={`${label} month`}
-          onChange={(e) => changeMonth(Number(e.target.value))}
-        >
-          {MONTHS.map((name, idx) => (
-            <option key={name} value={idx}>
-              {name}
-            </option>
-          ))}
-        </select>
-        <select
-          className="react-datepicker__year-select"
-          value={monthDate.getFullYear()}
-          aria-label={`${label} year`}
-          onChange={(e) => changeYear(Number(e.target.value))}
-        >
-          {!YEARS.includes(monthDate.getFullYear()) ? (
-            <option value={monthDate.getFullYear()}>{monthDate.getFullYear()}</option>
-          ) : null}
-          {YEARS.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+        {isLeft ? (
+          <>
+            <select
+              className="react-datepicker__month-select"
+              value={monthDate.getMonth()}
+              aria-label={`${label} month`}
+              onChange={(e) => changeMonth(Number(e.target.value))}
+            >
+              {MONTHS.map((name, idx) => (
+                <option key={name} value={idx}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="react-datepicker__year-select"
+              value={monthDate.getFullYear()}
+              aria-label={`${label} year`}
+              onChange={(e) => changeYear(Number(e.target.value))}
+            >
+              {!YEARS.includes(monthDate.getFullYear()) ? (
+                <option value={monthDate.getFullYear()}>{monthDate.getFullYear()}</option>
+              ) : null}
+              {YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </>
+        ) : (
+          <div className="app-daterange-header-readonly" aria-label={`${label} ${MONTHS[monthDate.getMonth()]} ${monthDate.getFullYear()}`}>
+            <span>{MONTHS[monthDate.getMonth()]}</span>
+            <span>{monthDate.getFullYear()}</span>
+          </div>
+        )}
       </div>
-      <button
-        type="button"
-        className="app-daterange-nav"
-        onClick={increaseMonth}
-        disabled={nextMonthButtonDisabled}
-        aria-label={`${label} next month`}
-      >
-        ›
-      </button>
+      {isRight ? (
+        <button
+          type="button"
+          className="app-daterange-nav"
+          onClick={increaseMonth}
+          disabled={nextMonthButtonDisabled}
+          aria-label={`${label} next month`}
+        >
+          ›
+        </button>
+      ) : (
+        <span className="app-daterange-nav-spacer" aria-hidden="true" />
+      )}
     </div>
   );
 }
 
 /**
  * Single-input date range picker (marketing.aspx / daterangepicker style).
- * From & To calendars navigate independently (month/year tidak saling ikut).
+ * Linked dual months (From | To+1) so hover range spans both calendars.
  * Emits YYYY-MM-DD strings via onChange(startYmd, endYmd).
  */
 export default function AppDateRangePicker({
@@ -181,17 +207,16 @@ export default function AppDateRangePicker({
   className = "form-control form-control-sm",
   disabled = false,
   isClearable = true,
-  monthsShown = 2, // kept for API compat; dual calendars always independent
+  monthsShown = 2,
   ...props
 }) {
   const start = useMemo(() => toDate(startDate), [startDate]);
   const end = useMemo(() => toDate(endDate), [endDate]);
   const [open, setOpen] = useState(false);
   const [openSeq, setOpenSeq] = useState(0);
-  const [leftOpenTo, setLeftOpenTo] = useState(() => startOfDay(new Date()));
-  const [rightOpenTo, setRightOpenTo] = useState(() => {
+  const [openToDate, setOpenToDate] = useState(() => {
     const t = startOfDay(new Date());
-    return new Date(t.getFullYear(), t.getMonth() + 1, 1);
+    return new Date(t.getFullYear(), t.getMonth(), 1);
   });
 
   const applyRange = (nextStart, nextEnd) => {
@@ -201,61 +226,31 @@ export default function AppDateRangePicker({
   const openPicker = () => {
     if (disabled) return;
     const s = start || startOfDay(new Date());
-    const left = new Date(s.getFullYear(), s.getMonth(), 1);
-    // Always show a different month on the right by default (end missing or same month).
-    let right;
-    if (end) {
-      right = new Date(end.getFullYear(), end.getMonth(), 1);
-      if (right.getTime() === left.getTime()) {
-        right = new Date(left.getFullYear(), left.getMonth() + 1, 1);
-      }
-    } else {
-      right = new Date(left.getFullYear(), left.getMonth() + 1, 1);
-    }
-    setLeftOpenTo(left);
-    setRightOpenTo(right);
+    // Base month = start month; right panel is always base+1 (linked)
+    setOpenToDate(new Date(s.getFullYear(), s.getMonth(), 1));
     setOpenSeq((n) => n + 1);
     setOpen(true);
   };
 
-  const handleDay = (date) => {
-    if (!date) return;
-    const d = startOfDay(date);
-    // New range / restart when both ends already set (or none)
-    if (!start || (start && end)) {
-      applyRange(d, null);
-      return;
-    }
-    // Completing range
-    if (d.getTime() < start.getTime()) {
-      applyRange(d, start);
-    } else {
-      applyRange(start, d);
-    }
-    setOpen(false);
-  };
-
-  /** selectsRange onChange may pass [start, end]; keep single-day click path too. */
   const handleCalChange = (update) => {
-    if (Array.isArray(update)) {
-      const [s, e] = update;
-      if (s && !e) {
-        applyRange(startOfDay(s), null);
-        return;
-      }
-      if (s && e) {
-        const a = startOfDay(s);
-        const b = startOfDay(e);
-        if (a.getTime() <= b.getTime()) applyRange(a, b);
-        else applyRange(b, a);
-        setOpen(false);
-      }
+    if (!Array.isArray(update)) return;
+    const [s, e] = update;
+    if (s && !e) {
+      applyRange(startOfDay(s), null);
       return;
     }
-    handleDay(update);
+    if (s && e) {
+      const a = startOfDay(s);
+      const b = startOfDay(e);
+      if (a.getTime() <= b.getTime()) applyRange(a, b);
+      else applyRange(b, a);
+      setOpen(false);
+    }
   };
 
-  const CalendarContainer = ({ className: calClass }) => (
+  const showDual = monthsShown >= 2;
+
+  const CalendarContainer = ({ className: calClass, children }) => (
     <div className={`${calClass || ""} app-daterange-popper`}>
       <div className="app-daterange-presets">
         {PRESETS.map((p) => (
@@ -273,54 +268,31 @@ export default function AppDateRangePicker({
           </button>
         ))}
       </div>
-      <div className={`app-daterange-calendars${monthsShown < 2 ? " is-single" : ""}`}>
-        <div className="app-daterange-cal">
+      <div className={`app-daterange-calendars${showDual ? "" : " is-single"}`}>
+        <div className="app-daterange-cal-labels" aria-hidden="true">
           <div className="app-daterange-cal-label">From</div>
-          <DatePicker
-            key={`from-${openSeq}`}
-            inline
-            selectsRange
-            selected={start}
-            startDate={start}
-            endDate={end}
-            openToDate={leftOpenTo}
-            onChange={handleCalChange}
-            renderCustomHeader={(hp) => <MonthYearHeader {...hp} label="From" />}
-            disabledKeyboardNavigation
-            shouldCloseOnSelect={false}
-          />
+          {showDual ? <div className="app-daterange-cal-label">To</div> : null}
         </div>
-        {monthsShown >= 2 ? (
-          <div className="app-daterange-cal">
-            <div className="app-daterange-cal-label">To</div>
-            <DatePicker
-              key={`to-${openSeq}`}
-              inline
-              selectsRange
-              selected={end || start}
-              startDate={start}
-              endDate={end}
-              openToDate={rightOpenTo}
-              onChange={handleCalChange}
-              renderCustomHeader={(hp) => <MonthYearHeader {...hp} label="To" />}
-              disabledKeyboardNavigation
-              shouldCloseOnSelect={false}
-            />
-          </div>
-        ) : null}
+        {children}
       </div>
     </div>
   );
 
   return (
     <DatePicker
+      key={`range-${openSeq}`}
       selectsRange
       startDate={start}
       endDate={end}
+      selected={start}
       onChange={(update) => {
-        // Clear (X) on the input
-        const [s, e] = update || [];
-        if (!s && !e) applyRange(null, null);
+        if (!open) {
+          // Clear (X) on the input while closed
+          const [s, e] = update || [];
+          if (!s && !e) applyRange(null, null);
+          return;
+        }
+        handleCalChange(update);
       }}
       open={open}
       onInputClick={openPicker}
@@ -331,8 +303,13 @@ export default function AppDateRangePicker({
       className={className}
       disabled={disabled}
       isClearable={isClearable}
+      monthsShown={showDual ? 2 : 1}
+      openToDate={openToDate}
+      onMonthChange={(d) => setOpenToDate(new Date(d.getFullYear(), d.getMonth(), 1))}
+      renderCustomHeader={(hp) => <LinkedMonthHeader {...hp} />}
       calendarContainer={CalendarContainer}
       portalId="hrd-datepicker-portal"
+      disabledKeyboardNavigation
       {...props}
     />
   );

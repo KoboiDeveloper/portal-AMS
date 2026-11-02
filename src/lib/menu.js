@@ -334,12 +334,18 @@ const buildMenuTree = (nodes) => {
   return roots.map(cleanSubMenu);
 };
 
+/** Temporarily hide from sidebar (route may still exist). */
+const HIDDEN_MENU_MODULES = new Set([
+  "REG_RPT_OMNI_ORDER", // Order Online — hide dulu
+]);
+
 export const buildNavigationFromMenuRows = (menuRows, options = {}) => {
   const { storeOnly = false, excludeStore = false } = options;
 
   let nodes = (menuRows || [])
     .map((row) => normalizeMenuRow(row, { storeOnly }))
     .filter((node) => node.moduleCode && node.link)
+    .filter((node) => !HIDDEN_MENU_MODULES.has(String(node.moduleCode).toUpperCase()))
     .filter((node) => {
       if (storeOnly) return node.moduleCode.startsWith("STORE_");
       if (excludeStore) return !node.moduleCode.startsWith("STORE_");

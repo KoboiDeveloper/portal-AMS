@@ -2590,9 +2590,9 @@ $admin-filter-h: 32px;
 
 .app-daterange-calendars {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 0.65rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.15rem;
   padding: 0.45rem 0.55rem 0.55rem;
 }
 
@@ -2600,10 +2600,15 @@ $admin-filter-h: 32px;
   justify-content: center;
 }
 
-.app-daterange-cal {
+.app-daterange-cal-labels {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
+}
+
+.app-daterange-cal-labels .app-daterange-cal-label {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .app-daterange-cal-label {
@@ -2615,19 +2620,32 @@ $admin-filter-h: 32px;
   padding: 0.1rem 0.35rem 0.25rem;
 }
 
-.app-daterange-cal .react-datepicker {
+.app-daterange-calendars .react-datepicker {
   border: 0;
   background: transparent;
+  display: flex;
+  flex-direction: row;
+  gap: 0.65rem;
 }
 
-/* Range hover / mid selection — visible while picking end date */
-.app-daterange-cal .react-datepicker__day--in-selecting-range:not(.react-datepicker__day--selected):not(.react-datepicker__day--range-start):not(.react-datepicker__day--range-end) {
+.app-daterange-calendars .react-datepicker__month-container {
+  float: none;
+}
+
+/* Hide outside-month bleed so Nov days don't appear inside Dec panel */
+.app-daterange-calendars .react-datepicker__day--outside-month {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Range hover / mid selection — visible while picking end date (spans both months) */
+.app-daterange-calendars .react-datepicker__day--in-selecting-range:not(.react-datepicker__day--selected):not(.react-datepicker__day--range-start):not(.react-datepicker__day--range-end) {
   color: #1e3a8a !important;
   background-color: rgba(99, 102, 241, 0.22) !important;
   border-radius: 0;
 }
 
-.app-daterange-cal .react-datepicker__day--in-range:not(.react-datepicker__day--selected):not(.react-datepicker__day--range-start):not(.react-datepicker__day--range-end) {
+.app-daterange-calendars .react-datepicker__day--in-range:not(.react-datepicker__day--selected):not(.react-datepicker__day--range-start):not(.react-datepicker__day--range-end) {
   color: #1e3a8a !important;
   background-color: rgba(99, 102, 241, 0.18) !important;
   border-radius: 0;
@@ -2639,6 +2657,22 @@ $admin-filter-h: 32px;
   justify-content: space-between;
   gap: 0.35rem;
   padding: 0.25rem 0.15rem 0.45rem;
+}
+
+.app-daterange-nav-spacer {
+  flex: 0 0 1.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.app-daterange-header-readonly {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #152033;
+  padding: 0.15rem 0.25rem;
 }
 
 .app-daterange-header-selects {
