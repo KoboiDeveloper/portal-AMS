@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import {
@@ -14,14 +14,17 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDatePicker from "../../../components/AppDatePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   createRegionalService,
   regionalLookupOptions,
 } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-reg-report.css";
 import "./reg-daily-sales.css";
 import "./reg-asbc-qty.css";
+import "./reg-inv-report.css";
 
 /** Legacy ASBC.aspx (ASBC by QTY, REG) -> GET /regional/rpt/sales/asbc-qty */
 const svc = createRegionalService("rpt/sales/asbc-qty", { crud: false });
@@ -73,6 +76,7 @@ const rowType = (r) => {
 };
 
 const RegAsbcQtyPage = () => {
+  const tableRef = useRef(null);
   const [sm, setSm] = useState(false);
   const [brandId, setBrandId] = useState("");
   const [storeId, setStoreId] = useState("");
@@ -137,11 +141,13 @@ const RegAsbcQtyPage = () => {
   }, [brandId, date, storeId]);
 
   const caps = useMemo(() => salesCaptions(view?.date || date), [view, date]);
+  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${view?.date || ""}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_ASBC_QTY">
       <Head title="ASBC by QTY" />
       <Content>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
         <BlockHead size="sm">
           <BlockBetween>
             <BlockHeadContent>
@@ -235,7 +241,7 @@ const RegAsbcQtyPage = () => {
                 {view && rows.length > 0 ? (
                   <>
                     <div className="rds-table-wrap mt-3">
-                      <table className="rds-table rasq-table">
+                      <table ref={tableRef} className="rds-table rasq-table">
                         <thead>
                           <tr>
                             <th>CLASS</th>
@@ -303,12 +309,18 @@ const RegAsbcQtyPage = () => {
                     <div className="rds-meta">
                       <span>{rows.length ? `${rows.length} baris` : "0 baris"}</span>
                     </div>
+                    <RivStickyThead
+                      tableRef={tableRef}
+                      enabled={Boolean(view && rows.length)}
+                      tableClassName="rds-table rasq-table"
+                    />
                   </>
                 ) : null}
               </div>
             </div>
           ) : null}
         </Block>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

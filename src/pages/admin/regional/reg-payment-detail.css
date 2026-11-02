@@ -1,4 +1,12 @@
 /* Payment Detail — finance table, sticky store/date/total */
+
+/* page scroll only — no nested vertical scrollbar */
+.rpd-page .rds-table-wrap {
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
 .rpd-table {
   min-width: 720px;
 }
@@ -86,4 +94,22 @@
 
 .rpd-sort:hover .icon {
   opacity: 1;
+}
+
+/* Sticky thead clone — keep STORE/DATE/TOTAL pins frozen while scrolling */
+.riv-sticky-clone__table.rpd-table thead .rpd-sticky {
+  z-index: 5;
+  background: #f8f9fc !important;
+}
+
+.riv-sticky-clone__table.rpd-table thead .rpd-sticky--store {
+  left: 0;
+}
+
+.riv-sticky-clone__table.rpd-table thead .rpd-sticky--date {
+  left: 72px;
+}
+
+.riv-sticky-clone__table.rpd-table thead .rpd-sticky--total {
+  right: 0;
 }

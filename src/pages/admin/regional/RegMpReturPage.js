@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExcelJS from "exceljs";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -14,9 +14,11 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import { getRegMpReturBadge, getRegMpReturList } from "../../../services/regional/regional.service";
 import { extractRow, extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-mp-ar-list.css";
 
 const MP_OPTS = [
@@ -62,18 +64,69 @@ const KET_GUDANG_OPTS = [
 ];
 
 const COLS = [
-  { key: "TANGGAL_TRANSAKSI", label: "Tgl Transaksi" },
+  { key: "TANGGAL_TRANSAKSI", label: "Tgl Transaksi", date: true },
   { key: "MARKETPLACE", label: "Marketplace" },
   { key: "NO_INVOICE", label: "No Invoice" },
   { key: "PLU", label: "PLU" },
   { key: "DESKRIPSI", label: "Deskripsi" },
   { key: "PRICE_POS", label: "Price POS", num: true },
-  { key: "TANGGAL_RETUR", label: "Tgl Retur" },
+  { key: "TANGGAL_RETUR", label: "Tgl Retur", date: true },
   { key: "KETERANGAN_ADMIN", label: "Ket. Admin" },
-  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali" },
+  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali", date: true },
   { key: "KETERANGAN_GUDANG", label: "Ket. Gudang" },
-  { key: "SISA_HARI_RETUR", label: "Sisa Hari" },
+  { key: "SISA_HARI_RETUR", label: "Sisa Hari", sortNum: true },
 ];
+
+const MONTHS = {
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mei: 5, jun: 6, jul: 7, aug: 8, agu: 8, agt: 8,
+  sep: 9, oct: 10, okt: 10, nov: 11, dec: 12, des: 12,
+};
+
+const dateSortKey = (v) => {
+  const s = String(v ?? "").trim();
+  if (!s || s === "—" || s === "-") return null;
+  let m = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if (m) return Number(m[1]) * 1e8 + Number(m[2]) * 1e6 + Number(m[3]) * 1e4 + Number(m[4] || 0) * 100 + Number(m[5] || 0);
+  m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+  if (m) return Number(m[3]) * 1e8 + Number(m[2]) * 1e6 + Number(m[1]) * 1e4 + Number(m[4] || 0) * 100 + Number(m[5] || 0);
+  m = s.match(/^(\d{1,2})[\s-]+([A-Za-z]{3})[A-Za-z]*[\s-]+(\d{4})/);
+  if (m && MONTHS[m[2].toLowerCase()]) return Number(m[3]) * 1e8 + MONTHS[m[2].toLowerCase()] * 1e6 + Number(m[1]) * 1e4;
+  const t = Date.parse(s);
+  return Number.isNaN(t) ? null : t;
+};
+
+const numSortKey = (v) => {
+  if (v == null || v === "") return null;
+  if (typeof v === "number") return v;
+  const m = String(v).replace(/,/g, "").match(/-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : null;
+};
+
+const sortValue = (row, col) => {
+  const v = cell(row, col.key);
+  if (col.date) return dateSortKey(v);
+  if (col.num || col.sortNum) return numSortKey(v);
+  const s = String(v ?? "").trim();
+  return s === "" || s === "—" ? null : s;
+};
+
+const PAGE_SIZE = 50;
+
+const PRESETS = [
+  { id: "today", label: "Hari Ini" },
+  { id: "month", label: "Bulan Ini" },
+  { id: "3m", label: "3 Bulan" },
+  { id: "ytd", label: "YTD" },
+];
+
+const yearStartYmd = () => `${new Date().getFullYear()}-01-01`;
+
+const addMonthsYmd = (ymd, delta) => {
+  const [y, m, d] = String(ymd).split("-").map(Number);
+  const dt = new Date(y, m - 1 + delta, d || 1);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`;
+};
 
 const filterSelectStyles = {
   control: (base) => ({
@@ -140,12 +193,50 @@ const RegMpReturPage = () => {
   const [error, setError] = useState("");
   const [quick, setQuick] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [page, setPage] = useState(1);
+  const [wide, setWide] = useState(false);
+  const [presetId, setPresetId] = useState("month");
+  const [sort, setSort] = useState({ key: "", dir: "asc" });
+  const tableRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   const clearResult = () => {
     setRows([]);
     setBadge(null);
     setLoaded(false);
     setError("");
+    setPage(1);
+  };
+
+  const applyPreset = (id) => {
+    const today = todayYmd();
+    setPresetId(id);
+    if (id === "today") {
+      setFromDate(today);
+      setToDate(today);
+    } else if (id === "month") {
+      setFromDate(monthStartYmd());
+      setToDate(today);
+    } else if (id === "3m") {
+      setFromDate(addMonthsYmd(today, -3));
+      setToDate(today);
+    } else if (id === "ytd") {
+      setFromDate(yearStartYmd());
+      setToDate(today);
+    }
+    clearResult();
   };
 
   const baseParams = useCallback(
@@ -168,6 +259,7 @@ const RegMpReturPage = () => {
     }
     setLoading(true);
     setError("");
+    setPage(1);
     try {
       const params = baseParams();
       const [listRes, badgeRes] = await Promise.all([getRegMpReturList(params), getRegMpReturBadge(params)]);
@@ -199,234 +291,356 @@ const RegMpReturPage = () => {
     return rows.filter((r) => COLS.some((c) => String(cell(r, c.key)).toLowerCase().includes(q)));
   }, [rows, quick]);
 
+  const sorted = useMemo(() => {
+    const col = COLS.find((c) => c.key === sort.key);
+    if (!col) return filtered;
+    const mul = sort.dir === "desc" ? -1 : 1;
+    const numeric = Boolean(col.date || col.num || col.sortNum);
+    return filtered
+      .map((r, i) => ({ r, i, v: sortValue(r, col) }))
+      .sort((a, b) => {
+        const an = a.v == null;
+        const bn = b.v == null;
+        if (an || bn) return an === bn ? a.i - b.i : an ? 1 : -1;
+        const c = numeric ? a.v - b.v : String(a.v).localeCompare(String(b.v), "id", { numeric: true, sensitivity: "base" });
+        return c !== 0 ? c * mul : a.i - b.i;
+      })
+      .map((x) => x.r);
+  }, [filtered, sort]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [quick, sort]);
+
+  const toggleSort = (key) =>
+    setSort((s) => {
+      if (s.key !== key) return { key, dir: "asc" };
+      if (s.dir === "asc") return { key, dir: "desc" };
+      return { key: "", dir: "asc" };
+    });
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE) || 1);
+  const safePage = Math.min(page, totalPages);
+  const shown = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return sorted.slice(start, start + PAGE_SIZE);
+  }, [sorted, safePage]);
+  const rowOffset = (safePage - 1) * PAGE_SIZE;
+  const recordFrom = filtered.length ? rowOffset + 1 : 0;
+  const recordTo = filtered.length ? rowOffset + shown.length : 0;
+  const recordInfo = filtered.length
+    ? `${recordFrom.toLocaleString("id-ID")}–${recordTo.toLocaleString("id-ID")} dari ${filtered.length.toLocaleString("id-ID")} baris`
+    : "0 baris";
+  const scrollRevision = `${loading ? "loading" : "ready"}-${filtered.length}-${safePage}-${wide ? "w" : "n"}-${error || "ok"}`;
+
   const exportExcel = async () => {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("Retur");
     ws.addRow(["NO", ...COLS.map((c) => c.label)]);
-    filtered.forEach((r, i) => {
+    sorted.forEach((r, i) => {
       ws.addRow([i + 1, ...COLS.map((c) => cell(r, c.key))]);
     });
     await saveXlsxFile(wb, `MP_RETUR_${todayYmd()}.xlsx`);
   };
 
+  const tableMessage = loading
+    ? "Memuat…"
+    : !loaded
+      ? "Belum ada data. Atur filter lalu Cari."
+      : filtered.length === 0
+        ? "Tidak ada data untuk filter ini."
+        : "";
+
   return (
     <AccessGuard moduleCode="REG_MP_RETUR">
       <Head title="MP Retur" />
       <Content>
-        <div className="reg-ar-wrap">
-          <BlockHead size="sm">
-            <BlockBetween>
-              <BlockHeadContent>
-                <BlockTitle page tag="h3">
-                  MP Retur
-                </BlockTitle>
-                <BlockDes className="text-soft">View-only · retur gudang marketplace</BlockDes>
-              </BlockHeadContent>
-            </BlockBetween>
-          </BlockHead>
-
-          <Block>
-            <div className="reg-ar-toolbar">
-              <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
-                <div className="reg-ar-f-item">
-                  <label>Marketplace</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={MP_OPTS}
-                    value={MP_OPTS.find((o) => o.value === marketplace) || MP_OPTS[0]}
-                    onChange={(o) => {
-                      setMarketplace(o?.value || "0");
-                      clearResult();
-                    }}
-                    isSearchable
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>Brand</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={BRAND_OPTS}
-                    value={BRAND_OPTS.find((o) => o.value === brand) || BRAND_OPTS[0]}
-                    onChange={(o) => {
-                      setBrand(o?.value || "ALL");
-                      clearResult();
-                    }}
-                    isSearchable
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>Periode</label>
-                  <AppDateRangePicker
-                    startDate={fromDate}
-                    endDate={toDate}
-                    className="form-control form-control-sm reg-ar-ctl"
-                    onChange={(f, t) => {
-                      setFromDate(f || "");
-                      setToDate(t || "");
-                      clearResult();
-                    }}
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>Date By</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={DATE_BY_OPTS}
-                    value={DATE_BY_OPTS.find((o) => o.value === dateBy)}
-                    onChange={(o) => {
-                      setDateBy(o?.value || "Tanggal Transaksi");
-                      clearResult();
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--3">
-                <div className="reg-ar-f-item">
-                  <label>Ket. Gudang</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={KET_GUDANG_OPTS}
-                    value={KET_GUDANG_OPTS.find((o) => o.value === ketGudang)}
-                    onChange={(o) => {
-                      setKetGudang(o?.value || "Semua Barang");
-                      clearResult();
-                    }}
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>Invoice / PLU</label>
-                  <input
-                    className="form-control form-control-sm reg-ar-ctl"
-                    value={keywords}
-                    onChange={(e) => {
-                      setKeywords(e.target.value);
-                      clearResult();
-                    }}
-                    placeholder="Search invoice / PLU"
-                  />
-                </div>
-              </div>
-
-              <div className="reg-ar-toolbar-row">
-                <div className="reg-ar-chips-active">
-                  <span className="reg-ar-chips-active-label">Filter</span>
-                  <span className="reg-ar-chip is-active">
-                    {MP_OPTS.find((o) => o.value === marketplace)?.label || marketplace}
-                  </span>
-                  <span className="reg-ar-chip">{BRAND_OPTS.find((o) => o.value === brand)?.label || brand}</span>
-                  <span className="reg-ar-chip">{DATE_BY_OPTS.find((o) => o.value === dateBy)?.label || dateBy}</span>
-                </div>
-                <div className="reg-ar-actions">
-                  <button type="button" className="reg-ar-btn" disabled={loading} onClick={loadData}>
-                    <Icon name="search" />
-                    Cari
-                  </button>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+          <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
+            <BlockHead size="sm">
+              <BlockBetween>
+                <BlockHeadContent>
+                  <BlockTitle page tag="h3">
+                    MP Retur
+                  </BlockTitle>
+                  <BlockDes className="text-soft">View-only · retur gudang marketplace</BlockDes>
+                </BlockHeadContent>
+                <BlockHeadContent>
                   <button
                     type="button"
-                    className="reg-ar-btn reg-ar-btn--ghost"
-                    disabled={!filtered.length}
-                    onClick={exportExcel}
+                    className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
+                    title={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-pressed={wide}
+                    onClick={() => setWide((w) => !w)}
                   >
-                    <Icon name="download" />
-                    Excel
+                    <Icon name={wide ? "minimize" : "maximize"} />
                   </button>
-                </div>
-              </div>
-            </div>
+                </BlockHeadContent>
+              </BlockBetween>
+            </BlockHead>
 
-            {badge ? (
-              <div className="reg-ar-stats">
-                <div className="reg-ar-stat">
-                  <span className="reg-ar-stat-label">Retur periode</span>
-                  <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_total", "retur_Total"])}</span>
-                  <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_retur_total_presentase"])}</span>
+            <Block>
+              <div className="reg-ar-toolbar">
+                <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
+                  <div className="reg-ar-f-item">
+                    <label>Marketplace</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={MP_OPTS}
+                      value={MP_OPTS.find((o) => o.value === marketplace) || MP_OPTS[0]}
+                      onChange={(o) => {
+                        setMarketplace(o?.value || "0");
+                        clearResult();
+                      }}
+                      isSearchable
+                    />
+                  </div>
+                  <div className="reg-ar-f-item">
+                    <label>Brand</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={BRAND_OPTS}
+                      value={BRAND_OPTS.find((o) => o.value === brand) || BRAND_OPTS[0]}
+                      onChange={(o) => {
+                        setBrand(o?.value || "ALL");
+                        clearResult();
+                      }}
+                      isSearchable
+                    />
+                  </div>
+                  <div className="reg-ar-f-item">
+                    <label>Periode</label>
+                    <AppDateRangePicker
+                      startDate={fromDate}
+                      endDate={toDate}
+                      className="form-control form-control-sm reg-ar-ctl"
+                      onChange={(f, t) => {
+                        setFromDate(f || "");
+                        setToDate(t || "");
+                        setPresetId("");
+                        clearResult();
+                      }}
+                    />
+                  </div>
+                  <div className="reg-ar-f-item">
+                    <label>Date By</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={DATE_BY_OPTS}
+                      value={DATE_BY_OPTS.find((o) => o.value === dateBy)}
+                      onChange={(o) => {
+                        setDateBy(o?.value || "Tanggal Transaksi");
+                        clearResult();
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="reg-ar-stat">
-                  <span className="reg-ar-stat-label">Retur all-time</span>
-                  <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_all_time_total"])}</span>
+
+                <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--3">
+                  <div className="reg-ar-f-item">
+                    <label>Ket. Gudang</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={KET_GUDANG_OPTS}
+                      value={KET_GUDANG_OPTS.find((o) => o.value === ketGudang)}
+                      onChange={(o) => {
+                        setKetGudang(o?.value || "Semua Barang");
+                        clearResult();
+                      }}
+                    />
+                  </div>
+                  <div className="reg-ar-f-item">
+                    <label>Invoice / PLU</label>
+                    <input
+                      className="form-control form-control-sm reg-ar-ctl"
+                      value={keywords}
+                      onChange={(e) => {
+                        setKeywords(e.target.value);
+                        clearResult();
+                      }}
+                      placeholder="Search invoice / PLU"
+                    />
+                  </div>
+                  <div className="reg-ar-f-item reg-ar-f-actions">
+                    <label className="reg-ar-f-actions-label">&nbsp;</label>
+                    <div className="reg-ar-actions">
+                      <button type="button" className="reg-ar-btn" disabled={loading} onClick={loadData}>
+                        <Icon name="search" />
+                        Cari
+                      </button>
+                      <button
+                        type="button"
+                        className="reg-ar-btn reg-ar-btn--ghost"
+                        disabled={!filtered.length}
+                        onClick={exportExcel}
+                      >
+                        <Icon name="download" />
+                        Excel
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="reg-ar-stat">
-                  <span className="reg-ar-stat-label">Barang balik</span>
-                  <span className="reg-ar-stat-val">{pickBadge(badge, ["barang_balik_total", "barang_balik_Total"])}</span>
-                  <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_balik_total_presentase"])}</span>
-                </div>
-                <div className="reg-ar-stat">
-                  <span className="reg-ar-stat-label">Belum balik</span>
-                  <span className="reg-ar-stat-val">
-                    {pickBadge(badge, ["barang_belum_balik_total", "barang_belum_balik_Total"])}
-                  </span>
-                  <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_belum_balik_total_presentase"])}</span>
-                </div>
-              </div>
-            ) : null}
 
-            {loaded ? (
-              <div className="reg-ar-quick">
-                <Icon name="search" className="reg-ar-quick-ico" />
-                <input
-                  className="reg-ar-quick-input"
-                  value={quick}
-                  onChange={(e) => setQuick(e.target.value)}
-                  placeholder="Cari cepat di hasil…"
-                />
-                {quick ? (
-                  <button type="button" className="reg-ar-quick-clear" onClick={() => setQuick("")} aria-label="Clear">
-                    ×
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-
-            {error ? <div className="reg-ar-error">{error}</div> : null}
-
-            <div className="reg-ar-meta">
-              {loading ? "Memuat…" : loaded ? `${filtered.length.toLocaleString("id-ID")} baris` : "Atur filter lalu Cari"}
-            </div>
-
-            <div className="reg-ar-table-wrap">
-              <table className="reg-ar-table">
-                <thead>
-                  <tr>
-                    <th className="col-no">No.</th>
-                    {COLS.map((c) => (
-                      <th key={c.key}>{c.label}</th>
+                <div className="reg-ar-toolbar-row">
+                  <div className="reg-ar-presets">
+                    <span className="reg-ar-presets-label">Preset</span>
+                    {PRESETS.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={`reg-ar-preset ${presetId === p.id ? "is-active" : ""}`}
+                        onClick={() => applyPreset(p.id)}
+                      >
+                        {p.id === "ytd" ? `YTD ${new Date().getFullYear()}` : p.label}
+                      </button>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {!loading && filtered.length === 0 ? (
+                  </div>
+                </div>
+              </div>
+
+              {badge ? (
+                <div className="reg-ar-stats">
+                  <div className="reg-ar-stat">
+                    <span className="reg-ar-stat-label">Retur periode</span>
+                    <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_total", "retur_Total"])}</span>
+                    <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_retur_total_presentase"])}</span>
+                  </div>
+                  <div className="reg-ar-stat">
+                    <span className="reg-ar-stat-label">Retur all-time</span>
+                    <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_all_time_total"])}</span>
+                  </div>
+                  <div className="reg-ar-stat">
+                    <span className="reg-ar-stat-label">Barang balik</span>
+                    <span className="reg-ar-stat-val">{pickBadge(badge, ["barang_balik_total", "barang_balik_Total"])}</span>
+                    <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_balik_total_presentase"])}</span>
+                  </div>
+                  <div className="reg-ar-stat">
+                    <span className="reg-ar-stat-label">Belum balik</span>
+                    <span className="reg-ar-stat-val">
+                      {pickBadge(badge, ["barang_belum_balik_total", "barang_belum_balik_Total"])}
+                    </span>
+                    <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_belum_balik_total_presentase"])}</span>
+                  </div>
+                </div>
+              ) : null}
+
+              {loaded ? (
+                <div className="reg-ar-quick-row">
+                  <div className="reg-ar-quick">
+                    <Icon name="search" className="reg-ar-quick-ico" />
+                    <input
+                      className="reg-ar-quick-input"
+                      value={quick}
+                      onChange={(e) => setQuick(e.target.value)}
+                      placeholder="Cari cepat di hasil…"
+                    />
+                    {quick ? (
+                      <button type="button" className="reg-ar-quick-clear" onClick={() => setQuick("")} aria-label="Clear">
+                        ×
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="reg-ar-record-info">{recordInfo}</div>
+                </div>
+              ) : null}
+
+              {error ? <div className="reg-ar-error">{error}</div> : null}
+
+              <div className="reg-ar-table-wrap">
+                <table ref={tableRef} className="reg-ar-table">
+                  <thead>
                     <tr>
-                      <td colSpan={COLS.length + 1} className="reg-ar-empty">
-                        {loaded ? "Tidak ada data untuk filter ini." : "Belum ada data. Atur filter lalu Cari."}
-                      </td>
+                      <th className="col-no">No.</th>
+                      {COLS.map((c) => {
+                        const active = sort.key === c.key;
+                        return (
+                          <th
+                            key={c.key}
+                            className={`reg-ar-sortable${active ? " is-sorted" : ""}${c.num ? " num" : ""}`}
+                            onClick={() => toggleSort(c.key)}
+                            aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+                            title="Klik untuk urutkan"
+                          >
+                            <span className="reg-ar-th-inner">
+                              {c.label}
+                              <Icon
+                                name={active ? (sort.dir === "asc" ? "caret-up-fill" : "caret-down-fill") : "sort"}
+                                className="reg-ar-sort-ic"
+                              />
+                            </span>
+                          </th>
+                        );
+                      })}
                     </tr>
-                  ) : (
-                    filtered.map((r, i) => (
-                      <tr key={i}>
-                        <td className="col-no">{i + 1}</td>
-                        {COLS.map((c) => {
-                          const v = cell(r, c.key);
-                          const isNote = c.key === "KETERANGAN_ADMIN" || c.key === "KETERANGAN_GUDANG";
-                          return (
-                            <td
-                              key={c.key}
-                              className={[c.num ? "num" : "", isNote ? "reg-ar-note-cell" : ""]
-                                .filter(Boolean)
-                                .join(" ")}
-                            >
-                              {c.num ? fmtNum(v) : v === "" || v == null ? "—" : String(v)}
-                            </td>
-                          );
-                        })}
+                  </thead>
+                  <tbody>
+                    {tableMessage ? (
+                      <tr>
+                        <td colSpan={COLS.length + 1} className="reg-ar-empty">
+                          {tableMessage}
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Block>
-        </div>
+                    ) : (
+                      shown.map((r, i) => (
+                        <tr key={rowOffset + i}>
+                          <td className="col-no">{rowOffset + i + 1}</td>
+                          {COLS.map((c) => {
+                            const v = cell(r, c.key);
+                            const isNote = c.key === "KETERANGAN_ADMIN" || c.key === "KETERANGAN_GUDANG";
+                            return (
+                              <td
+                                key={c.key}
+                                className={[c.num ? "num" : "", isNote ? "reg-ar-note-cell" : ""]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
+                                {c.num ? fmtNum(v) : v === "" || v == null ? "—" : String(v)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <RivStickyThead
+                tableRef={tableRef}
+                enabled={Boolean(loaded && shown.length)}
+                tableClassName="reg-ar-table"
+                interactive
+              />
+
+              {loaded && filtered.length > PAGE_SIZE ? (
+                <div className="reg-ar-pager">
+                  <span className="reg-ar-pager-info">
+                    Halaman {safePage} / {totalPages}
+                  </span>
+                  <div className="reg-ar-pager-btns">
+                    <button
+                      type="button"
+                      className="reg-ar-pager-btn"
+                      disabled={safePage <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Sebelumnya
+                    </button>
+                    <button
+                      type="button"
+                      className="reg-ar-pager-btn"
+                      disabled={safePage >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      Berikutnya
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </Block>
+          </div>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import {
   Block,
-  BlockDes,
+  BlockBetween,
   BlockHead,
   BlockHeadContent,
   BlockTitle,
@@ -12,13 +12,16 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   createRegionalService,
   regionalLookupOptions,
 } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-reg-report.css";
 import "./reg-daily-sales.css";
+import "./reg-inv-report.css";
 
 /** Legacy Daily_s_sales.aspx (REG) -> GET /regional/rpt/sales/daily-sales */
 const svc = createRegionalService("rpt/sales/daily-sales", { crud: false });
@@ -74,7 +77,7 @@ const BASE_COLS = [
   { key: "LABA", field: "LABA", label: "LABA", num: true, sum: true },
   { key: "NET_LABA", field: "NET_LABA", label: "NET LABA", num: true, sum: true },
   { key: "MARGIN", field: "MARGIN", label: "MARGIN", num: true },
-  { key: "NET_PERSENTASE", field: "NET_PERSENTASE", label: "NET PERSENTASE (%)", pct: true },
+  { key: "NET_PERSENTASE", field: "NET_PERSENTASE", label: "NET (%)", pct: true },
 ];
 
 /** Columns hidden client-side (same rules as legacy userGrid_Rowhide_* / UsersGrid_Rowhide_*) */
@@ -116,6 +119,21 @@ const RegDailySalesPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [limit, setLimit] = useState(RENDER_STEP);
+  const [wide, setWide] = useState(false);
+  const wrapRef = useRef(null);
+  const tableRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   useEffect(() => {
     regionalLookupOptions("brand").then((opts) => {
@@ -231,18 +249,32 @@ const RegDailySalesPage = () => {
   };
 
   const shown = rows.slice(0, limit);
+  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${limit}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_DAILY_SALES">
       <Head title="Daily Sales Summary" />
       <Content>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+        <div ref={wrapRef}>
         <BlockHead size="sm">
-          <BlockHeadContent>
-            <BlockTitle page>Daily Sales Summary</BlockTitle>
-            <BlockDes>
-              <p>Parity Daily_s_sales.aspx (REG) - filter, mode dan kolom sama dengan legacy.</p>
-            </BlockDes>
-          </BlockHeadContent>
+          <BlockBetween>
+            <BlockHeadContent>
+              <BlockTitle page>Daily Sales Summary</BlockTitle>
+            </BlockHeadContent>
+            <BlockHeadContent>
+              <button
+                type="button"
+                className={`rds-wide-btn${wide ? " is-on" : ""}`}
+                title={wide ? "Lebar normal" : "Lebar penuh"}
+                aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                aria-pressed={wide}
+                onClick={() => setWide((w) => !w)}
+              >
+                <Icon name={wide ? "minimize" : "maximize"} />
+              </button>
+            </BlockHeadContent>
+          </BlockBetween>
         </BlockHead>
         <Block>
           <div className="card rsa-card">
@@ -363,7 +395,7 @@ const RegDailySalesPage = () => {
               {view ? (
                 <>
                   <div className="rds-table-wrap mt-3">
-                    <table className="rds-table">
+                    <table ref={tableRef} className="rds-table">
                       <thead>
                         <tr>
                           <th className="rds-no">No</th>
@@ -427,11 +459,18 @@ const RegDailySalesPage = () => {
                       </span>
                     ) : null}
                   </div>
+                  <RivStickyThead
+                    tableRef={tableRef}
+                    enabled={Boolean(view && shown.length)}
+                    tableClassName="rds-table"
+                  />
                 </>
               ) : null}
             </div>
           </div>
         </Block>
+        </div>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

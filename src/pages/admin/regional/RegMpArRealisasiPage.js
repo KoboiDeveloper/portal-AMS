@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExcelJS from "exceljs";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -14,9 +14,11 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import { getRegMpArRealisasiList } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-mp-ar-list.css";
 
 const MP_OPTS = [
@@ -55,6 +57,8 @@ const COLS = [
   { key: "TGL_REALISASI", label: "Tgl Pelunasan", alts: ["TANGGAL_REALISASI"] },
   { key: "STATUS_REALISASI", label: "Status", alts: ["STATUS_PELUNASAN", "STATUS"] },
 ];
+
+const PAGE_SIZE = 50;
 
 const filterSelectStyles = {
   control: (base) => ({
@@ -108,6 +112,22 @@ const RegMpArRealisasiPage = () => {
   const [error, setError] = useState("");
   const [quick, setQuick] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [page, setPage] = useState(1);
+  const [wide, setWide] = useState(false);
+  const tableRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   const isSudah = status === "sudah";
 
@@ -115,11 +135,13 @@ const RegMpArRealisasiPage = () => {
     setRows([]);
     setLoaded(false);
     setError("");
+    setPage(1);
   };
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError("");
+    setPage(1);
     try {
       const params = {
         status,
@@ -157,6 +179,24 @@ const RegMpArRealisasiPage = () => {
     );
   }, [rows, quick]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [quick]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE) || 1);
+  const safePage = Math.min(page, totalPages);
+  const shown = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, safePage]);
+  const rowOffset = (safePage - 1) * PAGE_SIZE;
+  const recordFrom = filtered.length ? rowOffset + 1 : 0;
+  const recordTo = filtered.length ? rowOffset + shown.length : 0;
+  const recordInfo = filtered.length
+    ? `${recordFrom.toLocaleString("id-ID")}–${recordTo.toLocaleString("id-ID")} dari ${filtered.length.toLocaleString("id-ID")} baris`
+    : "0 baris";
+  const scrollRevision = `${loading ? "loading" : "ready"}-${filtered.length}-${safePage}-${wide ? "w" : "n"}-${error || "ok"}`;
+
   const exportExcel = async () => {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("REALISASI");
@@ -167,193 +207,236 @@ const RegMpArRealisasiPage = () => {
     await saveXlsxFile(wb, `AR_REALISASI_${todayYmd()}.xlsx`);
   };
 
-  const mpLabel = MP_OPTS.find((o) => o.value === marketplace)?.label || "ALL";
-  const brandLabel = BRAND_OPTS.find((o) => o.value === brand)?.label || "ALL Brand";
-  const statusLabel = STATUS_OPTS.find((o) => o.value === status)?.label || status;
+  const tableMessage = loading
+    ? "Memuat…"
+    : !loaded
+      ? "Belum ada data. Atur filter lalu Cari."
+      : filtered.length === 0
+        ? "Tidak ada data untuk filter ini."
+        : "";
 
   return (
     <AccessGuard moduleCode="REG_MP_AR_REALISASI">
       <Head title="AR Realisasi" />
       <Content>
-        <div className="reg-ar-wrap">
-          <BlockHead size="sm">
-            <BlockBetween>
-              <BlockHeadContent>
-                <BlockTitle page tag="h3">
-                  AR Realisasi
-                </BlockTitle>
-                <BlockDes className="text-soft">View-only · pelunasan AR marketplace</BlockDes>
-              </BlockHeadContent>
-            </BlockBetween>
-          </BlockHead>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+          <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
+            <BlockHead size="sm">
+              <BlockBetween>
+                <BlockHeadContent>
+                  <BlockTitle page tag="h3">
+                    AR Realisasi
+                  </BlockTitle>
+                  <BlockDes className="text-soft">View-only · pelunasan AR marketplace</BlockDes>
+                </BlockHeadContent>
+                <BlockHeadContent>
+                  <button
+                    type="button"
+                    className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
+                    title={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-pressed={wide}
+                    onClick={() => setWide((w) => !w)}
+                  >
+                    <Icon name={wide ? "minimize" : "maximize"} />
+                  </button>
+                </BlockHeadContent>
+              </BlockBetween>
+            </BlockHead>
 
-          <Block>
-            <div className="reg-ar-toolbar">
-              <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
-                <div className="reg-ar-f-item">
-                  <label>Status</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={STATUS_OPTS}
-                    value={STATUS_OPTS.find((o) => o.value === status)}
-                    onChange={(o) => {
-                      setStatus(o?.value || "belum");
-                      clearResult();
-                    }}
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>Marketplace</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={MP_OPTS}
-                    value={MP_OPTS.find((o) => o.value === marketplace) || MP_OPTS[0]}
-                    onChange={(o) => {
-                      setMarketplace(o?.value ?? "");
-                      clearResult();
-                    }}
-                    isSearchable
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>Brand</label>
-                  <RSelect
-                    styles={filterSelectStyles}
-                    options={BRAND_OPTS}
-                    value={BRAND_OPTS.find((o) => o.value === brand) || BRAND_OPTS[0]}
-                    onChange={(o) => {
-                      setBrand(o?.value ?? "");
-                      clearResult();
-                    }}
-                    isSearchable
-                  />
-                </div>
-                <div className="reg-ar-f-item">
-                  <label>No. Invoice</label>
-                  <input
-                    className="form-control form-control-sm reg-ar-ctl"
-                    value={invoice}
-                    onChange={(e) => {
-                      setInvoice(e.target.value);
-                      clearResult();
-                    }}
-                    placeholder="Opsional"
-                  />
-                </div>
-              </div>
-
-              {isSudah ? (
-                <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--3">
+            <Block>
+              <div className="reg-ar-toolbar">
+                <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
                   <div className="reg-ar-f-item">
-                    <label>Periode Pelunasan</label>
-                    <AppDateRangePicker
-                      startDate={fromDate}
-                      endDate={toDate}
-                      className="form-control form-control-sm reg-ar-ctl"
-                      onChange={(f, t) => {
-                        setFromDate(f || "");
-                        setToDate(t || "");
+                    <label>Status</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={STATUS_OPTS}
+                      value={STATUS_OPTS.find((o) => o.value === status)}
+                      onChange={(o) => {
+                        setStatus(o?.value || "belum");
                         clearResult();
                       }}
                     />
                   </div>
+                  <div className="reg-ar-f-item">
+                    <label>Marketplace</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={MP_OPTS}
+                      value={MP_OPTS.find((o) => o.value === marketplace) || MP_OPTS[0]}
+                      onChange={(o) => {
+                        setMarketplace(o?.value ?? "");
+                        clearResult();
+                      }}
+                      isSearchable
+                    />
+                  </div>
+                  <div className="reg-ar-f-item">
+                    <label>Brand</label>
+                    <RSelect
+                      styles={filterSelectStyles}
+                      options={BRAND_OPTS}
+                      value={BRAND_OPTS.find((o) => o.value === brand) || BRAND_OPTS[0]}
+                      onChange={(o) => {
+                        setBrand(o?.value ?? "");
+                        clearResult();
+                      }}
+                      isSearchable
+                    />
+                  </div>
+                  <div className="reg-ar-f-item">
+                    <label>No. Invoice</label>
+                    <input
+                      className="form-control form-control-sm reg-ar-ctl"
+                      value={invoice}
+                      onChange={(e) => {
+                        setInvoice(e.target.value);
+                        clearResult();
+                      }}
+                      placeholder="Opsional"
+                    />
+                  </div>
+                </div>
+
+                <div className={`reg-ar-toolbar-grid ${isSudah ? "reg-ar-toolbar-grid--3" : "reg-ar-toolbar-grid--actions-only"}`}>
+                  {isSudah ? (
+                    <div className="reg-ar-f-item">
+                      <label>Periode Pelunasan</label>
+                      <AppDateRangePicker
+                        startDate={fromDate}
+                        endDate={toDate}
+                        className="form-control form-control-sm reg-ar-ctl"
+                        onChange={(f, t) => {
+                          setFromDate(f || "");
+                          setToDate(t || "");
+                          clearResult();
+                        }}
+                      />
+                    </div>
+                  ) : null}
+                  {isSudah ? <div /> : null}
+                  <div className="reg-ar-f-item reg-ar-f-actions">
+                    <label className="reg-ar-f-actions-label">&nbsp;</label>
+                    <div className="reg-ar-actions">
+                      <button type="button" className="reg-ar-btn" disabled={loading} onClick={loadData}>
+                        <Icon name="search" />
+                        Cari
+                      </button>
+                      <button
+                        type="button"
+                        className="reg-ar-btn reg-ar-btn--ghost"
+                        disabled={!filtered.length}
+                        onClick={exportExcel}
+                      >
+                        <Icon name="download" />
+                        Excel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {loaded ? (
+                <div className="reg-ar-quick-row">
+                  <div className="reg-ar-quick">
+                    <Icon name="search" className="reg-ar-quick-ico" />
+                    <input
+                      className="reg-ar-quick-input"
+                      value={quick}
+                      onChange={(e) => setQuick(e.target.value)}
+                      placeholder="Cari cepat di hasil…"
+                    />
+                    {quick ? (
+                      <button type="button" className="reg-ar-quick-clear" onClick={() => setQuick("")} aria-label="Clear">
+                        ×
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="reg-ar-record-info">{recordInfo}</div>
                 </div>
               ) : null}
 
-              <div className="reg-ar-toolbar-row">
-                <div className="reg-ar-chips-active">
-                  <span className="reg-ar-chips-active-label">Filter</span>
-                  <span className="reg-ar-chip is-active">{statusLabel}</span>
-                  <span className="reg-ar-chip">{mpLabel}</span>
-                  <span className="reg-ar-chip">{brandLabel}</span>
-                  {invoice.trim() ? <span className="reg-ar-chip">{invoice.trim()}</span> : null}
-                </div>
-                <div className="reg-ar-actions">
-                  <button type="button" className="reg-ar-btn" disabled={loading} onClick={loadData}>
-                    <Icon name="search" />
-                    Cari
-                  </button>
-                  <button
-                    type="button"
-                    className="reg-ar-btn reg-ar-btn--ghost"
-                    disabled={!filtered.length}
-                    onClick={exportExcel}
-                  >
-                    <Icon name="download" />
-                    Excel
-                  </button>
-                </div>
-              </div>
-            </div>
+              {error ? <div className="reg-ar-error">{error}</div> : null}
 
-            {loaded ? (
-              <div className="reg-ar-quick">
-                <Icon name="search" className="reg-ar-quick-ico" />
-                <input
-                  className="reg-ar-quick-input"
-                  value={quick}
-                  onChange={(e) => setQuick(e.target.value)}
-                  placeholder="Cari cepat di hasil…"
-                />
-                {quick ? (
-                  <button type="button" className="reg-ar-quick-clear" onClick={() => setQuick("")} aria-label="Clear">
-                    ×
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-
-            {error ? <div className="reg-ar-error">{error}</div> : null}
-
-            <div className="reg-ar-meta">
-              {loading ? "Memuat…" : loaded ? `${filtered.length.toLocaleString("id-ID")} baris` : "Atur filter lalu Cari"}
-            </div>
-
-            <div className="reg-ar-table-wrap">
-              <table className="reg-ar-table">
-                <thead>
-                  <tr>
-                    <th className="col-no">No.</th>
-                    {COLS.map((c) => (
-                      <th key={c.key}>{c.label}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {!loading && filtered.length === 0 ? (
+              <div className="reg-ar-table-wrap">
+                <table ref={tableRef} className="reg-ar-table">
+                  <thead>
                     <tr>
-                      <td colSpan={COLS.length + 1} className="reg-ar-empty">
-                        {loaded ? "Tidak ada data untuk filter ini." : "Belum ada data. Atur filter lalu Cari."}
-                      </td>
+                      <th className="col-no">No.</th>
+                      {COLS.map((c) => (
+                        <th key={c.key}>{c.label}</th>
+                      ))}
                     </tr>
-                  ) : (
-                    filtered.map((r, i) => {
-                      const st = String(cell(r, "STATUS_REALISASI", ["STATUS_PELUNASAN", "STATUS"])).toLowerCase();
-                      return (
-                        <tr key={i}>
-                          <td className="col-no">{i + 1}</td>
-                          {COLS.map((c) => {
-                            const v = cell(r, c.key, c.alts || []);
-                            if (c.key === "STATUS_REALISASI") {
-                              return (
-                                <td key={c.key}>
-                                  <span className={`reg-ar-badge ${st.includes("sudah") ? "is-ok" : "is-warn"}`}>
-                                    {v || "—"}
-                                  </span>
-                                </td>
-                              );
-                            }
-                            return <td key={c.key}>{v === "" || v == null ? "—" : String(v)}</td>;
-                          })}
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Block>
-        </div>
+                  </thead>
+                  <tbody>
+                    {tableMessage ? (
+                      <tr>
+                        <td colSpan={COLS.length + 1} className="reg-ar-empty">
+                          {tableMessage}
+                        </td>
+                      </tr>
+                    ) : (
+                      shown.map((r, i) => {
+                        const st = String(cell(r, "STATUS_REALISASI", ["STATUS_PELUNASAN", "STATUS"])).toLowerCase();
+                        return (
+                          <tr key={rowOffset + i}>
+                            <td className="col-no">{rowOffset + i + 1}</td>
+                            {COLS.map((c) => {
+                              const v = cell(r, c.key, c.alts || []);
+                              if (c.key === "STATUS_REALISASI") {
+                                return (
+                                  <td key={c.key}>
+                                    <span className={`reg-ar-badge ${st.includes("sudah") ? "is-ok" : "is-warn"}`}>
+                                      {v || "—"}
+                                    </span>
+                                  </td>
+                                );
+                              }
+                              return <td key={c.key}>{v === "" || v == null ? "—" : String(v)}</td>;
+                            })}
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <RivStickyThead
+                tableRef={tableRef}
+                enabled={Boolean(loaded && shown.length)}
+                tableClassName="reg-ar-table"
+              />
+
+              {loaded && filtered.length > PAGE_SIZE ? (
+                <div className="reg-ar-pager">
+                  <span className="reg-ar-pager-info">
+                    Halaman {safePage} / {totalPages}
+                  </span>
+                  <div className="reg-ar-pager-btns">
+                    <button
+                      type="button"
+                      className="reg-ar-pager-btn"
+                      disabled={safePage <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Sebelumnya
+                    </button>
+                    <button
+                      type="button"
+                      className="reg-ar-pager-btn"
+                      disabled={safePage >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      Berikutnya
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </Block>
+          </div>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

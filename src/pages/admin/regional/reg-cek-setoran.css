@@ -1,0 +1,66 @@
+.rcs-page .rcs-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.rcs-page .riv-table--rcs {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+.rcs-page .riv-table--rcs th,
+.rcs-page .riv-table--rcs td {
+  word-break: break-word;
+}
+
+.riv-table--rcs th.rcs-sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.riv-table--rcs th.rcs-sortable:hover {
+  color: #6576ff;
+}
+
+.riv-table--rcs th.rcs-sortable.is-sorted {
+  color: #6576ff;
+}
+
+.riv-table--rcs .rcs-th-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.riv-table--rcs .rcs-sort-ic {
+  font-size: 0.75rem;
+  opacity: 0.45;
+}
+
+.riv-table--rcs th.is-sorted .rcs-sort-ic {
+  opacity: 1;
+}
+
+.rcs-page .rcs-status {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #eef2f7;
+  color: #364a63;
+}
+
+.rcs-page .rcs-status--ok {
+  background: #e2f5ea;
+  color: #1f7a45;
+}
+
+.rcs-page .rcs-status--bad {
+  background: #fde8e8;
+  color: #b42318;
+}

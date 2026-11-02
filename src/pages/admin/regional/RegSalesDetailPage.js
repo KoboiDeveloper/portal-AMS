@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExcelJS from "exceljs";
 import { Modal, ModalBody } from "reactstrap";
 import Head from "../../../layout/head/Head";
@@ -16,6 +16,7 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   createRegionalService,
   regionalLookupOptions,
@@ -23,9 +24,11 @@ import {
 import api from "../../../lib/api";
 import { extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-reg-report.css";
 import "./reg-daily-sales.css";
 import "./reg-sales-detail.css";
+import "./reg-inv-report.css";
 
 /** Legacy Seles_Detail.aspx (REG) — DAILY SALES DETAIL */
 const svc = createRegionalService("rpt/sales/sales-detail", { crud: false });
@@ -142,6 +145,7 @@ const RegSalesDetailPage = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [limit, setLimit] = useState(RENDER_STEP);
+  const tableRef = useRef(null);
 
   /** Drill-down modal */
   const [detailOpen, setDetailOpen] = useState(false);
@@ -421,11 +425,13 @@ const RegSalesDetailPage = () => {
 
   const shown = rows.slice(0, limit);
   const totalsBar = allTotals || emptyTotals();
+  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${tab}-${limit}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_SALES_DETAIL">
       <Head title="Daily Sales Detail" />
       <Content>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
         <BlockHead size="sm">
           <BlockBetween>
             <BlockHeadContent>
@@ -524,7 +530,7 @@ const RegSalesDetailPage = () => {
         </BlockHead>
 
         <Block>
-          <div className="card rsa-card">
+          <div className="card rsa-card rsd-page">
             <div className="card-inner">
               <ul className="rsd-tabs">
                 {TABS.map((t) => {
@@ -575,7 +581,7 @@ const RegSalesDetailPage = () => {
               {view && rows.length > 0 ? (
                 <>
                   <div className="rds-table-wrap mt-3">
-                    <table className="rds-table rsd-table">
+                    <table ref={tableRef} className="rds-table rsd-table">
                       <thead>
                         <tr>
                           <th className="rds-no">No</th>
@@ -651,11 +657,17 @@ const RegSalesDetailPage = () => {
                       </span>
                     ) : null}
                   </div>
+                  <RivStickyThead
+                    tableRef={tableRef}
+                    enabled={Boolean(view && shown.length)}
+                    tableClassName="rds-table rsd-table"
+                  />
                 </>
               ) : null}
             </div>
           </div>
         </Block>
+        </PageSmoothScroll>
 
         <Modal
           isOpen={detailOpen}
@@ -685,6 +697,17 @@ const RegSalesDetailPage = () => {
               <span className="rsd-detail-section-label">SALES DETAIL</span>
               <div className="rds-table-wrap">
                 <table className="rds-table rsd-table rsd-detail-table">
+                  <colgroup>
+                    <col style={{ width: "5%" }} />
+                    <col style={{ width: "8%" }} />
+                    <col style={{ width: "12%" }} />
+                    <col style={{ width: "25%" }} />
+                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "9%" }} />
+                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "6%" }} />
+                    <col style={{ width: "15%" }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th className="rds-no">No</th>

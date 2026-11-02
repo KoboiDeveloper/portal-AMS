@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import {
@@ -14,14 +14,17 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   createRegionalService,
   regionalLookupOptions,
 } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-reg-report.css";
 import "./reg-daily-sales.css";
 import "./reg-payment-detail.css";
+import "./reg-inv-report.css";
 
 /** Legacy Get_Payment_detail.aspx — dense finance table (grouped / used-columns only) */
 const svc = createRegionalService("rpt/sales/payment-detail", { crud: false });
@@ -148,6 +151,7 @@ const compareRows = (a, b, key, direction, colMap) => {
 };
 
 const RegPaymentDetailPage = () => {
+  const tableRef = useRef(null);
   const [sm, setSm] = useState(false);
   const [brandId, setBrandId] = useState("");
   const [storeId, setStoreId] = useState("");
@@ -274,11 +278,14 @@ const RegPaymentDetailPage = () => {
   }, [columns, rows]);
 
   const activeMode = view?.mode || mode;
+  const tableClassName = `rds-table rpd-table${activeMode === "group" ? " rpd-table--group" : ""}`;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${sortedRows.length}-${activeMode}-${sortConfig.key}-${sortConfig.direction}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_PAYMENT">
       <Head title="Payment Detail" />
       <Content>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
         <BlockHead size="sm">
           <BlockBetween>
             <BlockHeadContent>
@@ -387,10 +394,10 @@ const RegPaymentDetailPage = () => {
           ) : null}
 
           {view && rows.length > 0 ? (
-            <div className="card rsa-card">
+            <div className="card rsa-card rpd-page">
               <div className="card-inner">
                 <div className="rds-table-wrap mt-3">
-                  <table className={`rds-table rpd-table${activeMode === "group" ? " rpd-table--group" : ""}`}>
+                  <table ref={tableRef} className={tableClassName}>
                     <thead>
                       <tr>
                         {allSortCols.map((c) => {
@@ -462,10 +469,16 @@ const RegPaymentDetailPage = () => {
                       : "Detail: kolom kosong (semua 0) disembunyikan otomatis."}
                   </span>
                 </div>
+                <RivStickyThead
+                  tableRef={tableRef}
+                  enabled={Boolean(view && sortedRows.length)}
+                  tableClassName={tableClassName}
+                />
               </div>
             </div>
           ) : null}
         </Block>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

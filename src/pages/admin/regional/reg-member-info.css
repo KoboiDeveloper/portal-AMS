@@ -1,0 +1,274 @@
+.rmi-page .rmi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rmi-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.rmi-toolbar-tools {
+  margin: 0;
+  padding: 0;
+}
+
+.rmi-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #dbdfea;
+  background: #fff;
+  color: #364a63;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.25rem;
+  line-height: 1.2;
+}
+
+.rmi-btn:hover:not(:disabled) {
+  border-color: #b7c2d0;
+  background: #f5f6fa;
+}
+
+.rmi-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rmi-points {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+@media (max-width: 575px) {
+  .rmi-points {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rmi-points > div {
+  background: #fff;
+  border: 1px solid #e5e9f2;
+  border-radius: 0.4rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.rmi-points span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #8094ae;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
+}
+
+.rmi-points strong {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #364a63;
+  line-height: 1.2;
+}
+
+.rmi-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+@media (max-width: 991px) {
+  .rmi-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rmi-card,
+.rmi-panel {
+  background: #fff;
+  border: 1px solid #e5e9f2;
+  border-radius: 0.4rem;
+  padding: 0.85rem 1rem;
+}
+
+.rmi-card-title,
+.rmi-panel__head h6 {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #364a63;
+}
+
+.rmi-card-title {
+  margin-bottom: 0.65rem;
+}
+
+.rmi-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.rmi-chart-card {
+  min-height: 380px;
+}
+
+.rmi-chart-box {
+  position: relative;
+  height: 320px;
+}
+
+.rmi-chart-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8094ae;
+  font-size: 0.8125rem;
+}
+
+.rmi-main {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.25fr);
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+.rmi-main > .rmi-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.rmi-main > .rmi-panel .rmi-form,
+.rmi-main > .rmi-panel .rmi-table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 991px) {
+  .rmi-main {
+    grid-template-columns: 1fr;
+  }
+
+  .rmi-main > .rmi-panel {
+    height: auto;
+  }
+}
+
+.rmi-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 0.65rem;
+}
+
+.rmi-field--full {
+  grid-column: 1 / -1;
+}
+
+.rmi-field label {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #8094ae;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rmi-field .form-control,
+.rmi-field .form-control:focus {
+  font-size: 0.8125rem;
+}
+
+.rmi-field .form-control[readonly] {
+  background: #f8f9fc;
+  color: #526484;
+}
+
+.rmi-gender {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  min-height: 32px;
+  font-size: 0.8125rem;
+  color: #364a63;
+}
+
+.rmi-gender label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: #364a63;
+  cursor: pointer;
+}
+
+.rmi-table-scroll {
+  max-height: none;
+  overflow: auto;
+}
+
+.rmi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.rmi-table th,
+.rmi-table td {
+  padding: 0.4rem 0.45rem;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.rmi-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8f9fc;
+  color: #8094ae;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+}
+
+.rmi-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rmi-table .ctr {
+  text-align: center;
+  color: #8094ae;
+}
+
+.rmi-page .rrd-msg.ok {
+  color: #364a63;
+  background: #f5f6fa;
+  border: 1px solid #e5e9f2;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+}
+
+.rmi-page a.btn.btn-outline-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}

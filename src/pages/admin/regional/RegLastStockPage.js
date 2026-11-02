@@ -72,9 +72,23 @@ const RegLastStockPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [detailLimit, setDetailLimit] = useState(RENDER_STEP);
+  const [wide, setWide] = useState(false);
 
+  const wrapRef = useRef(null);
   const totalTableRef = useRef(null);
   const detailTableRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   useEffect(() => {
     regionalLookupOptions("brand").then((opts) => setBrandOpts(noAll(opts)));
@@ -220,13 +234,14 @@ const RegLastStockPage = () => {
     () => filteredDetail.slice(0, detailLimit),
     [filteredDetail, detailLimit]
   );
-  const scrollRevision = `${loading ? "loading" : "ready"}-${totalRows.length}-${filteredDetail.length}-${articleDraft}-${error || "ok"}`;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${totalRows.length}-${filteredDetail.length}-${articleDraft}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_LAST_STOCK">
       <Head title="Last Stock" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll riv-laststock-page">
+          <div ref={wrapRef} className={wide ? "is-wide" : undefined}>
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
@@ -248,7 +263,7 @@ const RegLastStockPage = () => {
                     <Icon name="menu-alt-r" />
                   </Button>
                   <div className="toggle-expand-content" style={{ display: sm ? "block" : undefined }}>
-                    <ul className="nk-block-tools g-3 riv-laststock-filters">
+                    <ul className="nk-block-tools g-3 riv-laststock-filters align-items-center">
                       <li className="hrd-filter-select">
                         <RSelect
                           className="hrd-filter-rselect"
@@ -315,6 +330,18 @@ const RegLastStockPage = () => {
                         >
                           Filter
                         </Button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          className={`btn btn-icon btn-trigger${wide ? " active" : ""}`}
+                          title={wide ? "Lebar normal" : "Lebar penuh"}
+                          aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                          aria-pressed={wide}
+                          onClick={() => setWide((w) => !w)}
+                        >
+                          <Icon name={wide ? "minimize" : "maximize"} />
+                        </button>
                       </li>
                     </ul>
                   </div>
@@ -590,6 +617,7 @@ const RegLastStockPage = () => {
               ) : null}
             </div>
           </Block>
+          </div>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

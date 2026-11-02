@@ -65,7 +65,7 @@ function scrollParentOf(table) {
  * Locomotive-safe sticky thead — clones full multi-row thead into a fixed portal.
  * Syncs horizontal scroll when table sits in overflow-x wrap (Tr SO, etc.).
  */
-export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv-table" }) {
+export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv-table", interactive = false }) {
   const { native, subscribe } = usePageSmoothScroll();
   const rootRef = useRef(null);
   const tableCloneRef = useRef(null);
@@ -113,6 +113,7 @@ export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv
       if (!shouldStick) {
         if (visibleRef.current) {
           root.style.visibility = "hidden";
+          root.style.pointerEvents = "none";
           visibleRef.current = false;
         }
         return;
@@ -124,9 +125,14 @@ export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv
         cloneThead.innerHTML = nextHtml;
       }
 
+      /* Drop leftover colgroup on the live table (older sticky sync). */
+      const liveCg = table.querySelector(":scope > colgroup");
+      if (liveCg) liveCg.remove();
+
       const widths = measureColWidths(table, thead);
+      /* Only size the clone — writing colgroup into the live table breaks
+         multi-row colspan headers (Tr SO) when the page goes full-width. */
       applyColgroup(cloneTable, widths);
-      applyColgroup(table, widths);
 
       const visibleWidth = Math.round(wrapRect.width);
       const fullWidth = Math.round(tableRect.width);
@@ -134,13 +140,30 @@ export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv
       root.style.top = `${topPad}px`;
       root.style.left = `${Math.round(wrapRect.left)}px`;
       root.style.width = `${visibleWidth}px`;
+      /* scrollLeft (not transform) so sticky left/right pin cols stay frozen */
       root.style.overflow = "hidden";
       root.style.visibility = "visible";
+      root.style.pointerEvents = interactive ? "auto" : "none";
 
       cloneTable.style.width = `${fullWidth}px`;
       cloneTable.style.minWidth = `${fullWidth}px`;
-      cloneTable.style.transform = scrollLeft ? `translateX(${-Math.round(scrollLeft)}px)` : "";
+      cloneTable.style.transform = "";
       cloneTable.style.margin = "0";
+
+      const pinNoW = widths[0];
+      if (wrap && pinNoW != null) {
+        wrap.style.setProperty("--riv-trso-pin-so-left", `${pinNoW}px`);
+      }
+      const pinNo = cloneThead.querySelector(".riv-trso-pin-no");
+      const pinSo = cloneThead.querySelector(".riv-trso-pin-so");
+      if (pinNo) {
+        pinNo.style.left = "0px";
+        if (pinSo && pinNoW != null) pinSo.style.left = `${pinNoW}px`;
+      }
+
+      if (Math.round(root.scrollLeft) !== Math.round(scrollLeft)) {
+        root.scrollLeft = scrollLeft;
+      }
 
       visibleRef.current = true;
     };
@@ -169,7 +192,19 @@ export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv
       unsub();
       ro?.disconnect();
     };
-  }, [enabled, native, subscribe, tableRef]);
+  }, [enabled, interactive, native, subscribe, tableRef]);
+
+  /* Clone is static HTML — forward clicks to the matching live th (e.g. sort headers). */
+  const onCloneClick = (ev) => {
+    if (!interactive) return;
+    const th = ev.target.closest("th");
+    const cloneThead = theadCloneRef.current;
+    const liveThead = tableRef.current?.tHead;
+    if (!th || !cloneThead || !liveThead) return;
+    const idx = Array.from(cloneThead.querySelectorAll("th")).indexOf(th);
+    const liveTh = liveThead.querySelectorAll("th")[idx];
+    if (liveTh) liveTh.click();
+  };
 
   if (typeof document === "undefined") return null;
 
@@ -179,6 +214,7 @@ export function RivStickyThead({ tableRef, enabled = true, tableClassName = "riv
       className="riv-sticky-clone"
       style={{ visibility: "hidden", top: 0, left: 0, width: 0 }}
       aria-hidden="true"
+      onClick={onCloneClick}
     >
       <table ref={tableCloneRef} className={`${tableClassName} riv-sticky-clone__table`}>
         <thead ref={theadCloneRef} />

@@ -89,11 +89,13 @@ const cell = (r, ...keys) => {
 
 const RegTrSoPartialPage = () => {
   const tableRef = useRef(null);
+  const wrapRef = useRef(null);
   const [sm, setSm] = useState(false);
   const [brandId, setBrandId] = useState("");
   const [storeId, setStoreId] = useState("");
   const [fromDate, setFromDate] = useState(monthStartYmd());
   const [toDate, setToDate] = useState(todayYmd());
+  const [wide, setWide] = useState(false);
 
   const [brandOpts, setBrandOpts] = useState([ALL_OPT]);
   const [storeOpts, setStoreOpts] = useState([ALL_OPT]);
@@ -113,6 +115,18 @@ const RegTrSoPartialPage = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
   const detailTableRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   useEffect(() => {
     regionalLookupOptions("brand").then((opts) => {
@@ -269,13 +283,14 @@ const RegTrSoPartialPage = () => {
     return { qa, ha, pa, tha, tpa, qr, hr, pr, thr, tpr, qs, ths, tps };
   }, [modalItems]);
 
-  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${error || "ok"}`;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_TR_SO_PARTIAL">
       <Head title="Tr So Partial" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+          <div ref={wrapRef} className={`riv-trso-page${wide ? " is-wide" : ""}`}>
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
@@ -349,6 +364,18 @@ const RegTrSoPartialPage = () => {
                           aria-label="Load"
                         >
                           <Icon pack="premium" name="pencarian" size={32} />
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          className={`btn btn-icon btn-trigger${wide ? " active" : ""}`}
+                          title={wide ? "Lebar normal" : "Lebar penuh"}
+                          aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                          aria-pressed={wide}
+                          onClick={() => setWide((w) => !w)}
+                        >
+                          <Icon name={wide ? "minimize" : "maximize"} />
                         </button>
                       </li>
                     </ul>
@@ -531,6 +558,7 @@ const RegTrSoPartialPage = () => {
               </div>
             ) : null}
           </Block>
+          </div>
         </PageSmoothScroll>
 
         <Modal

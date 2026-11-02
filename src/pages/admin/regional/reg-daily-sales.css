@@ -1,4 +1,40 @@
 /* REG2 Daily Sales Summary - legacy Daily_s_sales.aspx */
+
+/* Full-width toggle — unlock DashLite .wide-xl (1240px) */
+.nk-content .container-xl.wide-xl {
+  transition: max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nk-content .container-xl.wide-xl.reg-ar-container-wide {
+  max-width: 100% !important;
+}
+
+.rds-wide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #dbdfea;
+  background: #fff;
+  color: #526484;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.rds-wide-btn:hover,
+.rds-wide-btn.is-on {
+  color: #0f2e57;
+  border-color: #0f2e57;
+  background: #eef2f8;
+}
+
+.rds-wide-btn .icon {
+  font-size: 1.15rem;
+}
+
 .rsa-card .rsa-filter--action {
   flex: 0 0 auto;
 }
@@ -26,8 +62,10 @@
 }
 
 .rds-table-wrap {
-  max-height: 68vh;
-  overflow: auto;
+  /* page scroll only — no nested vertical scrollbar */
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
   border: 1px solid #e5e9f2;
   border-radius: 4px;
 }
@@ -49,21 +87,40 @@
 }
 
 .rds-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 3;
+  /* sticky via RivStickyThead portal when PageSmoothScroll is used */
+  position: relative;
+  z-index: 1;
   background: #f5f6fa;
   font-weight: 600;
   text-align: left;
 }
 
 .rds-table tfoot td {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   background: #f5f6fa;
   font-weight: 700;
   border-top: 2px solid #dbdfea;
+}
+
+.riv-sticky-clone__table.rds-table {
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  background: #f5f6fa;
+}
+
+.riv-sticky-clone__table.rds-table thead th {
+  background: #f5f6fa !important;
+  font-weight: 600;
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e9f2;
+  color: #364a63;
+}
+
+.riv-sticky-clone__table.rds-table thead th.num {
+  text-align: right;
 }
 
 .rds-table th.num,

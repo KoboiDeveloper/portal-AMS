@@ -163,19 +163,19 @@ const RegSoAdjPage = () => {
 
   return (
     <AccessGuard moduleCode="REG_RPT_SO_ADJ">
-      <Head title="So Adjustment" />
+      <Head title="Stock Opname Adjustment" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
                 <BlockTitle page tag="h3">
-                  So Adjustment
+                  Stock Opname Adjustment
                 </BlockTitle>
                 <BlockDes className="text-soft">
                   {view
                     ? `You have total ${rows.length} rows · view ${String(view.viewMode).toUpperCase()}`
-                    : "Isi filter lalu klik Cari untuk memuat data"}
+                    : "Filter: Brand, Store, View (PLU/CLASS), Date Range"}
                 </BlockDes>
               </BlockHeadContent>
               <BlockHeadContent>
@@ -219,6 +219,7 @@ const RegSoAdjPage = () => {
                           options={VIEW_OPTS}
                           value={VIEW_OPTS.find((o) => o.value === viewMode) || VIEW_OPTS[0]}
                           onChange={(opt) => setViewMode(opt?.value || "plu")}
+                          placeholder="View"
                         />
                       </li>
                       <li className="hrd-filter-daterange">

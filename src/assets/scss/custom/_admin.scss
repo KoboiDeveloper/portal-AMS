@@ -2589,7 +2589,75 @@ $admin-filter-h: 32px;
 }
 
 .app-daterange-calendars {
-  padding: 0.35rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.45rem 0.55rem 0.55rem;
+}
+
+.app-daterange-calendars.is-single {
+  justify-content: center;
+}
+
+.app-daterange-cal {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.app-daterange-cal-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8094ae;
+  padding: 0.1rem 0.35rem 0.25rem;
+}
+
+.app-daterange-cal .react-datepicker {
+  border: 0;
+  background: transparent;
+}
+
+.app-daterange-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.25rem 0.15rem 0.45rem;
+}
+
+.app-daterange-header-selects {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.app-daterange-nav {
+  flex: 0 0 1.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid #d5deea;
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #f1f5f9;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
 }
 
 @include media-breakpoint-down(md) {
@@ -2603,6 +2671,11 @@ $admin-filter-h: 32px;
     min-width: 0;
     border-right: 0;
     border-bottom: 1px solid #e5e9f0;
+  }
+
+  .app-daterange-calendars {
+    flex-direction: column;
+    align-items: center;
   }
 }
 
@@ -2631,6 +2704,16 @@ $admin-filter-h: 32px;
   color: #152033;
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.app-daterange-header .react-datepicker__month-select {
+  min-width: 6.25rem;
+  max-width: 7.5rem;
+}
+
+.app-daterange-header .react-datepicker__year-select {
+  min-width: 4.5rem;
+  max-width: 5.25rem;
 }
 
 #sales-datepicker-portal,

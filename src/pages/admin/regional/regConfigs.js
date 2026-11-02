@@ -201,45 +201,28 @@ export const regAbsenList = cfg({
 ],
 });
 
-export const regPluScan = cfg({
-  title: "Scan Plu",
-  moduleCode: "REG_PLU_SCAN",
-  path: "util/scan-plu",
+/* Slip Setoran Bank → custom page RegSlipDcrPage (table + sorting) */
+
+/* Custom page: RegCekSetoranPage — rekonsiliasireg.aspx (Brand + Date) */
+export const regCekSetoran = cfg({
+  title: "Cek Setoran",
+  moduleCode: "REG_RPT_CEK_SETORAN",
+  path: "office/cek-setoran",
   crud: false,
   hideSearch: true,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "TGL", label: "BATCH", size: "sm" },
+    { key: "STORE_ID", label: "STORE", size: "lg" },
+    { key: "PU", label: "AMOUNT POS", size: "sm", align: "right" },
+    { key: "TRX_AMOUNT", label: "VA", size: "sm", align: "right" },
+    { key: "STATUS_PEMBAYARAN", label: "STATUS", size: "md" },
+  ],
   filterDefs: [
-  {
-    "name": "plu",
-    "label": "PLU",
-    "type": "text"
-  }
-],
+    { name: "id_brand", label: "Brand", type: "select", lookupKey: "brand" },
+    { name: "from_date", label: "From", type: "date" },
+    { name: "to_date", label: "To", type: "date" },
+  ],
 });
-
-/* Slip Setoran Bank → custom page RegSlipDcrPage (table + sorting) */
 
 export const regArList = cfg({
   title: "Ar List",
@@ -1065,114 +1048,65 @@ export const regRptTrSo = cfg({
 ],
 });
 
+/* Custom page: RegSoDiffPage — Rpt_SO_Selisih.aspx parity (Brand/Store/View/Date) */
 export const regRptSoDiff = cfg({
   title: "So Different",
   moduleCode: "REG_RPT_SO_DIFF",
   path: "rpt/so/so-diff",
   crud: false,
-  hideSearch: false,
+  hideSearch: true,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "NO_TR_SO_HEADER", label: "SO.NUMBER", size: "md" },
+    { key: "STATUS", label: "STATUS", size: "sm" },
+    { key: "STORE_ID_KIRIM", label: "FROM", size: "sm" },
+    { key: "STORE_ID_TERIMA", label: "TO", size: "sm" },
+    { key: "PLU", label: "PLU", size: "md" },
+    { key: "QTY", label: "QTY", size: "sm", align: "right" },
+    { key: "HPP", label: "HPP", size: "sm", align: "right" },
+    { key: "PRICE", label: "PRICE", size: "sm", align: "right" },
+    { key: "TOTAL_HPP", label: "TOTAL HPP", size: "sm", align: "right" },
+    { key: "TOTAL_PRICE", label: "TOTAL PRICE", size: "sm", align: "right" },
+    { key: "TGL_REAL", label: "REALIZATION DATE", size: "md" },
+  ],
   filterDefs: [
-  {
-    "name": "id_brand",
-    "label": "Brand",
-    "type": "select",
-    "lookupKey": "brand"
-  },
-  {
-    "name": "id_store",
-    "label": "Store",
-    "type": "select",
-    "lookupKey": "store"
-  },
-  {
-    "name": "from_date",
-    "label": "From",
-    "type": "date"
-  },
-  {
-    "name": "to_date",
-    "label": "To",
-    "type": "date"
-  }
-],
+    { name: "id_brand", label: "Brand", type: "select", lookupKey: "brand" },
+    { name: "id_store", label: "Store", type: "select", lookupKey: "store" },
+    { name: "tipe", label: "View", type: "select", options: [
+      { value: "plu", label: "PLU" },
+      { value: "class", label: "CLASS" },
+    ]},
+    { name: "from_date", label: "From", type: "date" },
+    { name: "to_date", label: "To", type: "date" },
+  ],
 });
 
+/* Custom page: RegSoAdjPage — Rpt_SO_Adjusment.aspx parity (Brand/Store/View/Date) */
 export const regRptSoAdj = cfg({
-  title: "So Adjustment",
+  title: "Stock Opname Adjustment",
   moduleCode: "REG_RPT_SO_ADJ",
   path: "rpt/so/so-adj",
   crud: false,
-  hideSearch: false,
+  hideSearch: true,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "STORE_ID", label: "STORE", size: "sm" },
+    { key: "PLU", label: "PLU", size: "md" },
+    { key: "QTY", label: "QTY", size: "sm", align: "right" },
+    { key: "HPP", label: "HPP", size: "sm", align: "right" },
+    { key: "PRICE", label: "PRICE", size: "sm", align: "right" },
+    { key: "TOTAL_HPP", label: "TOTAL HPP", size: "sm", align: "right" },
+    { key: "TOTAL_PRICE", label: "TOTAL PRICE", size: "sm", align: "right" },
+    { key: "TGL_ADJUST", label: "ADJUSMENT DATE", size: "md" },
+  ],
   filterDefs: [
-  {
-    "name": "id_brand",
-    "label": "Brand",
-    "type": "select",
-    "lookupKey": "brand"
-  },
-  {
-    "name": "id_store",
-    "label": "Store",
-    "type": "select",
-    "lookupKey": "store"
-  },
-  {
-    "name": "from_date",
-    "label": "From",
-    "type": "date"
-  },
-  {
-    "name": "to_date",
-    "label": "To",
-    "type": "date"
-  }
-],
+    { name: "id_brand", label: "Brand", type: "select", lookupKey: "brand" },
+    { name: "id_store", label: "Store", type: "select", lookupKey: "store" },
+    { name: "tipe", label: "View", type: "select", options: [
+      { value: "plu", label: "PLU" },
+      { value: "class", label: "CLASS" },
+    ]},
+    { name: "from_date", label: "From", type: "date" },
+    { name: "to_date", label: "To", type: "date" },
+  ],
 });
 
 export const regRptTrSoPartial = cfg({
@@ -1230,59 +1164,32 @@ export const regRptTrSoPartial = cfg({
 ],
 });
 
+/* Custom page: RegSoDiffPartialPage — Rpt_SO_Selisih_Partial_reg.aspx parity (Brand/Store/Date) */
 export const regRptSoDiffPartial = cfg({
   title: "So Different Partial",
   moduleCode: "REG_RPT_SO_DIFF_PARTIAL",
   path: "rpt/so/so-diff-partial",
   crud: false,
-  hideSearch: false,
+  hideSearch: true,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "NO_TR_SO_HEADER", label: "SO.NUMBER", size: "md" },
+    { key: "STATUS", label: "STATUS", size: "sm" },
+    { key: "STORE_ID_KIRIM", label: "FROM", size: "sm" },
+    { key: "STORE_ID_TERIMA", label: "TO", size: "sm" },
+    { key: "PLU", label: "PLU", size: "md" },
+    { key: "QTY", label: "QTY", size: "sm", align: "right" },
+    { key: "HPP", label: "HPP", size: "sm", align: "right" },
+    { key: "PRICE", label: "PRICE", size: "sm", align: "right" },
+    { key: "TOTAL_HPP", label: "TOTAL HPP", size: "sm", align: "right" },
+    { key: "TOTAL_PRICE", label: "TOTAL PRICE", size: "sm", align: "right" },
+    { key: "TGL_REAL", label: "REALIZATION DATE", size: "md" },
+  ],
   filterDefs: [
-  {
-    "name": "id_brand",
-    "label": "Brand",
-    "type": "select",
-    "lookupKey": "brand"
-  },
-  {
-    "name": "id_store",
-    "label": "Store",
-    "type": "select",
-    "lookupKey": "store"
-  },
-  {
-    "name": "from_date",
-    "label": "From",
-    "type": "date"
-  },
-  {
-    "name": "to_date",
-    "label": "To",
-    "type": "date"
-  }
-],
+    { name: "id_brand", label: "Brand", type: "select", lookupKey: "brand" },
+    { name: "id_store", label: "Store", type: "select", lookupKey: "store" },
+    { name: "from_date", label: "From", type: "date" },
+    { name: "to_date", label: "To", type: "date" },
+  ],
 });
 
 export const regRptSoAdjPartial = cfg({
@@ -1642,6 +1549,7 @@ export const regRptOmniOrder = cfg({
 ],
 });
 
+/** Custom page: RegMemberListPage (module/rpt/member.aspx parity) */
 export const regRptMember = cfg({
   title: "Member",
   moduleCode: "REG_RPT_MEMBER",
@@ -1649,66 +1557,27 @@ export const regRptMember = cfg({
   crud: false,
   hideSearch: false,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "member_id", label: "Member ID", size: "md" },
+    { key: "name", label: "Name", size: "lg" },
+    { key: "provinsi", label: "Provinsi", size: "md" },
+    { key: "kota", label: "Kota", size: "md" },
+    { key: "total_point", label: "Total Point", size: "sm" },
+    { key: "point_used", label: "Point Used", size: "sm" },
+    { key: "join_date", label: "Join Date", size: "md" },
+    { key: "tier", label: "Tier", size: "sm" },
+    { key: "total_transaction", label: "Total Transaction", size: "sm" },
+    { key: "age", label: "Age", size: "sm" },
+    { key: "gender", label: "Gender", size: "sm" },
+  ],
   filterDefs: [
-  {
-    "name": "id_brand",
-    "label": "Brand",
-    "type": "select",
-    "lookupKey": "brand"
-  },
-  {
-    "name": "provinsi",
-    "label": "Provinsi",
-    "type": "text"
-  },
-  {
-    "name": "kota",
-    "label": "Kota",
-    "type": "text"
-  },
-  {
-    "name": "from_date",
-    "label": "From",
-    "type": "date"
-  },
-  {
-    "name": "to_date",
-    "label": "To",
-    "type": "date"
-  },
-  {
-    "name": "id_member",
-    "label": "Member ID",
-    "type": "text"
-  },
-  {
-    "name": "keywords",
-    "label": "Search",
-    "type": "text"
-  }
-],
+    { name: "from_date", label: "From", type: "date" },
+    { name: "to_date", label: "To", type: "date" },
+    { name: "provinsi", label: "Provinsi", type: "text" },
+    { name: "kota", label: "Kota", type: "text" },
+    { name: "brand", label: "Brand", type: "text" },
+    { name: "jenis_kelamin", label: "Gender", type: "text" },
+    { name: "keywords", label: "Search", type: "text" },
+  ],
 });
 
 export const regRptMemberInfo = cfg({
@@ -1749,175 +1618,84 @@ export const regRptMemberInfo = cfg({
 ],
 });
 
-export const regScanSelisih = cfg({
-  title: "Tools Scan Selisih",
-  moduleCode: "REG_SCAN_SELISIH",
-  path: "util/scan-selisih",
-  crud: true,
-  hideSearch: false,
-  columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
-  filterDefs: [
-  {
-    "name": "plu",
-    "label": "PLU",
-    "type": "text"
-  },
-  {
-    "name": "id_store",
-    "label": "Store",
-    "type": "select",
-    "lookupKey": "store"
-  }
-],
-});
-
-export const regAdjSoPartial = cfg({
-  title: "Adj So Parsial",
-  moduleCode: "REG_TOOLS_ADJ_SO",
-  path: "util/adj-so-partial",
-  crud: true,
-  hideSearch: false,
-  columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
-  filterDefs: [
-  {
-    "name": "status",
-    "label": "Status",
-    "type": "text"
-  }
-],
-});
-
+/* Custom page: RegGroupHeadPage — MasterGH.aspx + masterlookup.aspx */
 export const regGroupHead = cfg({
   title: "Group Head",
   moduleCode: "REG_TOOLS_GH",
   path: "util/group-head",
   crud: true,
-  hideSearch: false,
+  hideSearch: true,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
-  filterDefs: [
-  {
-    "name": "keywords",
-    "label": "Search",
-    "type": "text"
-  }
-],
+    { key: "nama", label: "NAMA", size: "lg" },
+    { key: "id_gh", label: "CODE", size: "md" },
+    { key: "kategori_label", label: "TIPE", size: "md" },
+    { key: "status", label: "STATUS", size: "sm", type: "badge" },
+  ],
+  filterDefs: [{ name: "keywords", label: "Search", type: "text" }],
 });
 
+/* Custom page: RegPassSoPage — PassSO.aspx + PassSO_info.aspx */
+export const regPassSo = cfg({
+  title: "Password SO",
+  moduleCode: "REG_TOOLS_PASS_SO",
+  path: "util/pass-so",
+  crud: true,
+  hideSearch: false,
+  columns: [
+    { key: "tipe_so", label: "TIPE SO", size: "md" },
+    { key: "keterangan", label: "KETERANGAN", size: "lg" },
+    { key: "tgl_so", label: "TANGGAL SO", size: "md" },
+  ],
+  fields: [
+    { name: "tipe_so", label: "Tipe SO", type: "select", options: [
+      { value: "NASIONAL", label: "SO NASIONAL" },
+      { value: "PARSIAL", label: "SO PARSIAL" },
+    ]},
+    { name: "tgl_so", label: "Tanggal SO", type: "date" },
+    { name: "keterangan", label: "Keterangan", type: "textarea" },
+    { name: "class", label: "Class", type: "text" },
+  ],
+  filterDefs: [
+    { name: "keywords", label: "Search", type: "text" },
+    { name: "status", label: "Status", type: "select", options: [
+      { value: "ALL", label: "ALL" },
+      { value: "NASIONAL", label: "SO NASIONAL" },
+      { value: "PARSIAL", label: "SO PARSIAL" },
+    ]},
+    { name: "from_date", label: "From", type: "date" },
+    { name: "to_date", label: "To", type: "date" },
+  ],
+});
+
+/* Custom page: RegStoreListPage — STORE_ACTIVE.aspx (Brand/Status + inline toggle) */
 export const regStoreList = cfg({
   title: "Store List",
   moduleCode: "REG_TOOLS_STORE",
   path: "util/store-list",
   crud: false,
-  hideSearch: false,
+  hideSearch: true,
   columns: [
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "kota",
-    "label": "Kota",
-    "size": "md"
-  },
-  {
-    "key": "pulau",
-    "label": "Pulau",
-    "size": "md"
-  },
-  {
-    "key": "is_active",
-    "label": "Active",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "store_desc", label: "STORE", size: "lg" },
+    { key: "brand_id", label: "Brand", size: "md" },
+    { key: "status", label: "STATUS", size: "sm" },
+  ],
   filterDefs: [
-  {
-    "name": "keywords",
-    "label": "Search",
-    "type": "text"
-  },
-  {
-    "name": "id_brand",
-    "label": "Brand",
-    "type": "select",
-    "lookupKey": "brand"
-  }
-],
+    { name: "id_brand", label: "Brand", type: "select", lookupKey: "brand" },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { value: "ALL", label: "ALL" },
+        { value: "AKTIF", label: "AKTIF" },
+        { value: "TIDAK AKTIF", label: "TIDAK AKTIF" },
+      ],
+    },
+    { name: "keywords", label: "Search", type: "text" },
+  ],
 });
 
+/* Custom page: RegPrintOutstandingPage — InvStockOut.aspx (Detail + Summary, no filters) */
 export const regPrintOutstanding = cfg({
   title: "Outstanding Stock Print",
   moduleCode: "REG_PRINT_OUTSTANDING",
@@ -1925,28 +1703,36 @@ export const regPrintOutstanding = cfg({
   crud: false,
   hideSearch: true,
   columns: [
-  {
-    "key": "id",
-    "label": "ID",
-    "size": "sm"
-  },
-  {
-    "key": "store_id",
-    "label": "Store",
-    "size": "md"
-  },
-  {
-    "key": "brand_id",
-    "label": "Brand",
-    "size": "md"
-  },
-  {
-    "key": "status",
-    "label": "Status",
-    "size": "sm",
-    "type": "badge"
-  }
-],
+    { key: "PENGIRIM", label: "PENGIRIM", size: "sm" },
+    { key: "PENERIMA", label: "PENERIMA", size: "sm" },
+    { key: "PLU", label: "PLU", size: "md" },
+    { key: "QTY", label: "QTY", size: "sm", align: "right" },
+    { key: "HPP", label: "HPP", size: "sm", align: "right" },
+    { key: "PRICE", label: "PRICE", size: "sm", align: "right" },
+  ],
   filterDefs: [],
 });
+
+/* Custom page: RegPrintSsrPage — PrintSSRPU.aspx (Brand/Store/Date + View SSR) */
+export const regPrintSsr = cfg({
+  title: "Sales Summary Report",
+  moduleCode: "REG_PRINT_SSR",
+  path: "util/print-ssr",
+  crud: false,
+  hideSearch: true,
+  columns: [
+    { key: "CODE", label: "Code", size: "sm" },
+    { key: "DESKRIPSI", label: "Description", size: "md" },
+    { key: "QTY", label: "QTY", size: "sm", align: "right" },
+    { key: "NET_SALES", label: "Net Sales", size: "sm", align: "right" },
+    { key: "QTY_MTD", label: "QTY MTD", size: "sm", align: "right" },
+    { key: "NET_SALES_MTD", label: "Net Sales MTD", size: "sm", align: "right" },
+  ],
+  filterDefs: [
+    { name: "id_brand", label: "Brand", type: "select", lookupKey: "brand" },
+    { name: "id_store", label: "Store", type: "select", lookupKey: "store" },
+    { name: "from_date", label: "Date", type: "date" },
+  ],
+});
+
 

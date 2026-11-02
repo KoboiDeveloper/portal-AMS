@@ -235,8 +235,8 @@ import {
   RegDashboardPage,
   RegMobileTotSalesPage,
   RegAbsenListPage,
-  RegPluScanPage,
   RegSlipDcrPage,
+  RegCekSetoranPage,
   RegMpArListPage,
   RegMpArRealisasiPage,
   RegMpReturPage,
@@ -278,11 +278,12 @@ import {
   RegRptOmniOrderPage,
   RegRptMemberPage,
   RegRptMemberInfoPage,
-  RegScanSelisihPage,
-  RegToolsAdjSoPage,
+  RegAnalisaGmroiPage,
   RegToolsGhPage,
   RegToolsStorePage,
-  RegPrintOutstandingPage
+  RegPrintOutstandingPage,
+  RegPrintSsrPage,
+  RegPassSoPage,
 } from "../pages/admin/regional/pages";
 import { appPath } from "../lib/paths";
 
@@ -581,9 +582,8 @@ const Router = () => {
             <Route path="regional/rpt/sales/total-sales" element={<RegMobileTotSalesPage />} />
             <Route path="regional/mobile/total-sales" element={<RegMobileTotSalesPage />} />
             <Route path="regional/absen/list" element={<RegAbsenListPage />} />
-            <Route path="regional/util/scan-plu" element={<RegPluScanPage />} />
-            <Route path="regional/plu/scan" element={<RegPluScanPage />} />
             <Route path="regional/slip/dcr" element={<RegSlipDcrPage />} />
+            <Route path="regional/office/cek-setoran" element={<RegCekSetoranPage />} />
             <Route path="regional/mp/ar-list" element={<RegMpArListPage />} />
             <Route path="regional/mp/ar-realisasi" element={<RegMpArRealisasiPage />} />
             <Route path="regional/mp/retur" element={<RegMpReturPage />} />
@@ -625,11 +625,12 @@ const Router = () => {
             <Route path="regional/rpt/omni/order-online" element={<RegRptOmniOrderPage />} />
             <Route path="regional/rpt/member/list" element={<RegRptMemberPage />} />
             <Route path="regional/rpt/member/info" element={<RegRptMemberInfoPage />} />
-            <Route path="regional/util/scan-selisih" element={<RegScanSelisihPage />} />
-            <Route path="regional/util/adj-so-partial" element={<RegToolsAdjSoPage />} />
+            <Route path="regional/analist/dashboard/gmroi" element={<RegAnalisaGmroiPage />} />
             <Route path="regional/util/group-head" element={<RegToolsGhPage />} />
             <Route path="regional/util/store-list" element={<RegToolsStorePage />} />
             <Route path="regional/util/print-outstanding" element={<RegPrintOutstandingPage />} />
+            <Route path="regional/util/print-ssr" element={<RegPrintSsrPage />} />
+            <Route path="regional/util/pass-so" element={<RegPassSoPage />} />
           </Route>
           <Route path="dashboard" element={<Navigate to={appPath("/admin/dashboard")} replace />} />
           <Route path="profile" element={<AdminProfilePage />} />

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExcelJS from "exceljs";
 import { Modal, ModalBody } from "reactstrap";
 import Head from "../../../layout/head/Head";
@@ -15,6 +15,7 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   getRegMpArListByStore,
   getRegMpArListTotal,
@@ -25,6 +26,7 @@ import {
 } from "../../../services/regional/regional.service";
 import { extractRow, extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-mp-ar-list.css";
 import "./reg-sales-detail.css";
 
@@ -132,16 +134,6 @@ const addMonthsYmd = (ymd, delta) => {
   const dt = new Date(y, m - 1 + delta, d || 1);
   const p = (n) => String(n).padStart(2, "0");
   return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`;
-};
-
-const fmtChipRange = (from, to) => {
-  if (!from || !to) return "";
-  const fmt = (s) => {
-    const [y, m, d] = String(s).slice(0, 10).split("-");
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    return `${d} ${months[Number(m) - 1] || m} ${y}`;
-  };
-  return `${fmt(from)} - ${fmt(to)}`;
 };
 
 const TIPE_OPTS = [
@@ -296,7 +288,6 @@ const RegMpArListPage = () => {
   const [invoice, setInvoice] = useState("");
   const [reportStore, setReportStore] = useState("ALL");
   const [tipe, setTipe] = useState("tgl_sampai");
-  const [presetId, setPresetId] = useState("month");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -308,6 +299,22 @@ const RegMpArListPage = () => {
   const [modalDetail, setModalDetail] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
+  const [presetId, setPresetId] = useState("month");
+  const [wide, setWide] = useState(false);
+  const wrapRef = useRef(null);
+  const tableRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   const isStoreMode = mode === "store";
   const canSearch = Boolean(fromDate && toDate && (isStoreMode ? storeId : true));
@@ -662,16 +669,14 @@ const RegMpArListPage = () => {
     );
   };
 
-  const statusLabel = STATUS_OPTS.find((o) => o.value === status)?.label || status;
-  const channelChipLabel = channelOpt
-    ? `${channelOpt.value}${channelOpt.tiktok ? " · TikTok" : ""} · ${String(channelOpt.label).split(" - ")[1] || channelOpt.label}`
-    : channelValue;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${sortedRows.length}-${mode}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_MP_AR_LIST">
       <Head title="AR List" />
       <Content>
-        <div className="reg-ar-wrap">
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+        <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
@@ -679,6 +684,18 @@ const RegMpArListPage = () => {
                   AR List
                 </BlockTitle>
                 <BlockDes className="text-soft">{titleMeta}</BlockDes>
+              </BlockHeadContent>
+              <BlockHeadContent>
+                <button
+                  type="button"
+                  className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
+                  title={wide ? "Lebar normal" : "Lebar penuh"}
+                  aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                  aria-pressed={wide}
+                  onClick={() => setWide((w) => !w)}
+                >
+                  <Icon name={wide ? "minimize" : "maximize"} />
+                </button>
               </BlockHeadContent>
             </BlockBetween>
           </BlockHead>
@@ -809,6 +826,13 @@ const RegMpArListPage = () => {
                 <div className="reg-ar-actions">
                   <button
                     type="button"
+                    className="reg-ar-btn reg-ar-btn--ghost"
+                    onClick={resetFilters}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
                     className="reg-ar-btn reg-ar-btn--ghost reg-ar-btn--icon"
                     title="Refresh"
                     disabled={loading || !canSearch}
@@ -835,50 +859,6 @@ const RegMpArListPage = () => {
                     {loading ? "Memuat…" : "Terapkan Filter"}
                   </button>
                 </div>
-              </div>
-
-              <div className="reg-ar-chips-active">
-                <span className="reg-ar-chips-active-label">Filters aktif:</span>
-                <span className="reg-ar-tag">
-                  Channel: {channelChipLabel || "—"}
-                  {!isStoreMode && channelValue !== "ALL" ? (
-                    <button type="button" aria-label="Clear channel" onClick={() => onChannelChange({ value: "ALL" })}>
-                      ×
-                    </button>
-                  ) : null}
-                </span>
-                <span className="reg-ar-tag">
-                  Marketplace: {marketplaceValue}
-                  {!isTikTokChannel && marketplaceValue !== "ALL" ? (
-                    <button type="button" aria-label="Clear marketplace" onClick={() => setMarketplace("ALL")}>
-                      ×
-                    </button>
-                  ) : null}
-                </span>
-                <span className="reg-ar-tag">
-                  Periode: {fmtChipRange(fromDate, toDate) || "—"}
-                </span>
-                {(isStoreMode || mode !== "total") && (
-                  <span className="reg-ar-tag">
-                    Status: {statusLabel}
-                    {status !== "ALL" ? (
-                      <button type="button" aria-label="Clear status" onClick={() => setStatus("ALL")}>
-                        ×
-                      </button>
-                    ) : null}
-                  </span>
-                )}
-                {String(invoice || "").trim() ? (
-                  <span className="reg-ar-tag">
-                    Invoice: {invoice}
-                    <button type="button" aria-label="Clear invoice" onClick={() => setInvoice("")}>
-                      ×
-                    </button>
-                  </span>
-                ) : null}
-                <button type="button" className="reg-ar-reset" onClick={resetFilters}>
-                  Reset Semua
-                </button>
               </div>
             </div>
 
@@ -917,7 +897,7 @@ const RegMpArListPage = () => {
 
             {sortedRows.length > 0 && columns.length > 0 ? (
               <div className="reg-ar-table-wrap">
-                <table className="reg-ar-table">
+                <table ref={tableRef} className="reg-ar-table">
                   <thead>
                     <tr>
                       <th className="num reg-ar-no">No.</th>
@@ -1016,7 +996,15 @@ const RegMpArListPage = () => {
                 </table>
               </div>
             ) : null}
+
+            <RivStickyThead
+              tableRef={tableRef}
+              enabled={Boolean(loaded && sortedRows.length)}
+              tableClassName="reg-ar-table"
+            />
           </Block>
+        </div>
+        </PageSmoothScroll>
 
           <Modal
             isOpen={modalOpen}
@@ -1125,7 +1113,6 @@ const RegMpArListPage = () => {
               ) : null}
             </ModalBody>
           </Modal>
-        </div>
       </Content>
     </AccessGuard>
   );

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import {
@@ -13,14 +13,19 @@ import {
   RSelect,
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
-import ProjectListTable from "../../../components/admin/common/ProjectListTable";
 import ErrorState from "../../../components/admin/common/ErrorState";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   createRegionalService,
   regionalLookupOptions,
 } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
+import { RivStickyThead } from "./RivStickyThead";
+import "./reg-reg-report.css";
+import "./reg-daily-sales.css";
+import "./reg-payment-detail.css";
+import "./reg-inv-report.css";
 
 /** Legacy Seles_byM.aspx — Brand / Store / ManPower DDL / periode */
 const svc = createRegionalService("rpt/sales/sales-manpower", { crud: false });
@@ -70,7 +75,6 @@ const filterSelectStyles = {
 
 const ALL_OPT = { value: "ALL", label: "ALL" };
 const PILIH_OPT = { value: "", label: "PILIH" };
-const PAGE_SIZE = 25;
 
 const todayYmd = () => {
   const d = new Date();
@@ -84,29 +88,16 @@ const monthStartYmd = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-01`;
 };
 
-const fmtNum = (v) => Number(v || 0).toLocaleString("id-ID", { maximumFractionDigits: 0 });
+const nf0 = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 });
+const fmtNum = (v) => nf0.format(Number(v || 0));
 
 const COLUMNS = [
-  { key: "TANGGAL_TRANSAKSI", label: "TANGGAL", size: "md", sortable: true },
-  { key: "USER_NIK", label: "NIK", size: "md", sortable: true },
-  { key: "USER_NAME", label: "NAMA", size: "md", sortable: true },
-  { key: "JABATAN", label: "JABATAN", size: "md", sortable: true },
-  {
-    key: "TOTAL_QTY",
-    label: "QTY",
-    size: "sm",
-    align: "right",
-    sortable: true,
-    render: (row) => fmtNum(row.TOTAL_QTY),
-  },
-  {
-    key: "NILAI_SALES",
-    label: "NILAI SALES",
-    size: "md",
-    align: "right",
-    sortable: true,
-    render: (row) => fmtNum(row.NILAI_SALES),
-  },
+  { key: "TANGGAL_TRANSAKSI", label: "TANGGAL" },
+  { key: "USER_NIK", label: "NIK" },
+  { key: "USER_NAME", label: "NAMA" },
+  { key: "JABATAN", label: "JABATAN" },
+  { key: "TOTAL_QTY", label: "QTY", num: true },
+  { key: "NILAI_SALES", label: "NILAI SALES", num: true },
 ];
 
 const cellOf = (r, key) => {
@@ -128,7 +119,33 @@ const normalizeRow = (r, idx) => ({
   NILAI_SALES: cellOf(r, "NILAI_SALES") ?? 0,
 });
 
+const toSortable = (value) => {
+  if (value == null || value === "") return { kind: "empty", raw: "" };
+  if (typeof value === "number" && Number.isFinite(value)) return { kind: "num", raw: value };
+  const s = String(value).trim();
+  const iso = Date.parse(s.length >= 10 ? s.slice(0, 10) : s);
+  if (!Number.isNaN(iso) && /\d{4}[-/]\d{2}[-/]\d{2}/.test(s)) return { kind: "num", raw: iso };
+  const asId = s.replace(/\./g, "").replace(/,/g, "");
+  if (asId !== "" && /^-?\d+(\.\d+)?$/.test(asId)) {
+    const n = Number(asId);
+    if (Number.isFinite(n)) return { kind: "num", raw: n };
+  }
+  return { kind: "str", raw: s.toLowerCase() };
+};
+
+const compareRows = (a, b, key, direction) => {
+  const left = toSortable(a?.[key]);
+  const right = toSortable(b?.[key]);
+  let cmp = 0;
+  if (left.kind === "empty" && right.kind !== "empty") cmp = 1;
+  else if (right.kind === "empty" && left.kind !== "empty") cmp = -1;
+  else if (left.kind === "num" && right.kind === "num") cmp = left.raw - right.raw;
+  else cmp = String(left.raw).localeCompare(String(right.raw), "id", { numeric: true, sensitivity: "base" });
+  return direction === "desc" ? -cmp : cmp;
+};
+
 const RegSalesManpowerPage = () => {
+  const tableRef = useRef(null);
   const [sm, setSm] = useState(false);
   const [fromDate, setFromDate] = useState(monthStartYmd());
   const [toDate, setToDate] = useState(todayYmd());
@@ -143,7 +160,7 @@ const RegSalesManpowerPage = () => {
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: "TANGGAL_TRANSAKSI", direction: "asc" });
 
   useEffect(() => {
     regionalLookupOptions("brand").then((opts) => {
@@ -215,7 +232,6 @@ const RegSalesManpowerPage = () => {
     }
     setLoading(true);
     setError("");
-    setCurrentPage(1);
     try {
       const res = await svc.list({
         from_date: fromDate,
@@ -241,124 +257,187 @@ const RegSalesManpowerPage = () => {
     }
   }, [brandId, fromDate, nik, storeId, toDate]);
 
+  const sortedRows = useMemo(() => {
+    if (!sortConfig.key) return rows;
+    const next = [...rows];
+    next.sort((a, b) => compareRows(a, b, sortConfig.key, sortConfig.direction));
+    return next;
+  }, [rows, sortConfig]);
+
+  const handleSort = (key) => {
+    setSortConfig((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === "asc" ? "desc" : "asc" }
+        : { key, direction: "asc" }
+    );
+  };
+
+  const sortIcon = (key) => {
+    if (sortConfig.key !== key) return "unsorted";
+    return sortConfig.direction === "asc" ? "arrow-up" : "arrow-down";
+  };
+
   const nikValue = manpowerOpts.find((o) => String(o.value) === String(nik)) || PILIH_OPT;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${sortedRows.length}-${sortConfig.key}-${sortConfig.direction}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_SALES_MANPOWER">
       <Head title="Sales By Man Power" />
       <Content>
-        <BlockHead size="sm">
-          <BlockBetween>
-            <BlockHeadContent>
-              <BlockTitle page tag="h3">
-                Sales By Man Power
-              </BlockTitle>
-              <BlockDes className="text-soft">
-                {!loaded
-                  ? "Isi filter lalu klik Cari untuk memuat data"
-                  : `You have total ${rows.length} sales by man power`}
-              </BlockDes>
-            </BlockHeadContent>
-            <BlockHeadContent>
-              <div className="toggle-wrap nk-block-tools-toggle">
-                <Button
-                  className={`btn-icon btn-trigger toggle-expand me-n1 ${sm ? "active" : ""}`}
-                  onClick={() => setSm(!sm)}
-                >
-                  <Icon name="menu-alt-r" />
-                </Button>
-                <div className="toggle-expand-content" style={{ display: sm ? "block" : undefined }}>
-                  <ul className="nk-block-tools g-3 align-items-center">
-                    <li className="hrd-filter-daterange">
-                      <div className="form-control-wrap">
-                        <div className="form-icon form-icon-left">
-                          <Icon name="calendar" />
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+          <BlockHead size="sm">
+            <BlockBetween>
+              <BlockHeadContent>
+                <BlockTitle page tag="h3">
+                  Sales By Man Power
+                </BlockTitle>
+                <BlockDes className="text-soft">
+                  {!loaded
+                    ? "Isi filter lalu klik Cari untuk memuat data"
+                    : `You have total ${rows.length} sales by man power`}
+                </BlockDes>
+              </BlockHeadContent>
+              <BlockHeadContent>
+                <div className="toggle-wrap nk-block-tools-toggle">
+                  <Button
+                    className={`btn-icon btn-trigger toggle-expand me-n1 ${sm ? "active" : ""}`}
+                    onClick={() => setSm(!sm)}
+                  >
+                    <Icon name="menu-alt-r" />
+                  </Button>
+                  <div className="toggle-expand-content" style={{ display: sm ? "block" : undefined }}>
+                    <ul className="nk-block-tools g-3 align-items-center">
+                      <li className="hrd-filter-daterange">
+                        <div className="form-control-wrap">
+                          <div className="form-icon form-icon-left">
+                            <Icon name="calendar" />
+                          </div>
+                          <AppDateRangePicker
+                            startDate={fromDate}
+                            endDate={toDate}
+                            placeholder="Date Range"
+                            className="form-control form-control-sm date-picker ps-4"
+                            onChange={(f, t) => {
+                              setFromDate(f || "");
+                              setToDate(t || "");
+                            }}
+                          />
                         </div>
-                        <AppDateRangePicker
-                          startDate={fromDate}
-                          endDate={toDate}
-                          placeholder="Date Range"
-                          className="form-control form-control-sm date-picker ps-4"
-                          onChange={(f, t) => {
-                            setFromDate(f || "");
-                            setToDate(t || "");
-                          }}
+                      </li>
+                      <li className="hrd-filter-select">
+                        <RSelect
+                          className="hrd-filter-rselect"
+                          styles={filterSelectStyles}
+                          isSearchable
+                          isClearable
+                          placeholder="Brand"
+                          options={brandOpts}
+                          value={brandOpts.find((o) => String(o.value) === String(brandId)) || null}
+                          onChange={(o) => setBrandId(o?.value ?? "")}
                         />
-                      </div>
-                    </li>
-                    <li className="hrd-filter-select">
-                      <RSelect
-                        className="hrd-filter-rselect"
-                        styles={filterSelectStyles}
-                        isSearchable
-                        isClearable
-                        placeholder="Brand"
-                        options={brandOpts}
-                        value={brandOpts.find((o) => String(o.value) === String(brandId)) || null}
-                        onChange={(o) => setBrandId(o?.value ?? "")}
-                      />
-                    </li>
-                    <li className="hrd-filter-select">
-                      <RSelect
-                        className="hrd-filter-rselect"
-                        styles={filterSelectStyles}
-                        isSearchable
-                        isClearable
-                        placeholder="Store"
-                        options={storeOpts}
-                        value={storeOpts.find((o) => String(o.value) === String(storeId)) || null}
-                        onChange={(o) => setStoreId(o?.value ?? "")}
-                      />
-                    </li>
-                    <li className="hrd-filter-select">
-                      <RSelect
-                        className="hrd-filter-rselect"
-                        styles={filterSelectStyles}
-                        options={manpowerOpts}
-                        value={nikValue}
-                        onChange={(o) => setNik(o?.value != null ? String(o.value) : "")}
-                        placeholder={manpowerLoading ? "Memuat..." : "Nama / NIK"}
-                        isDisabled={!storeId || storeId === "ALL" || manpowerLoading}
-                        isSearchable
-                      />
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        className="btn btn-icon btn-trigger admin-filter-premium-btn"
-                        onClick={load}
-                        disabled={loading || !canSearch}
-                        title={canSearch ? "Load" : "Pilih filter dulu"}
-                        aria-label="Load"
-                      >
-                        <Icon pack="premium" name="pencarian" size={32} />
-                      </button>
-                    </li>
-                  </ul>
+                      </li>
+                      <li className="hrd-filter-select">
+                        <RSelect
+                          className="hrd-filter-rselect"
+                          styles={filterSelectStyles}
+                          isSearchable
+                          isClearable
+                          placeholder="Store"
+                          options={storeOpts}
+                          value={storeOpts.find((o) => String(o.value) === String(storeId)) || null}
+                          onChange={(o) => setStoreId(o?.value ?? "")}
+                        />
+                      </li>
+                      <li className="hrd-filter-select">
+                        <RSelect
+                          className="hrd-filter-rselect"
+                          styles={filterSelectStyles}
+                          options={manpowerOpts}
+                          value={nikValue}
+                          onChange={(o) => setNik(o?.value != null ? String(o.value) : "")}
+                          placeholder={manpowerLoading ? "Memuat..." : "Nama / NIK"}
+                          isDisabled={!storeId || storeId === "ALL" || manpowerLoading}
+                          isSearchable
+                        />
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-trigger admin-filter-premium-btn"
+                          onClick={load}
+                          disabled={loading || !canSearch}
+                          title={canSearch ? "Load" : "Pilih filter dulu"}
+                          aria-label="Load"
+                        >
+                          <Icon pack="premium" name="pencarian" size={32} />
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </BlockHeadContent>
+            </BlockBetween>
+          </BlockHead>
+
+          <Block>
+            {error && !loading ? (
+              <ErrorState message={error} onRetry={load} />
+            ) : null}
+            {loading ? <div className="text-soft small mb-2">Memuat data...</div> : null}
+            {!loaded && !loading && !error ? (
+              <div className="reg-rpt-empty">Data belum tersedia</div>
+            ) : null}
+            {loaded && !error && !rows.length && !loading ? (
+              <div className="reg-rpt-empty">Data belum tersedia</div>
+            ) : null}
+
+            {loaded && rows.length > 0 ? (
+              <div className="card rsa-card">
+                <div className="card-inner">
+                  <div className="rds-table-wrap mt-3">
+                    <table ref={tableRef} className="rds-table">
+                      <thead>
+                        <tr>
+                          {COLUMNS.map((c) => (
+                            <th key={c.key} className={c.num ? "num" : ""}>
+                              <button
+                                type="button"
+                                className="rpd-sort"
+                                onClick={() => handleSort(c.key)}
+                              >
+                                <span>{c.label}</span>
+                                <Icon name={sortIcon(c.key)} />
+                              </button>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedRows.map((r, i) => (
+                          <tr key={r.id || i}>
+                            {COLUMNS.map((c) => (
+                              <td key={c.key} className={c.num ? "num" : ""}>
+                                {c.num ? fmtNum(r[c.key]) : r[c.key] || "—"}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="rds-meta">
+                    <span>{rows.length} baris</span>
+                  </div>
+                  <RivStickyThead
+                    tableRef={tableRef}
+                    enabled={Boolean(loaded && sortedRows.length)}
+                    tableClassName="rds-table"
+                  />
                 </div>
               </div>
-            </BlockHeadContent>
-          </BlockBetween>
-        </BlockHead>
-
-        <Block>
-          {error && !loading ? (
-            <ErrorState message={error} onRetry={load} />
-          ) : (
-            <ProjectListTable
-              columns={COLUMNS}
-              rows={rows}
-              idField="id"
-              rowKey={(row, idx) => row.id || idx}
-              canEdit={false}
-              canDelete={false}
-              currentPage={currentPage}
-              itemPerPage={PAGE_SIZE}
-              onPageChange={setCurrentPage}
-              loading={loading}
-            />
-          )}
-        </Block>
+            ) : null}
+          </Block>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

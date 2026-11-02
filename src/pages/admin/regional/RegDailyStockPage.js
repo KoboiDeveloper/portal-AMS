@@ -22,6 +22,7 @@ import {
 import { extractRows, isSuccess } from "../../../lib/response";
 import { RivStickyThead } from "./RivStickyThead";
 import "./reg-reg-report.css";
+import "./reg-daily-sales.css";
 import "./reg-sales-detail.css";
 import "./reg-inv-report.css";
 
@@ -104,7 +105,21 @@ const RegDailyStockPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [limit, setLimit] = useState(RENDER_STEP);
+  const [wide, setWide] = useState(false);
+  const wrapRef = useRef(null);
   const tableRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   useEffect(() => {
     regionalLookupOptions("brand").then((opts) => {
@@ -186,13 +201,14 @@ const RegDailyStockPage = () => {
     return t;
   }, [rows]);
 
-  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${error || "ok"}-${view?.mode || ""}`;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${error || "ok"}-${view?.mode || ""}-${wide ? "w" : "n"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_DAILY_STOCK">
       <Head title="Daily Stock Summary" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+          <div ref={wrapRef}>
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
@@ -204,6 +220,18 @@ const RegDailyStockPage = () => {
                     ? `You have total ${rows.length} rows`
                     : "Isi filter lalu klik Filter"}
                 </BlockDes>
+              </BlockHeadContent>
+              <BlockHeadContent>
+                <button
+                  type="button"
+                  className={`btn btn-icon btn-trigger${wide ? " active" : ""}`}
+                  title={wide ? "Lebar normal" : "Lebar penuh"}
+                  aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                  aria-pressed={wide}
+                  onClick={() => setWide((w) => !w)}
+                >
+                  <Icon name={wide ? "minimize" : "maximize"} />
+                </button>
               </BlockHeadContent>
             </BlockBetween>
           </BlockHead>
@@ -422,6 +450,7 @@ const RegDailyStockPage = () => {
               </div>
             ) : null}
           </Block>
+          </div>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

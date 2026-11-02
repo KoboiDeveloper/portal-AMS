@@ -65,14 +65,6 @@ const pages = [
     ],
   },
   {
-    key: "regPluScan",
-    title: "Scan Plu",
-    code: "REG_PLU_SCAN",
-    path: "util/scan-plu",
-    filters: [fd("plu", "PLU", "text")],
-    hideSearch: true,
-  },
-  {
     key: "regSlipDcr",
     title: "Slip Setoran Bank",
     code: "REG_SLIP_DCR",
@@ -82,6 +74,14 @@ const pages = [
       fd("multi_store", "Multi Store", "text"),
       fd("keywords", "Search", "text"),
     ],
+  },
+  {
+    key: "regCekSetoran",
+    title: "Cek Setoran",
+    code: "REG_RPT_CEK_SETORAN",
+    path: "office/cek-setoran",
+    filters: [fd("id_brand", "Brand", "select", { lookupKey: "brand" }), ...brandStoreDate.slice(2)],
+    hideSearch: true,
   },
 
   // Marketplace
@@ -408,25 +408,6 @@ const pages = [
 
   // Tools
   {
-    key: "regScanSelisih",
-    title: "Tools Scan Selisih",
-    code: "REG_SCAN_SELISIH",
-    path: "util/scan-selisih",
-    crud: true,
-    filters: [
-      fd("plu", "PLU", "text"),
-      fd("id_store", "Store", "select", { lookupKey: "store" }),
-    ],
-  },
-  {
-    key: "regAdjSoPartial",
-    title: "Adj So Parsial",
-    code: "REG_TOOLS_ADJ_SO",
-    path: "util/adj-so-partial",
-    crud: true,
-    filters: [fd("status", "Status", "text")],
-  },
-  {
     key: "regGroupHead",
     title: "Group Head",
     code: "REG_TOOLS_GH",
@@ -449,11 +430,37 @@ const pages = [
     ],
   },
   {
+    key: "regPassSo",
+    title: "Password SO",
+    code: "REG_TOOLS_PASS_SO",
+    path: "util/pass-so",
+    crud: true,
+    filters: [
+      fd("keywords", "Search", "text"),
+      fd("status", "Status", "select", {
+        options: [
+          { value: "ALL", label: "ALL" },
+          { value: "NASIONAL", label: "SO NASIONAL" },
+          { value: "PARSIAL", label: "SO PARSIAL" },
+        ],
+      }),
+      ...brandStoreDate.slice(2),
+    ],
+  },
+  {
     key: "regPrintOutstanding",
     title: "Outstanding Stock Print",
     code: "REG_PRINT_OUTSTANDING",
     path: "util/print-outstanding",
     filters: [],
+    hideSearch: true,
+  },
+  {
+    key: "regPrintSsr",
+    title: "Sales Summary Report",
+    code: "REG_PRINT_SSR",
+    path: "util/print-ssr",
+    filters: brandStoreDate,
     hideSearch: true,
   },
 ];

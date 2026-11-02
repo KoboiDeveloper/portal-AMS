@@ -122,6 +122,20 @@ const RegTrSoPage = () => {
   const [limit, setLimit] = useState(RENDER_STEP);
   const [selectedId, setSelectedId] = useState("");
   const [listQuery, setListQuery] = useState("");
+  const [wide, setWide] = useState(false);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const container = wrap?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState("");
@@ -352,13 +366,14 @@ const RegTrSoPage = () => {
     return null;
   }, [modalAction, modalItems]);
 
-  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${error || "ok"}`;
+  const scrollRevision = `${loading ? "loading" : "ready"}-${rows.length}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
     <AccessGuard moduleCode="REG_RPT_TR_SO">
       <Head title="Tr So" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
+          <div ref={wrapRef} className={`riv-trso-page${wide ? " is-wide" : ""}`}>
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
@@ -432,6 +447,18 @@ const RegTrSoPage = () => {
                           aria-label="Load"
                         >
                           <Icon pack="premium" name="pencarian" size={32} />
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          className={`btn btn-icon btn-trigger${wide ? " active" : ""}`}
+                          title={wide ? "Lebar normal" : "Lebar penuh"}
+                          aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                          aria-pressed={wide}
+                          onClick={() => setWide((w) => !w)}
+                        >
+                          <Icon name={wide ? "minimize" : "maximize"} />
                         </button>
                       </li>
                     </ul>
@@ -623,6 +650,7 @@ const RegTrSoPage = () => {
               </div>
             ) : null}
           </Block>
+          </div>
         </PageSmoothScroll>
 
         <Modal

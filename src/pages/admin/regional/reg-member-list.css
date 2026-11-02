@@ -1,0 +1,242 @@
+.nk-content .container-xl.wide-xl.reg-ar-container-wide {
+  max-width: 100% !important;
+}
+
+.rml-wide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #526484;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: none;
+  transition: color 0.2s ease;
+}
+
+.rml-wide-btn:hover,
+.rml-wide-btn.is-on {
+  color: #0f2e57;
+  background: transparent;
+  border: 0;
+}
+
+.rml-wide-btn .icon {
+  font-size: 1.35rem;
+}
+
+.rml-badges {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 991px) {
+  .rml-badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rml-badge {
+  background: #fff;
+  border: 1px solid #e5e9f2;
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.rml-badge-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8094ae;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rml-badge-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #364a63;
+  line-height: 1.3;
+}
+
+.rml-badge-note {
+  font-size: 0.75rem;
+}
+
+.rml-up,
+.rml-down {
+  color: #526484;
+  font-weight: 600;
+}
+
+.rml-card {
+  background: #fff;
+  border: 1px solid #e5e9f2;
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.rml-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.rml-card-title {
+  margin: 0;
+  font-weight: 700;
+  color: #364a63;
+}
+
+.rml-card-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rml-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  margin: 0;
+  cursor: pointer;
+}
+
+.rml-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.rml-f-date,
+.rml-f-age,
+.rml-f-actions,
+.rml-f-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rml-f-meta {
+  margin-left: auto;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.rml-meta-total {
+  font-size: 0.8125rem;
+  color: #8094ae;
+  line-height: 1.2;
+}
+
+.rml-f-date.hrd-filter-daterange {
+  /* width from shared .hrd-filter-daterange (Total Sales) */
+  min-width: 0;
+}
+
+.rml-f-age input {
+  width: 78px;
+}
+
+.rml-size {
+  width: auto;
+  height: 32px;
+  min-height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.8125rem;
+}
+
+.rml-page .riv-table th.num,
+.rml-page .riv-table td.num {
+  text-align: right;
+}
+
+.rml-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.rml-sortable .icon {
+  margin-left: 0.2rem;
+  font-size: 0.7rem;
+}
+
+.rml-f-actions .rml-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #dbdfea;
+  background: #fff;
+  color: #364a63;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.25rem;
+  line-height: 1.2;
+}
+
+.rml-f-actions .rml-action-btn:hover:not(:disabled) {
+  border-color: #b7c2d0;
+  background: #f5f6fa;
+  color: #0f2e57;
+}
+
+.rml-f-actions .rml-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rml-f-actions .rml-action-btn .icon {
+  font-size: 1rem;
+}
+
+.rml-valid {
+  color: #526484;
+  font-size: 1rem;
+}
+
+.rml-logos {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.rml-logos img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.rml-side {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+}
+
+@media (max-width: 991px) {
+  .rml-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rml-pill {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  background: #eef2f8;
+  color: #526484;
+  font-size: 0.75rem;
+  font-weight: 600;
+}

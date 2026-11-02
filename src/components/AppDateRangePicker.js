@@ -21,6 +21,34 @@ const toYmd = (value) => {
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const YEAR_SPAN = 40;
+
+const buildYears = () => {
+  const now = new Date().getFullYear();
+  const from = now - YEAR_SPAN;
+  const to = now + 5;
+  const years = [];
+  for (let y = to; y >= from; y -= 1) years.push(y);
+  return years;
+};
+
+const YEARS = buildYears();
+
 const PRESETS = [
   {
     label: "Today",
@@ -76,8 +104,73 @@ const PRESETS = [
   },
 ];
 
+/** Independent month/year header (each calendar owns its own view). */
+function MonthYearHeader({
+  monthDate,
+  decreaseMonth,
+  increaseMonth,
+  prevMonthButtonDisabled,
+  nextMonthButtonDisabled,
+  changeMonth,
+  changeYear,
+  label,
+}) {
+  return (
+    <div className="app-daterange-header">
+      <button
+        type="button"
+        className="app-daterange-nav"
+        onClick={decreaseMonth}
+        disabled={prevMonthButtonDisabled}
+        aria-label={`${label} previous month`}
+      >
+        ‹
+      </button>
+      <div className="app-daterange-header-selects">
+        <select
+          className="react-datepicker__month-select"
+          value={monthDate.getMonth()}
+          aria-label={`${label} month`}
+          onChange={(e) => changeMonth(Number(e.target.value))}
+        >
+          {MONTHS.map((name, idx) => (
+            <option key={name} value={idx}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <select
+          className="react-datepicker__year-select"
+          value={monthDate.getFullYear()}
+          aria-label={`${label} year`}
+          onChange={(e) => changeYear(Number(e.target.value))}
+        >
+          {!YEARS.includes(monthDate.getFullYear()) ? (
+            <option value={monthDate.getFullYear()}>{monthDate.getFullYear()}</option>
+          ) : null}
+          {YEARS.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        type="button"
+        className="app-daterange-nav"
+        onClick={increaseMonth}
+        disabled={nextMonthButtonDisabled}
+        aria-label={`${label} next month`}
+      >
+        ›
+      </button>
+    </div>
+  );
+}
+
 /**
  * Single-input date range picker (marketing.aspx / daterangepicker style).
+ * From & To calendars navigate independently (month/year tidak saling ikut).
  * Emits YYYY-MM-DD strings via onChange(startYmd, endYmd).
  */
 export default function AppDateRangePicker({
@@ -88,18 +181,53 @@ export default function AppDateRangePicker({
   className = "form-control form-control-sm",
   disabled = false,
   isClearable = true,
-  monthsShown = 2,
+  monthsShown = 2, // kept for API compat; dual calendars always independent
   ...props
 }) {
   const start = useMemo(() => toDate(startDate), [startDate]);
   const end = useMemo(() => toDate(endDate), [endDate]);
   const [open, setOpen] = useState(false);
+  const [openSeq, setOpenSeq] = useState(0);
+  const [leftOpenTo, setLeftOpenTo] = useState(() => startOfDay(new Date()));
+  const [rightOpenTo, setRightOpenTo] = useState(() => {
+    const t = startOfDay(new Date());
+    return new Date(t.getFullYear(), t.getMonth() + 1, 1);
+  });
 
   const applyRange = (nextStart, nextEnd) => {
     onChange?.(toYmd(nextStart), toYmd(nextEnd));
   };
 
-  const CalendarContainer = ({ className: calClass, children }) => (
+  const openPicker = () => {
+    if (disabled) return;
+    const s = start || startOfDay(new Date());
+    const e =
+      end ||
+      new Date(s.getFullYear(), s.getMonth() + (start && !end ? 0 : 1), 1);
+    setLeftOpenTo(new Date(s.getFullYear(), s.getMonth(), 1));
+    setRightOpenTo(new Date(e.getFullYear(), e.getMonth(), 1));
+    setOpenSeq((n) => n + 1);
+    setOpen(true);
+  };
+
+  const handleDay = (date) => {
+    if (!date) return;
+    const d = startOfDay(date);
+    // New range / restart when both ends already set (or none)
+    if (!start || (start && end)) {
+      applyRange(d, null);
+      return;
+    }
+    // Completing range
+    if (d.getTime() < start.getTime()) {
+      applyRange(d, start);
+    } else {
+      applyRange(start, d);
+    }
+    setOpen(false);
+  };
+
+  const CalendarContainer = ({ className: calClass }) => (
     <div className={`${calClass || ""} app-daterange-popper`}>
       <div className="app-daterange-presets">
         {PRESETS.map((p) => (
@@ -117,7 +245,38 @@ export default function AppDateRangePicker({
           </button>
         ))}
       </div>
-      <div className="app-daterange-calendars">{children}</div>
+      <div className={`app-daterange-calendars${monthsShown < 2 ? " is-single" : ""}`}>
+        <div className="app-daterange-cal">
+          <div className="app-daterange-cal-label">From</div>
+          <DatePicker
+            key={`from-${openSeq}`}
+            inline
+            selected={start}
+            startDate={start}
+            endDate={end}
+            openToDate={leftOpenTo}
+            onChange={handleDay}
+            renderCustomHeader={(hp) => <MonthYearHeader {...hp} label="From" />}
+            disabledKeyboardNavigation
+          />
+        </div>
+        {monthsShown >= 2 ? (
+          <div className="app-daterange-cal">
+            <div className="app-daterange-cal-label">To</div>
+            <DatePicker
+              key={`to-${openSeq}`}
+              inline
+              selected={end}
+              startDate={start}
+              endDate={end}
+              openToDate={rightOpenTo}
+              onChange={handleDay}
+              renderCustomHeader={(hp) => <MonthYearHeader {...hp} label="To" />}
+              disabledKeyboardNavigation
+            />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 
@@ -127,20 +286,14 @@ export default function AppDateRangePicker({
       startDate={start}
       endDate={end}
       onChange={(update) => {
+        // Clear (X) on the input
         const [s, e] = update || [];
-        applyRange(s, e);
-        if (s && e) setOpen(false);
+        if (!s && !e) applyRange(null, null);
       }}
       open={open}
-      onInputClick={() => setOpen(true)}
+      onInputClick={openPicker}
       onClickOutside={() => setOpen(false)}
       shouldCloseOnSelect={false}
-      monthsShown={monthsShown}
-      showMonthDropdown
-      showYearDropdown
-      dropdownMode="select"
-      scrollableYearDropdown
-      yearDropdownItemNumber={25}
       dateFormat="dd/MM/yyyy"
       placeholderText={placeholder}
       className={className}

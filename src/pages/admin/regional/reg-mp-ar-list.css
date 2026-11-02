@@ -9,10 +9,51 @@
   --ams-line: rgba(15, 46, 87, 0.12);
   --ams-soft: #eef2f8;
   --ams-tiktok: #1a1a2e;
-  max-width: 1400px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   font-family: "Segoe UI", "DM Sans", sans-serif;
   color: var(--ams-ink);
+}
+
+/* Unlock DashLite .wide-xl (1240px) so full-width toggle is visible */
+.nk-content .container-xl.wide-xl {
+  transition: max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nk-content .container-xl.wide-xl.reg-ar-container-wide {
+  max-width: 100% !important;
+}
+
+.reg-ar-wide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--ams-hair);
+  background: #fff;
+  color: var(--ams-steel);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.reg-ar-wide-btn:hover {
+  color: var(--ams-navy);
+  border-color: var(--ams-navy);
+  background: var(--ams-soft);
+}
+
+.reg-ar-wide-btn.is-on {
+  color: var(--ams-navy);
+  border-color: var(--ams-navy);
+  background: var(--ams-soft);
+}
+
+.reg-ar-wide-btn .icon {
+  font-size: 1.15rem;
 }
 
 .reg-ar-report {
@@ -84,8 +125,27 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.reg-ar-toolbar-grid--actions-only {
+  grid-template-columns: 1fr;
+  justify-items: end;
+}
+
 .reg-ar-toolbar-grid + .reg-ar-toolbar-grid {
   margin-top: 12px;
+}
+
+.reg-ar-f-actions {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.reg-ar-f-actions .reg-ar-actions {
+  justify-content: flex-end;
+  height: 38px;
+}
+
+.reg-ar-f-actions-label {
+  user-select: none;
 }
 
 .reg-ar-f-item {
@@ -190,6 +250,28 @@
   letter-spacing: 0.02em;
 }
 
+.reg-ar-quick-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 10px;
+  padding: 4px 0 0;
+  border-bottom: 0;
+  min-height: 40px;
+}
+
+.reg-ar-record-info {
+  flex-shrink: 0;
+  margin-left: auto;
+  text-align: right;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ams-steel);
+  line-height: 32px;
+  white-space: nowrap;
+}
+
 .reg-ar-quick {
   position: relative;
   display: flex;
@@ -198,7 +280,19 @@
   margin: 0 0 10px;
   padding: 4px 0 8px;
   border-bottom: 1px solid var(--ams-hair);
-  max-width: 320px;
+  width: 280px;
+  max-width: 100%;
+}
+
+.reg-ar-quick-row .reg-ar-quick {
+  margin: 0;
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--ams-hair);
+  flex: 0 0 auto;
+}
+
+.reg-ar-quick-row .reg-ar-quick:focus-within {
+  border-bottom-color: var(--ams-navy);
 }
 
 .reg-ar-quick-ico {
@@ -282,8 +376,8 @@
   white-space: normal !important;
   word-break: break-word;
   overflow-wrap: anywhere;
-  max-width: 320px;
-  min-width: 160px;
+  max-width: 220px;
+  min-width: 140px;
   line-height: 1.4;
 }
 
@@ -452,21 +546,27 @@
 .reg-ar-table-wrap {
   background: #fff;
   border: 1px solid var(--ams-hair);
-  overflow: auto;
-  max-height: min(70vh, 720px);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
 .reg-ar-table {
-  width: 100%;
-  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
   font-size: 0.8125rem;
   white-space: nowrap;
 }
 
 .reg-ar-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  /* sticky via RivStickyThead portal — CSS sticky breaks under page smooth scroll */
+  position: relative;
+  z-index: 1;
   background: var(--ams-navy);
   color: #fff;
   font-weight: 600;
@@ -478,6 +578,83 @@
   border-bottom: 1px solid #0a2345;
   cursor: pointer;
   user-select: none;
+}
+
+/* Sticky clone base (portal) — needed when reg-inv-report.css not loaded */
+.riv-sticky-clone {
+  position: fixed;
+  z-index: 1040;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: top, left, width;
+}
+
+.riv-sticky-clone:has(.reg-ar-table) {
+  background: #0f2e57;
+  box-shadow: 0 2px 8px rgba(15, 46, 87, 0.18);
+}
+
+.riv-sticky-clone__table.reg-ar-table {
+  margin: 0;
+  background: #0f2e57;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.riv-sticky-clone__table.reg-ar-table thead th {
+  background: #0f2e57 !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #0a2345;
+}
+
+.reg-ar-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+  padding: 8px 2px;
+}
+
+.reg-ar-pager-info {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ams-steel);
+  white-space: nowrap;
+}
+
+.reg-ar-pager-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.reg-ar-pager-btn {
+  border: 1px solid var(--ams-hair);
+  background: #fff;
+  color: var(--ams-steel);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.reg-ar-pager-btn:hover:not(:disabled) {
+  border-color: var(--ams-navy);
+  color: var(--ams-navy);
+}
+
+.reg-ar-pager-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .reg-ar-table thead th.num,
@@ -512,22 +689,15 @@
   border-top: 1px solid var(--ams-hair);
 }
 
-.reg-ar-meta {
-  text-align: right;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--ams-steel);
-  margin: 0 0 8px;
-  padding: 0 2px;
-}
-
 .reg-ar-empty {
-  padding: 28px 16px;
+  padding: 48px 16px;
   text-align: center;
+  vertical-align: middle;
   color: var(--ams-muted);
   font-size: 0.875rem;
+  font-weight: 500;
   background: #fff;
-  border: 1px solid var(--ams-hair);
+  min-height: 160px;
 }
 
 .reg-ar-sort-ico {
@@ -684,4 +854,35 @@
   .reg-ar-actions .reg-ar-btn {
     flex: 1;
   }
+}
+
+/* Sortable headers (MP Retur) � unscoped so the RivStickyThead clone matches */
+.reg-ar-table th.reg-ar-sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.reg-ar-table th.reg-ar-sortable:hover,
+.reg-ar-table th.reg-ar-sortable.is-sorted {
+  color: #6576ff;
+}
+
+.reg-ar-table th.reg-ar-sortable.num {
+  text-align: right;
+}
+
+.reg-ar-table .reg-ar-th-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.reg-ar-table .reg-ar-sort-ic {
+  font-size: 0.75rem;
+  opacity: 0.45;
+}
+
+.reg-ar-table th.is-sorted .reg-ar-sort-ic {
+  opacity: 1;
 }

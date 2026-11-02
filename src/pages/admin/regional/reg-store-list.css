@@ -1,0 +1,86 @@
+.rsl-page .rsl-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.rsl-page .riv-table--rsl {
+  width: 100%;
+  table-layout: auto;
+}
+
+.rsl-page .riv-table--rsl th,
+.rsl-page .riv-table--rsl td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.rsl-status-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid #dbdfea;
+  background: #fff;
+  color: #364a63;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  line-height: 1.3;
+}
+
+.rsl-status-btn .icon {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.rsl-status-btn.is-on {
+  border-color: #9be3c2;
+  background: #e8f9f1;
+  color: #1ee0ac;
+}
+
+.rsl-status-btn.is-off {
+  border-color: #f5bdb8;
+  background: #feeeec;
+  color: #e85347;
+}
+
+.rsl-status-btn:disabled {
+  opacity: 0.55;
+}
+
+.rsl-status-menu {
+  min-width: 150px;
+}
+
+.rsl-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.rsl-pager-info {
+  font-size: 0.75rem;
+  color: #8094ae;
+}
+
+.rsl-pager-btns {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.rsl-pager-btn {
+  border: 1px solid #dbdfea;
+  background: #fff;
+  color: #364a63;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+}
+
+.rsl-pager-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -44,6 +44,7 @@ const FOLDER_LABELS = {
   REG_COMMERCE: "Commerce",
   REG_MP: "Marketplace",
   REG_RPT: "Laporan",
+  REG_ANALIST: "Analist",
   REG_UTIL: "Utility",
   REG_GRP_MOBILE: "Mobile",
   REG_GRP_ABSEN: "Absen Store",
@@ -57,6 +58,7 @@ const FOLDER_LABELS = {
   REG_GRP_WORO: "Dr.Woro",
   REG_GRP_OMNI: "Omnichannel",
   REG_GRP_MEMBER: "Member",
+  REG_GRP_ANALIST_DASH: "Dashboard",
   REG_GRP_SCAN: "Scan Selisih Harga",
   REG_GRP_TOOLS: "Tools",
   REG_GRP_PRINT: "Print",
@@ -87,6 +89,7 @@ const FOLDER_MODULE_CODES = new Set([
   "REG_COMMERCE",
   "REG_MP",
   "REG_RPT",
+  "REG_ANALIST",
   "REG_UTIL",
   "REG_GRP_MOBILE",
   "REG_GRP_ABSEN",
@@ -100,6 +103,7 @@ const FOLDER_MODULE_CODES = new Set([
   "REG_GRP_WORO",
   "REG_GRP_OMNI",
   "REG_GRP_MEMBER",
+  "REG_GRP_ANALIST_DASH",
   "REG_GRP_SCAN",
   "REG_GRP_TOOLS",
   "REG_GRP_PRINT",
@@ -119,6 +123,7 @@ const ADMIN_FOLDER_PATHS = new Set([
   "/admin/regional/ops",
   "/admin/regional/mp",
   "/admin/regional/rpt",
+  "/admin/regional/analist",
   "/admin/regional/util",
   "/admin/regional/commerce",
 ]);
@@ -166,6 +171,7 @@ const storeNavigationFallback = () => [
 
 const guessIcon = (moduleCode = "") => {
   const code = String(moduleCode).toUpperCase();
+  if (code.includes("ANALIST") || code.includes("GMROI") || code.includes("ANALISA")) return "growth";
   if (code.includes("SALES") || code.startsWith("STORE_")) return "bag";
   if (code.includes("INVENTORY") || code.includes("STOCK")) return "box";
   if (code.includes("SETORAN") || code.includes("DCR")) return "wallet";

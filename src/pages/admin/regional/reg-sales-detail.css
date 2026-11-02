@@ -118,6 +118,42 @@
   min-width: 1100px;
 }
 
+/* page scroll only — avoid nested table scrollbar (shared .rds-table-wrap) */
+.rsd-page .rds-table-wrap {
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.rsd-page .rds-table thead th {
+  /* sticky via RivStickyThead portal */
+  position: relative;
+  top: auto;
+  z-index: 1;
+}
+
+.riv-sticky-clone__table.rds-table {
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  background: #f5f6fa;
+}
+
+.riv-sticky-clone__table.rds-table thead th {
+  background: #f5f6fa !important;
+  font-weight: 600;
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e9f2;
+  color: #364a63;
+}
+
+.riv-sticky-clone__table.rds-table thead th.num {
+  text-align: right;
+}
+
 .rsd-row-click {
   cursor: pointer;
 }
@@ -170,11 +206,46 @@
   color: #8094ae;
 }
 
-.rsd-detail-table {
-  min-width: 860px;
+.rsd-detail-body {
+  overflow-x: hidden;
 }
 
-.rsd-detail-pay-table {
-  min-width: 320px;
+.rsd-detail-modal .rds-table-wrap {
+  overflow-x: hidden;
+}
+
+.rsd-detail-modal .rds-table.rsd-detail-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.rsd-detail-modal .rsd-detail-table th,
+.rsd-detail-modal .rsd-detail-table td {
+  padding: 6px 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.rsd-detail-modal .rds-table.rsd-detail-pay-table {
+  width: 100%;
+  min-width: 0;
   max-width: 480px;
+}
+
+.rsd-detail-modal .rsd-detail-pay-table th,
+.rsd-detail-modal .rsd-detail-pay-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 991px) {
+  .rsd-detail-modal .rsd-detail-table {
+    font-size: 0.75rem;
+  }
+
+  .rsd-detail-modal .rsd-detail-table th,
+  .rsd-detail-modal .rsd-detail-table td {
+    padding: 5px 5px;
+  }
 }
