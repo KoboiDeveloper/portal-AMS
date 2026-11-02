@@ -75,6 +75,10 @@ export const getRegMpReturBadge = (params = {}) =>
 export const getLastStockBatchDate = (storeId) =>
   api.get(`/regional/rpt/inv/last-stock/${encodeURIComponent(storeId)}/batch-date`);
 
+/** Realtime Stock — list stores already in Redis cache */
+export const getRegOmniRealtimeCacheList = (params = {}) =>
+  api.get("/regional/rpt/omni/realtime-stock/cache", { params });
+
 export const regionalLookup = (type, params = {}) =>
   api.get(`/regional/lookups/${encodeURIComponent(type)}`, { params });
 

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Modal, ModalBody, ModalHeader } from "reactstrap";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import {
@@ -15,6 +16,7 @@ import AccessGuard from "../../../components/admin/AccessGuard";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
   createRegionalService,
+  getRegOmniRealtimeCacheList,
   regionalLookupOptions,
 } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
@@ -103,22 +105,71 @@ const RegOmniRealtimePage = () => {
   const [movementFrom, setMovementFrom] = useState("");
   const [sort, setSort] = useState({ key: "brand", dir: "ASC" });
   const [loaded, setLoaded] = useState(false);
+  const [cacheModalOpen, setCacheModalOpen] = useState(false);
+  const [cacheRows, setCacheRows] = useState([]);
+  const [cacheLoading, setCacheLoading] = useState(false);
+  const [cacheError, setCacheError] = useState("");
+  const [cacheBrand, setCacheBrand] = useState("");
+  const [brandOpts, setBrandOpts] = useState([{ value: "", label: "All Brand" }]);
 
   useEffect(() => {
     let cancel = false;
     (async () => {
       try {
-        const opts = await regionalLookupOptions("store_all");
+        const [stores, brands] = await Promise.all([
+          regionalLookupOptions("store_all"),
+          regionalLookupOptions("brand_all"),
+        ]);
         if (cancel) return;
-        setStoreOpts([{ value: "", label: "PILIH STORE" }, ...opts]);
+        setStoreOpts([{ value: "", label: "PILIH STORE" }, ...stores]);
+        setBrandOpts([{ value: "", label: "All Brand" }, ...brands]);
       } catch {
-        if (!cancel) setStoreOpts([{ value: "", label: "PILIH STORE" }]);
+        if (!cancel) {
+          setStoreOpts([{ value: "", label: "PILIH STORE" }]);
+          setBrandOpts([{ value: "", label: "All Brand" }]);
+        }
       }
     })();
     return () => {
       cancel = true;
     };
   }, []);
+
+  const loadCacheList = useCallback(async (brand = cacheBrand) => {
+    setCacheLoading(true);
+    setCacheError("");
+    try {
+      const res = await getRegOmniRealtimeCacheList(
+        brand ? { brand } : {}
+      );
+      if (!isSuccess(res)) {
+        setCacheRows([]);
+        setCacheError(res?.responseMessage || "Gagal memuat daftar cache");
+        return;
+      }
+      setCacheRows(extractRows(res));
+    } catch (e) {
+      setCacheRows([]);
+      setCacheError(e?.responseMessage || e?.message || "Gagal memuat daftar cache");
+    } finally {
+      setCacheLoading(false);
+    }
+  }, [cacheBrand]);
+
+  const openCacheModal = () => {
+    setCacheModalOpen(true);
+    loadCacheList(cacheBrand);
+  };
+
+  const onPickCachedStore = (sid) => {
+    const next = String(sid || "").trim();
+    if (!next) return;
+    setCacheModalOpen(false);
+    setStoreId(next);
+    setArticle("");
+    setArticleDraft("");
+    loadStore(next, { keepArticle: false, refresh: false });
+  };
 
   const loadStore = useCallback(async (sid, { keepArticle = true, refresh = false } = {}) => {
     const store = String(sid || "").trim();
@@ -316,6 +367,14 @@ const RegOmniRealtimePage = () => {
                   >
                     <Icon name="reload" /> {rebuilding ? "Rebuilding..." : "Reload"}
                   </button>
+                  <button
+                    type="button"
+                    className="btn btn-dim btn-outline-light btn-sm"
+                    onClick={openCacheModal}
+                    title="Lihat store yang sudah masuk Redis"
+                  >
+                    <Icon name="list" /> Cache Stores
+                  </button>
                 </div>
                 <div className="omni-rt-meta">
                   {sourceLabel ? <span className="omni-rt-source">{sourceLabel}</span> : null}
@@ -399,6 +458,102 @@ const RegOmniRealtimePage = () => {
               </div>
             </div>
           </Block>
+
+          <Modal
+            isOpen={cacheModalOpen}
+            toggle={() => setCacheModalOpen(false)}
+            size="lg"
+            className="omni-rt-cache-modal"
+          >
+            <ModalHeader toggle={() => setCacheModalOpen(false)}>
+              Store sudah di Redis Cache
+            </ModalHeader>
+            <ModalBody>
+              <div className="omni-rt-cache-toolbar">
+                <div className="omni-rt-cache-brand">
+                  <RSelect
+                    styles={filterSelectStyles}
+                    isSearchable
+                    options={brandOpts}
+                    value={
+                      brandOpts.find((o) => String(o.value) === String(cacheBrand)) ||
+                      brandOpts[0]
+                    }
+                    onChange={(o) => {
+                      const next = o?.value || "";
+                      setCacheBrand(next);
+                      loadCacheList(next);
+                    }}
+                    placeholder="All Brand"
+                    menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                    menuPosition="fixed"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  disabled={cacheLoading}
+                  onClick={() => loadCacheList(cacheBrand)}
+                >
+                  <Icon name="reload" /> Refresh
+                </button>
+                <span className="text-soft small">
+                  {cacheLoading ? "Memuat..." : `${cacheRows.length} store`}
+                </span>
+              </div>
+              {cacheError ? <div className="omni-rt-msg err">{cacheError}</div> : null}
+              <div className="table-responsive omni-rt-cache-table-wrap">
+                <table className="table table-sm table-hover omni-rt-table">
+                  <thead>
+                    <tr>
+                      <th>Brand</th>
+                      <th>Store</th>
+                      <th>Kota</th>
+                      <th>Closing (Z)</th>
+                      <th>Mutasi dari</th>
+                      <th>Tarikan</th>
+                      <th className="num">Rows</th>
+                      <th className="num">Qty</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {!cacheLoading && !cacheRows.length ? (
+                      <tr>
+                        <td colSpan={9} className="text-center text-soft">
+                          Belum ada store di cache Redis.
+                        </td>
+                      </tr>
+                    ) : null}
+                    {cacheRows.map((r) => {
+                      const sid = cellOf(r, "store_id");
+                      return (
+                        <tr key={sid}>
+                          <td>{cellOf(r, "brand") || "—"}</td>
+                          <td>{sid}</td>
+                          <td>{cellOf(r, "kota") || "—"}</td>
+                          <td>{cellOf(r, "close_date") || "—"}</td>
+                          <td>{cellOf(r, "movement_from") || "—"}</td>
+                          <td>{fmtBuiltAt(cellOf(r, "built_at")) || "—"}</td>
+                          <td className="num">{fmtNum(cellOf(r, "row_count"))}</td>
+                          <td className="num">{fmtNum(cellOf(r, "total_qty"))}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn btn-dim btn-sm btn-primary"
+                              onClick={() => onPickCachedStore(sid)}
+                            >
+                              Buka
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </ModalBody>
+          </Modal>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

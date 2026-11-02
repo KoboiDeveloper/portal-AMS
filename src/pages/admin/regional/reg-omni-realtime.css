@@ -102,6 +102,24 @@
   margin-bottom: 0.1rem;
 }
 
+.omni-rt-cache-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.omni-rt-cache-brand {
+  min-width: 200px;
+  width: min(240px, 100%);
+}
+
+.omni-rt-cache-table-wrap {
+  max-height: min(60vh, 480px);
+  overflow: auto;
+}
+
 .omni-rt-table-wrap {
   padding: 0.5rem 0.75rem 1rem;
 }
