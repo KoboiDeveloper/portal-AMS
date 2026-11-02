@@ -57,6 +57,22 @@
   letter-spacing: 0.04em;
 }
 
+.omni-rt-hide-zero {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.omni-rt-hide-zero input {
+  margin: 0;
+}
+
 .omni-rt-total {
   font-size: 0.875rem;
   letter-spacing: 0.02em;
@@ -122,6 +138,13 @@
 
 .omni-rt-table-wrap {
   padding: 0.5rem 0.75rem 1rem;
+  max-height: min(70vh, 720px);
+  overflow: auto;
+}
+
+.omni-rt-table {
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .omni-rt-table th,
@@ -132,8 +155,12 @@
 }
 
 .omni-rt-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: #f3f4f6;
   font-weight: 600;
+  box-shadow: 0 1px 0 #dbdfea;
 }
 
 .omni-rt-table tbody tr:nth-child(even) {

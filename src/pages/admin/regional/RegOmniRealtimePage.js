@@ -104,6 +104,7 @@ const RegOmniRealtimePage = () => {
   const [closeDate, setCloseDate] = useState("");
   const [movementFrom, setMovementFrom] = useState("");
   const [sort, setSort] = useState({ key: "brand", dir: "ASC" });
+  const [hideStockZero, setHideStockZero] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [cacheModalOpen, setCacheModalOpen] = useState(false);
   const [cacheRows, setCacheRows] = useState([]);
@@ -276,6 +277,9 @@ const RegOmniRealtimePage = () => {
     let list = needle
       ? rows.filter((r) => String(cellOf(r, "article") || "").toUpperCase().includes(needle))
       : rows.slice();
+    if (hideStockZero) {
+      list = list.filter((r) => Number(cellOf(r, "qty") || 0) !== 0);
+    }
     const { key, dir } = sort;
     const mul = dir === "ASC" ? 1 : -1;
     list.sort((a, b) => {
@@ -287,12 +291,16 @@ const RegOmniRealtimePage = () => {
       return String(va ?? "").localeCompare(String(vb ?? ""), "id", { sensitivity: "base" }) * mul;
     });
     return list;
-  }, [rows, article, sort]);
+  }, [rows, article, sort, hideStockZero]);
+
+  const hiddenZeroCount = hideStockZero
+    ? rows.filter((r) => Number(cellOf(r, "qty") || 0) === 0).length
+    : 0;
 
   const storeValue =
     storeOpts.find((o) => String(o.value) === String(storeId)) || storeOpts[0];
 
-  const scrollRevision = `${storeId}-${loading}-${visibleRows.length}-${sort.key}-${sort.dir}-${article}-${source}`;
+  const scrollRevision = `${storeId}-${loading}-${visibleRows.length}-${sort.key}-${sort.dir}-${article}-${source}-${hideStockZero}`;
 
   const sourceLabel =
     source === "cache"
@@ -377,6 +385,15 @@ const RegOmniRealtimePage = () => {
                   </button>
                 </div>
                 <div className="omni-rt-meta">
+                  <label className="omni-rt-hide-zero">
+                    <input
+                      type="checkbox"
+                      checked={hideStockZero}
+                      onChange={(e) => setHideStockZero(e.target.checked)}
+                    />
+                    Hide stock 0
+                    {hiddenZeroCount ? ` (${hiddenZeroCount})` : ""}
+                  </label>
                   {sourceLabel ? <span className="omni-rt-source">{sourceLabel}</span> : null}
                   {builtAt ? <span className="omni-rt-built">built {fmtBuiltAt(builtAt)}</span> : null}
                   <div className="omni-rt-total">
