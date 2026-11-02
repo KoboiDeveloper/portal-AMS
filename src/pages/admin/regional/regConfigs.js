@@ -98,10 +98,6 @@ export const regTotalSales = cfg({
       {
         "value": "celcius",
         "label": "CELCIUS"
-      },
-      {
-        "value": "online",
-        "label": "ONLINE"
       }
     ]
   },

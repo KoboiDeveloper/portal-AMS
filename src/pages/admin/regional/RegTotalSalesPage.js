@@ -29,7 +29,6 @@ const BRAND_OPTS = [
   { value: "mississippi", label: "MISSISSIPPI" },
   { value: "queensland", label: "QUEENSLAND" },
   { value: "aeesha", label: "AEESHA" },
-  { value: "online", label: "ONLINE" },
 ];
 
 const todayYmd = () => {

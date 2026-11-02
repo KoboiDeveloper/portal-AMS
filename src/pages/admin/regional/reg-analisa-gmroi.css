@@ -7,6 +7,42 @@
   --card: #fff;
 }
 
+/* Full-width toggle — unlock DashLite .wide-xl */
+.nk-content .container-xl.wide-xl {
+  transition: max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nk-content .container-xl.wide-xl.reg-ar-container-wide {
+  max-width: 100% !important;
+}
+
+.gmroi-wide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #526484;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: none;
+  transition: color 0.2s ease;
+}
+
+.gmroi-wide-btn:hover,
+.gmroi-wide-btn.is-on {
+  color: #0f2e57;
+  background: transparent;
+  border: 0;
+}
+
+.gmroi-wide-btn .icon {
+  font-size: 1.35rem;
+}
+
 .gmroi-page .gmroi-head {
   display: flex;
   flex-wrap: wrap;
@@ -53,7 +89,12 @@
   margin-bottom: 0.75rem;
 }
 
-.gmroi-filters label {
+.gmroi-filters .gmroi-filter {
+  min-width: 0;
+}
+
+.gmroi-filters label,
+.gmroi-filters .form-label {
   display: block;
   font-size: 0.65rem;
   font-weight: 700;
@@ -67,6 +108,11 @@
   font-size: 0.8125rem;
   min-height: 32px;
   padding: 0.2rem 0.5rem;
+}
+
+.gmroi-filters .react-select__control,
+.gmroi-filters [class*="-control"] {
+  min-height: 32px !important;
 }
 
 .gmroi-kpis {

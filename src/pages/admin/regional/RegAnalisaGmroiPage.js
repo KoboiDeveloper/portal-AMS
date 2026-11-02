@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -21,6 +21,7 @@ import {
   BlockHeadContent,
   BlockTitle,
   Icon,
+  RSelect,
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
@@ -45,6 +46,49 @@ import {
 import "./reg-analisa-gmroi.css";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend, Filler);
+
+const filterSelectStyles = {
+  control: (base) => ({ ...base, minHeight: 32, height: 32, fontSize: "0.8125rem" }),
+  valueContainer: (base) => ({ ...base, padding: "0 8px", height: 30 }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  indicatorsContainer: (base) => ({ ...base, height: 30 }),
+  dropdownIndicator: (base) => ({ ...base, padding: "0 6px" }),
+  clearIndicator: (base) => ({ ...base, padding: "0 4px" }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 40,
+    fontSize: "0.8125rem",
+    width: "max-content",
+    minWidth: "100%",
+  }),
+  menuList: (base) => ({
+    ...base,
+    overflowX: "hidden",
+  }),
+  option: (base) => ({
+    ...base,
+    fontSize: "0.8125rem",
+    padding: "6px 12px",
+    whiteSpace: "nowrap",
+  }),
+  singleValue: (base) => ({ ...base, whiteSpace: "nowrap" }),
+  placeholder: (base) => ({ ...base, color: "#8094ae" }),
+};
+
+const toOpts = (list) => (Array.isArray(list) ? list.map((v) => ({ value: v, label: v })) : []);
+
+const TREATMENT_OPTS = [
+  { value: "Balik Modal", label: "Balik Modal" },
+  { value: "Masa Evaluasi", label: "Masa Evaluasi" },
+  { value: "Treatment", label: "Treatment" },
+];
+
+const SELL_THROUGH_OPTS = [
+  { value: "lt30", label: "< 30%" },
+  { value: "30to50", label: "30% – < 50%" },
+  { value: "50to70", label: "50% – < 70%" },
+  { value: "gte70", label: "≥ 70%" },
+];
 
 const emptyFilters = () => ({
   TOKO: "",
@@ -79,6 +123,8 @@ const RegAnalisaGmroiPage = () => {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
+  const [wide, setWide] = useState(false);
+  const wrapRef = useRef(null);
 
   const artMetrics = useMemo(() => buildArticleMetrics(rows), [rows]);
   const filtered = useMemo(
@@ -118,6 +164,17 @@ const RegAnalisaGmroiPage = () => {
       alive = false;
     };
   }, [applySnapshot]);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return undefined;
+    const container = wrap.closest(".container-xl.wide-xl");
+    if (!container) return undefined;
+    container.classList.toggle("reg-ar-container-wide", wide);
+    return () => {
+      container.classList.remove("reg-ar-container-wide");
+    };
+  }, [wide]);
 
   const onSync = async () => {
     setSyncing(true);
@@ -350,13 +407,14 @@ const RegAnalisaGmroiPage = () => {
     URL.revokeObjectURL(a.href);
   };
 
-  const scrollRevision = `${rows.length}-${filtered.length}-${view}-${loadingCache ? "c" : "r"}`;
+  const scrollRevision = `${rows.length}-${filtered.length}-${view}-${loadingCache ? "c" : "r"}-${wide ? "w" : "n"}`;
 
   return (
     <AccessGuard moduleCode="REG_ANALIST_GMROI">
       <Head title="Analisa GMROI" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll gmroi-page">
+          <div ref={wrapRef}>
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
@@ -393,6 +451,15 @@ const RegAnalisaGmroiPage = () => {
                     <Icon name="download" />
                     <span>Export CSV</span>
                   </button>
+                  <button
+                    type="button"
+                    className={`gmroi-wide-btn${wide ? " is-on" : ""}`}
+                    onClick={() => setWide((w) => !w)}
+                    aria-pressed={wide}
+                    aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                  >
+                    <Icon name={wide ? "minimize" : "maximize"} />
+                  </button>
                 </div>
               </BlockHeadContent>
             </BlockBetween>
@@ -427,55 +494,31 @@ const RegAnalisaGmroiPage = () => {
               <>
                 <div className="gmroi-filters">
                   {[
-                    ["TOKO", "TOKO", opts.toko],
-                    ["CLASS", "CLASS", opts.className],
-                    ["TAGLINE", "TAGLINE", opts.tagline],
-                    ["KAT", "KAT", opts.kat],
-                    ["THEMA", "THEMA", opts.thema],
-                  ].map(([label, key, list]) => (
-                    <div key={key}>
-                      <label>{label}</label>
-                      <select
-                        className="form-select form-select-sm"
-                        value={filters[key]}
-                        onChange={(e) => setFilter(key, e.target.value)}
-                      >
-                        <option value="">Semua</option>
-                        {list.map((v) => (
-                          <option key={v} value={v}>
-                            {v}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                  <div>
-                    <label>TREATMENT</label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={filters.treatment}
-                      onChange={(e) => setFilter("treatment", e.target.value)}
-                    >
-                      <option value="">Semua</option>
-                      <option value="Balik Modal">Balik Modal</option>
-                      <option value="Masa Evaluasi">Masa Evaluasi</option>
-                      <option value="Treatment">Treatment</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label>SELL THROUGH</label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={filters.sellThrough}
-                      onChange={(e) => setFilter("sellThrough", e.target.value)}
-                    >
-                      <option value="">Semua</option>
-                      <option value="lt30">&lt; 30%</option>
-                      <option value="30to50">30% – &lt; 50%</option>
-                      <option value="50to70">50% – &lt; 70%</option>
-                      <option value="gte70">≥ 70%</option>
-                    </select>
-                  </div>
+                    ["TOKO", "TOKO", toOpts(opts.toko)],
+                    ["CLASS", "CLASS", toOpts(opts.className)],
+                    ["TAGLINE", "TAGLINE", toOpts(opts.tagline)],
+                    ["KAT", "KAT", toOpts(opts.kat)],
+                    ["THEMA", "THEMA", toOpts(opts.thema)],
+                    ["TREATMENT", "treatment", TREATMENT_OPTS],
+                    ["SELL THROUGH", "sellThrough", SELL_THROUGH_OPTS],
+                  ].map(([label, key, options]) => {
+                    const value =
+                      options.find((o) => String(o.value) === String(filters[key] || "")) || null;
+                    return (
+                      <div key={key} className="gmroi-filter">
+                        <label className="form-label">{label}</label>
+                        <RSelect
+                          styles={filterSelectStyles}
+                          isClearable
+                          isSearchable
+                          placeholder="Semua"
+                          options={options}
+                          value={value}
+                          onChange={(o) => setFilter(key, o?.value ?? "")}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="gmroi-kpis">
@@ -683,6 +726,7 @@ const RegAnalisaGmroiPage = () => {
               </>
             ) : null}
           </Block>
+          </div>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

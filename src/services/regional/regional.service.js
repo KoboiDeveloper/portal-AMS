@@ -91,7 +91,6 @@ export const regionalLookupOptions = async (
       { value: "all", label: "ALL" },
       { value: "discount", label: "DISCOUNT" },
       { value: "celcius", label: "CELCIUS" },
-      { value: "online", label: "ONLINE" },
     ];
   }
   /* brand_all = BindidbrandAll2 — no forced ALL prefix */

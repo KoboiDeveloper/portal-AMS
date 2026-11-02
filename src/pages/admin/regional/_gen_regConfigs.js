@@ -42,7 +42,6 @@ const pages = [
           { value: "all", label: "ALL" },
           { value: "discount", label: "DISCOUNT" },
           { value: "celcius", label: "CELCIUS" },
-          { value: "online", label: "ONLINE" },
         ],
       }),
       fd("from_date", "From", "date"),

@@ -40,6 +40,26 @@ const initials = (name = "") =>
     .map((part) => part[0]?.toUpperCase() || "")
     .join("") || "CS";
 
+/** Header badge labels — special-case regional operator account */
+const resolveUserBadge = (user) => {
+  const username = String(user?.username || "").trim();
+  const isReg2 = username.toLowerCase() === "reg2";
+  if (isReg2) {
+    return {
+      status: "reg2",
+      name: "Operational Dept",
+      avatar: "RE",
+    };
+  }
+  return {
+    status: user?.isSuperAdmin ? "Super Admin" : "User",
+    name: user?.employeeName || user?.username || "",
+    avatar: String(user?.employeeName || user?.username || "U")
+      .slice(0, 2)
+      .toUpperCase(),
+  };
+};
+
 const AdminHeader = () => {
   const { user, navigation, logout } = useAuth();
   const navigate = useNavigate();
@@ -60,6 +80,7 @@ const AdminHeader = () => {
   const onCashierPage = isCashierPath(location.pathname);
   const showCashierBadge =
     onCashierPage && selectCashierSessionValid({ cashier, lastActivityAt }) && cashier;
+  const userBadge = resolveUserBadge(user);
 
   const logoutSummary = (() => {
     const s = shiftSummary;
@@ -190,11 +211,11 @@ const AdminHeader = () => {
                     <DropdownToggle tag="a" className="dropdown-toggle" onClick={(e) => e.preventDefault()}>
                       <div className="user-toggle">
                         <div className="user-avatar sm bg-primary">
-                          <span>{(user?.employeeName || user?.username || "U").slice(0, 2).toUpperCase()}</span>
+                          <span>{userBadge.avatar}</span>
                         </div>
                         <div className="user-info d-none d-md-block">
-                          <div className="user-status">{user?.isSuperAdmin ? "Super Admin" : "User"}</div>
-                          <div className="user-name dropdown-indicator">{user?.employeeName || user?.username}</div>
+                          <div className="user-status">{userBadge.status}</div>
+                          <div className="user-name dropdown-indicator">{userBadge.name}</div>
                         </div>
                       </div>
                     </DropdownToggle>
