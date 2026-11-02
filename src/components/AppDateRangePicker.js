@@ -273,7 +273,7 @@ export default function AppDateRangePicker({
           <div className="app-daterange-cal-label">From</div>
           {showDual ? <div className="app-daterange-cal-label">To</div> : null}
         </div>
-        {children}
+        <div className="app-daterange-months">{children}</div>
       </div>
     </div>
   );

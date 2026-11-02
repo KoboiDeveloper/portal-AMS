@@ -2597,7 +2597,9 @@ $admin-filter-h: 32px;
 }
 
 .app-daterange-calendars.is-single {
-  justify-content: center;
+  .app-daterange-months {
+    justify-content: center;
+  }
 }
 
 .app-daterange-cal-labels {
@@ -2620,7 +2622,16 @@ $admin-filter-h: 32px;
   padding: 0.1rem 0.35rem 0.25rem;
 }
 
-.app-daterange-calendars .react-datepicker {
+/* Keep From | To months side-by-side (not stacked) */
+.app-daterange-months {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.app-daterange-months .react-datepicker {
   border: 0;
   background: transparent;
   display: flex;
@@ -2628,8 +2639,9 @@ $admin-filter-h: 32px;
   gap: 0.65rem;
 }
 
-.app-daterange-calendars .react-datepicker__month-container {
+.app-daterange-months .react-datepicker__month-container {
   float: none;
+  display: block;
 }
 
 /* Hide outside-month bleed so Nov days don't appear inside Dec panel */
@@ -2720,7 +2732,7 @@ $admin-filter-h: 32px;
     border-bottom: 1px solid #e5e9f0;
   }
 
-  .app-daterange-calendars {
+  .app-daterange-months {
     flex-direction: column;
     align-items: center;
   }
