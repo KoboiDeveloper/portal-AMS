@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Modal, ModalBody, ModalHeader } from "reactstrap";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -20,6 +20,7 @@ import {
   regionalLookupOptions,
 } from "../../../services/regional/regional.service";
 import { extractRows, isSuccess } from "../../../lib/response";
+import { RivStickyThead } from "./RivStickyThead";
 import "./reg-omni-realtime.css";
 
 /** Realtime Stock — Redis cache per store (warmer); Reload = refresh=1 SQL rebuild. */
@@ -106,6 +107,7 @@ const RegOmniRealtimePage = () => {
   const [sort, setSort] = useState({ key: "brand", dir: "ASC" });
   const [hideStockZero, setHideStockZero] = useState(true);
   const [loaded, setLoaded] = useState(false);
+  const tableRef = useRef(null);
   const [cacheModalOpen, setCacheModalOpen] = useState(false);
   const [cacheRows, setCacheRows] = useState([]);
   const [cacheLoading, setCacheLoading] = useState(false);
@@ -428,7 +430,10 @@ const RegOmniRealtimePage = () => {
               ) : null}
 
               <div className="table-responsive omni-rt-table-wrap">
-                <table className="table table-hover nk-tb-list nk-tb-ulist omni-rt-table">
+                <table
+                  ref={tableRef}
+                  className="table table-hover nk-tb-list nk-tb-ulist omni-rt-table"
+                >
                   <thead>
                     <tr>
                       {COLS.map((c) => (
@@ -473,6 +478,11 @@ const RegOmniRealtimePage = () => {
                   </tbody>
                 </table>
               </div>
+              <RivStickyThead
+                tableRef={tableRef}
+                enabled={Boolean(!loading && visibleRows.length)}
+                tableClassName="omni-rt-table"
+              />
             </div>
           </Block>
 

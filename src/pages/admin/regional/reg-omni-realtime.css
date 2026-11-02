@@ -138,13 +138,9 @@
 
 .omni-rt-table-wrap {
   padding: 0.5rem 0.75rem 1rem;
-  max-height: min(70vh, 720px);
-  overflow: auto;
-}
-
-.omni-rt-table {
-  border-collapse: separate;
-  border-spacing: 0;
+  /* page scroll only — sticky thead via RivStickyThead (Locomotive-safe) */
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .omni-rt-table th,
@@ -155,12 +151,13 @@
 }
 
 .omni-rt-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   background: #f3f4f6;
   font-weight: 600;
-  box-shadow: 0 1px 0 #dbdfea;
+}
+
+.riv-sticky-clone__table.omni-rt-table thead th {
+  background: #f3f4f6;
+  font-weight: 600;
 }
 
 .omni-rt-table tbody tr:nth-child(even) {
