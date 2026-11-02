@@ -20,7 +20,7 @@ import {
 import { extractRows, isSuccess } from "../../../lib/response";
 import "./reg-omni-realtime.css";
 
-/** Legacy module/omni/realtime_stock.aspx UI — store picker + SQL realtime qty (same formula as Varian). */
+/** Realtime Stock — Redis cache per store (warmer); Reload = refresh=1 SQL rebuild. */
 const svc = createRegionalService("rpt/omni/realtime-stock", { crud: false });
 
 const nf0 = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 });
@@ -55,6 +55,13 @@ const cellOf = (r, key) => {
   return hit != null ? r[hit] : null;
 };
 
+const fmtBuiltAt = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return d.toLocaleString("id-ID");
+};
+
 const RegOmniRealtimePage = () => {
   const [storeOpts, setStoreOpts] = useState([{ value: "", label: "PILIH STORE" }]);
   const [storeId, setStoreId] = useState("");
@@ -63,8 +70,13 @@ const RegOmniRealtimePage = () => {
   const [rows, setRows] = useState([]);
   const [totalQty, setTotalQty] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [rebuilding, setRebuilding] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [source, setSource] = useState("");
+  const [builtAt, setBuiltAt] = useState("");
+  const [closeDate, setCloseDate] = useState("");
+  const [movementFrom, setMovementFrom] = useState("");
   const [sort, setSort] = useState({ key: "brand", dir: "ASC" });
   const [loaded, setLoaded] = useState(false);
 
@@ -84,7 +96,7 @@ const RegOmniRealtimePage = () => {
     };
   }, []);
 
-  const loadStore = useCallback(async (sid, keepArticle = true) => {
+  const loadStore = useCallback(async (sid, { keepArticle = true, refresh = false } = {}) => {
     const store = String(sid || "").trim();
     if (!store) {
       setRows([]);
@@ -92,21 +104,34 @@ const RegOmniRealtimePage = () => {
       setLoaded(false);
       setError("");
       setInfo("");
+      setSource("");
+      setBuiltAt("");
+      setCloseDate("");
+      setMovementFrom("");
       return;
     }
     setLoading(true);
+    setRebuilding(!!refresh);
     setError("");
     setInfo("");
     try {
-      const res = await svc.list({ store_id: store });
+      const res = await svc.list({
+        store_id: store,
+        ...(refresh ? { refresh: "1" } : {}),
+      });
       if (!isSuccess(res)) {
         setRows([]);
         setTotalQty(0);
         setLoaded(true);
+        setSource(res?.source || "");
+        setBuiltAt(res?.built_at || "");
+        setCloseDate(res?.close_date || "");
+        setMovementFrom(res?.movement_from || "");
         setError(res?.responseMessage || "Gagal mengambil data");
         return;
       }
       const list = extractRows(res);
+      const src = String(res?.source || "");
       const tq =
         res?.total_qty != null
           ? Number(res.total_qty)
@@ -114,20 +139,34 @@ const RegOmniRealtimePage = () => {
       setRows(list);
       setTotalQty(tq);
       setLoaded(true);
+      setSource(src);
+      setBuiltAt(res?.built_at || "");
+      setCloseDate(res?.close_date || "");
+      setMovementFrom(res?.movement_from || "");
       if (!keepArticle) {
         setArticle("");
         setArticleDraft("");
       }
-      if (!list.length) {
+      if (src === "miss") {
+        setInfo(
+          res?.responseMessage ||
+            "Belum di-cache. Tunggu background warmer atau klik Reload (bisa 2–3 menit)."
+        );
+      } else if (!list.length) {
         setInfo("API sukses tetapi tidak ada data untuk ditampilkan.");
       }
     } catch (e) {
       setRows([]);
       setTotalQty(0);
       setLoaded(true);
+      setSource("");
+      setBuiltAt("");
+      setCloseDate("");
+      setMovementFrom("");
       setError(e?.responseMessage || e?.message || "Gagal mengambil data");
     } finally {
       setLoading(false);
+      setRebuilding(false);
     }
   }, []);
 
@@ -136,7 +175,7 @@ const RegOmniRealtimePage = () => {
     setStoreId(next);
     setArticle("");
     setArticleDraft("");
-    loadStore(next, false);
+    loadStore(next, { keepArticle: false, refresh: false });
   };
 
   const onSearch = () => {
@@ -146,7 +185,7 @@ const RegOmniRealtimePage = () => {
   const onReload = () => {
     setArticle("");
     setArticleDraft("");
-    loadStore(storeId, false);
+    loadStore(storeId, { keepArticle: false, refresh: true });
   };
 
   const toggleSort = (key) => {
@@ -178,7 +217,16 @@ const RegOmniRealtimePage = () => {
   const storeValue =
     storeOpts.find((o) => String(o.value) === String(storeId)) || storeOpts[0];
 
-  const scrollRevision = `${storeId}-${loading}-${visibleRows.length}-${sort.key}-${sort.dir}-${article}`;
+  const scrollRevision = `${storeId}-${loading}-${visibleRows.length}-${sort.key}-${sort.dir}-${article}-${source}`;
+
+  const sourceLabel =
+    source === "cache"
+      ? "cache"
+      : source === "sql"
+        ? "sql rebuild"
+        : source === "miss"
+          ? "belum cache"
+          : source || "";
 
   return (
     <AccessGuard moduleCode="REG_RPT_OMNI_RT">
@@ -192,7 +240,7 @@ const RegOmniRealtimePage = () => {
                   Realtime Stock
                 </BlockTitle>
                 <BlockDes className="text-soft">
-                  Stok realtime per store (SQL closing + mutasi, seperti Varian Stock)
+                  Cache Redis per store (warmer otomatis). Reload = hitung ulang SQL store ini.
                 </BlockDes>
               </BlockHeadContent>
             </BlockBetween>
@@ -238,18 +286,44 @@ const RegOmniRealtimePage = () => {
                     className="btn btn-dim btn-outline-light btn-sm"
                     disabled={!storeId || loading}
                     onClick={onReload}
-                    title="Reload"
+                    title="Rebuild SQL + tulis ulang cache (bisa 2–3 menit)"
                   >
-                    <Icon name="reload" /> Reload
+                    <Icon name="reload" /> {rebuilding ? "Rebuilding..." : "Reload"}
                   </button>
                 </div>
-                <div className="omni-rt-total">
-                  TOTAL QTY <strong>{fmtNum(totalQty)}</strong>
+                <div className="omni-rt-meta">
+                  {sourceLabel ? <span className="omni-rt-source">{sourceLabel}</span> : null}
+                  {builtAt ? <span className="omni-rt-built">built {fmtBuiltAt(builtAt)}</span> : null}
+                  <div className="omni-rt-total">
+                    TOTAL QTY <strong>{fmtNum(totalQty)}</strong>
+                  </div>
                 </div>
               </div>
 
               {error ? <div className="omni-rt-msg err">{error}</div> : null}
               {!error && info ? <div className="omni-rt-msg">{info}</div> : null}
+              {rebuilding ? (
+                <div className="omni-rt-msg">
+                  Sedang rebuild SQL untuk store ini — bisa 2–3 menit, jangan tutup halaman.
+                </div>
+              ) : null}
+              {storeId && (closeDate || builtAt || source === "miss") ? (
+                <div className="omni-rt-log" role="status">
+                  <div>
+                    <strong>Store</strong> {storeId}
+                  </div>
+                  <div>
+                    <strong>Closing stock (Z)</strong> {closeDate || "—"}
+                  </div>
+                  <div>
+                    <strong>Mutasi dari</strong> {movementFrom || "—"}
+                  </div>
+                  <div>
+                    <strong>Tarikan / cache</strong> {builtAt ? fmtBuiltAt(builtAt) : "—"}
+                    {sourceLabel ? ` · ${sourceLabel}` : ""}
+                  </div>
+                </div>
+              ) : null}
 
               <div className="table-responsive omni-rt-table-wrap">
                 <table className="table table-hover nk-tb-list nk-tb-ulist omni-rt-table">
@@ -270,17 +344,17 @@ const RegOmniRealtimePage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {loading ? (
+                    {loading && !rebuilding ? (
                       <tr>
                         <td colSpan={COLS.length} className="text-center text-soft">
-                          Memuat...
+                          Memuat cache...
                         </td>
                       </tr>
                     ) : null}
                     {!loading && loaded && !visibleRows.length ? (
                       <tr>
                         <td colSpan={COLS.length} className="text-center text-soft">
-                          Tidak ada data.
+                          {source === "miss" ? "Belum ada cache untuk store ini." : "Tidak ada data."}
                         </td>
                       </tr>
                     ) : null}

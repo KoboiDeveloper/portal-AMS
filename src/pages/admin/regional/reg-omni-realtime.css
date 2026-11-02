@@ -34,6 +34,22 @@
   font-size: 0.8125rem;
 }
 
+.omni-rt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem 0.85rem;
+}
+
+.omni-rt-source,
+.omni-rt-built {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .omni-rt-total {
   font-size: 0.875rem;
   letter-spacing: 0.02em;
@@ -54,6 +70,29 @@
 
 .omni-rt-msg.err {
   color: #b91c1c;
+}
+
+.omni-rt-log {
+  margin: 0.65rem 1rem 0;
+  padding: 0.55rem 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.35rem 1rem;
+  font-size: 0.8125rem;
+  color: #364a63;
+  background: #f5f6fa;
+  border: 1px solid #e5e9f2;
+  border-radius: 4px;
+}
+
+.omni-rt-log strong {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #8094ae;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
 }
 
 .omni-rt-table-wrap {
