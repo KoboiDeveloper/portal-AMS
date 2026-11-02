@@ -57,6 +57,17 @@
   letter-spacing: 0.04em;
 }
 
+.omni-rt-stale {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #fef3c7;
+  background: rgba(180, 83, 9, 0.55);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+}
+
 .omni-rt-hide-zero {
   display: inline-flex;
   align-items: center;

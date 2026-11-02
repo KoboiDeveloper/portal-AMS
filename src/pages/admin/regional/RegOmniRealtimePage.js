@@ -104,6 +104,8 @@ const RegOmniRealtimePage = () => {
   const [builtAt, setBuiltAt] = useState("");
   const [closeDate, setCloseDate] = useState("");
   const [movementFrom, setMovementFrom] = useState("");
+  const [closingUlangAt, setClosingUlangAt] = useState("");
+  const [stale, setStale] = useState(false);
   const [sort, setSort] = useState({ key: "brand", dir: "ASC" });
   const [hideStockZero, setHideStockZero] = useState(true);
   const [loaded, setLoaded] = useState(false);
@@ -186,6 +188,8 @@ const RegOmniRealtimePage = () => {
       setBuiltAt("");
       setCloseDate("");
       setMovementFrom("");
+      setClosingUlangAt("");
+      setStale(false);
       return;
     }
     setLoading(true);
@@ -205,11 +209,14 @@ const RegOmniRealtimePage = () => {
         setBuiltAt(res?.built_at || "");
         setCloseDate(res?.close_date || "");
         setMovementFrom(res?.movement_from || "");
+        setClosingUlangAt(res?.closing_ulang_at || "");
+        setStale(Boolean(res?.stale));
         setError(res?.responseMessage || "Gagal mengambil data");
         return;
       }
       const list = extractRows(res);
       const src = String(res?.source || "");
+      const isStale = Boolean(res?.stale);
       const tq =
         res?.total_qty != null
           ? Number(res.total_qty)
@@ -221,6 +228,8 @@ const RegOmniRealtimePage = () => {
       setBuiltAt(res?.built_at || "");
       setCloseDate(res?.close_date || "");
       setMovementFrom(res?.movement_from || "");
+      setClosingUlangAt(res?.closing_ulang_at || res?.closing_ulang_at_log || "");
+      setStale(isStale);
       if (!keepArticle) {
         setArticle("");
         setArticleDraft("");
@@ -229,6 +238,11 @@ const RegOmniRealtimePage = () => {
         setInfo(
           res?.responseMessage ||
             "Belum di-cache. Tunggu background warmer atau klik Reload (bisa 2–3 menit)."
+        );
+      } else if (isStale) {
+        setInfo(
+          res?.responseMessage ||
+            "Ada closing ulang — cache lama ditampilkan, rebuild jalan di background. Klik Reload untuk paksa refresh."
         );
       } else if (!list.length) {
         setInfo("API sukses tetapi tidak ada data untuk ditampilkan.");
@@ -241,6 +255,8 @@ const RegOmniRealtimePage = () => {
       setBuiltAt("");
       setCloseDate("");
       setMovementFrom("");
+      setClosingUlangAt("");
+      setStale(false);
       setError(e?.responseMessage || e?.message || "Gagal mengambil data");
     } finally {
       setLoading(false);
@@ -397,6 +413,7 @@ const RegOmniRealtimePage = () => {
                     {hiddenZeroCount ? ` (${hiddenZeroCount})` : ""}
                   </label>
                   {sourceLabel ? <span className="omni-rt-source">{sourceLabel}</span> : null}
+                  {stale ? <span className="omni-rt-stale">STALE · closing ulang</span> : null}
                   {builtAt ? <span className="omni-rt-built">built {fmtBuiltAt(builtAt)}</span> : null}
                   <div className="omni-rt-total">
                     TOTAL QTY <strong>{fmtNum(totalQty)}</strong>
@@ -411,13 +428,18 @@ const RegOmniRealtimePage = () => {
                   Sedang rebuild SQL untuk store ini — bisa 2–3 menit, jangan tutup halaman.
                 </div>
               ) : null}
-              {storeId && (closeDate || builtAt || source === "miss") ? (
+              {storeId && (closeDate || builtAt || closingUlangAt || source === "miss") ? (
                 <div className="omni-rt-log" role="status">
                   <div>
                     <strong>Store</strong> {storeId}
+                    {stale ? " · stale" : ""}
                   </div>
                   <div>
                     <strong>Closing stock (Z)</strong> {closeDate || "—"}
+                  </div>
+                  <div>
+                    <strong>Closing ulang</strong>{" "}
+                    {closingUlangAt ? fmtBuiltAt(closingUlangAt) : "—"}
                   </div>
                   <div>
                     <strong>Mutasi dari</strong> {movementFrom || "—"}
@@ -537,6 +559,7 @@ const RegOmniRealtimePage = () => {
                       <th>Store</th>
                       <th>Kota</th>
                       <th>Closing (Z)</th>
+                      <th>Closing ulang</th>
                       <th>Mutasi dari</th>
                       <th>Tarikan</th>
                       <th className="num">Rows</th>
@@ -547,7 +570,7 @@ const RegOmniRealtimePage = () => {
                   <tbody>
                     {!cacheLoading && !cacheRows.length ? (
                       <tr>
-                        <td colSpan={9} className="text-center text-soft">
+                        <td colSpan={10} className="text-center text-soft">
                           Belum ada store di cache Redis.
                         </td>
                       </tr>
@@ -560,6 +583,7 @@ const RegOmniRealtimePage = () => {
                           <td>{sid}</td>
                           <td>{cellOf(r, "kota") || "—"}</td>
                           <td>{cellOf(r, "close_date") || "—"}</td>
+                          <td>{fmtBuiltAt(cellOf(r, "closing_ulang_at")) || "—"}</td>
                           <td>{cellOf(r, "movement_from") || "—"}</td>
                           <td>{fmtBuiltAt(cellOf(r, "built_at")) || "—"}</td>
                           <td className="num">{fmtNum(cellOf(r, "row_count"))}</td>
