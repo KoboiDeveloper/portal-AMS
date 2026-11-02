@@ -201,11 +201,19 @@ export default function AppDateRangePicker({
   const openPicker = () => {
     if (disabled) return;
     const s = start || startOfDay(new Date());
-    const e =
-      end ||
-      new Date(s.getFullYear(), s.getMonth() + (start && !end ? 0 : 1), 1);
-    setLeftOpenTo(new Date(s.getFullYear(), s.getMonth(), 1));
-    setRightOpenTo(new Date(e.getFullYear(), e.getMonth(), 1));
+    const left = new Date(s.getFullYear(), s.getMonth(), 1);
+    // Always show a different month on the right by default (end missing or same month).
+    let right;
+    if (end) {
+      right = new Date(end.getFullYear(), end.getMonth(), 1);
+      if (right.getTime() === left.getTime()) {
+        right = new Date(left.getFullYear(), left.getMonth() + 1, 1);
+      }
+    } else {
+      right = new Date(left.getFullYear(), left.getMonth() + 1, 1);
+    }
+    setLeftOpenTo(left);
+    setRightOpenTo(right);
     setOpenSeq((n) => n + 1);
     setOpen(true);
   };
@@ -225,6 +233,26 @@ export default function AppDateRangePicker({
       applyRange(start, d);
     }
     setOpen(false);
+  };
+
+  /** selectsRange onChange may pass [start, end]; keep single-day click path too. */
+  const handleCalChange = (update) => {
+    if (Array.isArray(update)) {
+      const [s, e] = update;
+      if (s && !e) {
+        applyRange(startOfDay(s), null);
+        return;
+      }
+      if (s && e) {
+        const a = startOfDay(s);
+        const b = startOfDay(e);
+        if (a.getTime() <= b.getTime()) applyRange(a, b);
+        else applyRange(b, a);
+        setOpen(false);
+      }
+      return;
+    }
+    handleDay(update);
   };
 
   const CalendarContainer = ({ className: calClass }) => (
@@ -251,13 +279,15 @@ export default function AppDateRangePicker({
           <DatePicker
             key={`from-${openSeq}`}
             inline
+            selectsRange
             selected={start}
             startDate={start}
             endDate={end}
             openToDate={leftOpenTo}
-            onChange={handleDay}
+            onChange={handleCalChange}
             renderCustomHeader={(hp) => <MonthYearHeader {...hp} label="From" />}
             disabledKeyboardNavigation
+            shouldCloseOnSelect={false}
           />
         </div>
         {monthsShown >= 2 ? (
@@ -266,13 +296,15 @@ export default function AppDateRangePicker({
             <DatePicker
               key={`to-${openSeq}`}
               inline
-              selected={end}
+              selectsRange
+              selected={end || start}
               startDate={start}
               endDate={end}
               openToDate={rightOpenTo}
-              onChange={handleDay}
+              onChange={handleCalChange}
               renderCustomHeader={(hp) => <MonthYearHeader {...hp} label="To" />}
               disabledKeyboardNavigation
+              shouldCloseOnSelect={false}
             />
           </div>
         ) : null}

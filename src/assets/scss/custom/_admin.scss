@@ -2620,6 +2620,19 @@ $admin-filter-h: 32px;
   background: transparent;
 }
 
+/* Range hover / mid selection — visible while picking end date */
+.app-daterange-cal .react-datepicker__day--in-selecting-range:not(.react-datepicker__day--selected):not(.react-datepicker__day--range-start):not(.react-datepicker__day--range-end) {
+  color: #1e3a8a !important;
+  background-color: rgba(99, 102, 241, 0.22) !important;
+  border-radius: 0;
+}
+
+.app-daterange-cal .react-datepicker__day--in-range:not(.react-datepicker__day--selected):not(.react-datepicker__day--range-start):not(.react-datepicker__day--range-end) {
+  color: #1e3a8a !important;
+  background-color: rgba(99, 102, 241, 0.18) !important;
+  border-radius: 0;
+}
+
 .app-daterange-header {
   display: flex;
   align-items: center;
