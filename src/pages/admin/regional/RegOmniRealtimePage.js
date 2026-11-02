@@ -27,11 +27,35 @@ const nf0 = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 });
 const fmtNum = (v) => nf0.format(Number(v || 0));
 
 const filterSelectStyles = {
-  control: (base) => ({ ...base, minHeight: 32, height: 32, fontSize: "0.8125rem" }),
+  control: (base) => ({
+    ...base,
+    minHeight: 32,
+    height: 32,
+    fontSize: "0.8125rem",
+    backgroundColor: "#fff",
+    borderColor: "#dbdfea",
+    color: "#364a63",
+  }),
+  singleValue: (base) => ({ ...base, color: "#364a63" }),
+  placeholder: (base) => ({ ...base, color: "#8094ae" }),
+  input: (base) => ({ ...base, margin: 0, padding: 0, color: "#364a63" }),
   valueContainer: (base) => ({ ...base, padding: "0 8px", height: 30 }),
-  input: (base) => ({ ...base, margin: 0, padding: 0 }),
   indicatorsContainer: (base) => ({ ...base, height: 30 }),
-  menu: (base) => ({ ...base, zIndex: 40, fontSize: "0.8125rem" }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 9999,
+    fontSize: "0.8125rem",
+    backgroundColor: "#fff",
+    color: "#364a63",
+  }),
+  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  menuList: (base) => ({ ...base, maxHeight: 280, backgroundColor: "#fff" }),
+  option: (base, state) => ({
+    ...base,
+    color: "#364a63",
+    backgroundColor: state.isSelected ? "#e5e9f2" : state.isFocused ? "#f5f6fa" : "#fff",
+    cursor: "pointer",
+  }),
 };
 
 const COLS = [
@@ -258,6 +282,8 @@ const RegOmniRealtimePage = () => {
                       value={storeValue}
                       onChange={onStoreChange}
                       placeholder="PILIH STORE"
+                      menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                      menuPosition="fixed"
                     />
                   </div>
                   <div className="omni-rt-f">
