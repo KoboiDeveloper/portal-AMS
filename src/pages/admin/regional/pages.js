@@ -47,7 +47,7 @@ export { default as RegRptVoucherFisikPage } from "./RegVoucherFisikPage";
 export { default as RegRptVoucherImlekPage } from "./RegVoucherImlekPage";
 export const RegRptWoro1Page = wrap(C.regRptWoro1);
 export const RegRptWoro2Page = wrap(C.regRptWoro2);
-export const RegRptOmniRtPage = wrap(C.regRptOmniRt);
+export { default as RegRptOmniRtPage } from "./RegOmniRealtimePage";
 export { default as RegRptOmniVarianPage } from "./RegOmniVarianPage";
 export const RegRptOmniOrderPage = wrap(C.regRptOmniOrder);
 export { default as RegRptMemberPage } from "./RegMemberListPage";

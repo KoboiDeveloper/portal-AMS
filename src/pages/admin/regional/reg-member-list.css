@@ -122,6 +122,7 @@
 
 .rml-f-date,
 .rml-f-age,
+.rml-f-age-dd,
 .rml-f-actions,
 .rml-f-meta {
   display: flex;
@@ -148,6 +149,72 @@
 
 .rml-f-age input {
   width: 78px;
+}
+
+.rml-f-age-dd {
+  position: relative;
+  min-width: 120px;
+}
+
+.rml-age-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  min-width: 120px;
+  height: 32px;
+  padding: 0 0.65rem;
+  text-align: left;
+  background: #fff;
+  cursor: pointer;
+}
+
+.rml-age-toggle:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.rml-age-toggle .icon {
+  font-size: 0.75rem;
+  color: #8094ae;
+  transition: transform 0.15s ease;
+}
+
+.rml-f-age-dd.is-open .rml-age-toggle .icon {
+  transform: rotate(180deg);
+}
+
+.rml-age-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  min-width: 150px;
+  padding: 0.55rem 0.6rem 0.65rem;
+  background: #fff;
+  border: 1px solid #dbdfea;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+}
+
+.rml-age-menu-title {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #526484;
+  margin-bottom: 0.35rem;
+}
+
+.rml-age-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rml-age-menu-row input {
+  width: 58px;
+  height: 30px;
+  padding: 0 0.4rem;
+  text-align: center;
 }
 
 .rml-size {

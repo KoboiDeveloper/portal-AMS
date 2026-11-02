@@ -47,6 +47,10 @@ const GENDER_OPTS = [
   { value: "L", label: "Male" },
   { value: "P", label: "Female" },
 ];
+const LAST_TX_OPTS = [
+  { value: "Last_transaction", label: "Last Transaction" },
+  { value: "Normal", label: "Normal" },
+];
 const PAGE_SIZES = [20, 40, 60];
 const SIDE_PAGE_SIZE = 10;
 const DEFAULT_PROVINSI = "12";
@@ -130,11 +134,14 @@ const RegMemberListPage = () => {
   const [provinsi, setProvinsi] = useState(DEFAULT_PROVINSI);
   const [kota, setKota] = useState("0");
   const [brand, setBrand] = useState("0");
+  const [lastTx, setLastTx] = useState("Last_transaction");
   const [gender, setGender] = useState("0");
   const [ageFrom, setAgeFrom] = useState("0");
   const [ageTo, setAgeTo] = useState("0");
+  const [ageOpen, setAgeOpen] = useState(false);
   const [keywords, setKeywords] = useState("");
   const [memberOnly, setMemberOnly] = useState(false);
+  const ageWrapRef = useRef(null);
 
   const [badge, setBadge] = useState(null);
   const [rows, setRows] = useState([]);
@@ -171,6 +178,26 @@ const RegMemberListPage = () => {
       window.clearTimeout(t);
     };
   }, [wide]);
+
+  useEffect(() => {
+    if (!ageOpen) return undefined;
+    const onDoc = (e) => {
+      if (ageWrapRef.current && !ageWrapRef.current.contains(e.target)) setAgeOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setAgeOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [ageOpen]);
+
+  useEffect(() => {
+    if (memberOnly) setAgeOpen(false);
+  }, [memberOnly]);
 
   const allProv = useMemo(() => [{ value: "0", label: "All Provinsi" }, ...provOpts], [provOpts]);
   const allKota = useMemo(() => [{ value: "0", label: "All Kota" }, ...kotaOpts], [kotaOpts]);
@@ -429,26 +456,52 @@ const RegMemberListPage = () => {
                     placeholder="Brand"
                   />
                 </div>
-                <div className="rml-f rml-f-age">
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control form-control-sm"
-                    placeholder="Age from"
-                    disabled={memberOnly}
-                    value={ageFrom}
-                    onChange={(e) => setAgeFrom(e.target.value)}
+                <div className="rml-f" style={{ minWidth: 160 }}>
+                  <RSelect
+                    styles={filterSelectStyles}
+                    isDisabled={memberOnly}
+                    isSearchable
+                    options={LAST_TX_OPTS}
+                    value={LAST_TX_OPTS.find((o) => o.value === lastTx) || LAST_TX_OPTS[0]}
+                    onChange={(o) => setLastTx(o?.value || "Last_transaction")}
+                    placeholder="Select"
                   />
-                  <span className="text-soft">-</span>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control form-control-sm"
-                    placeholder="Age to"
+                </div>
+                <div className={`rml-f rml-f-age-dd${ageOpen ? " is-open" : ""}`} ref={ageWrapRef}>
+                  <button
+                    type="button"
+                    className="rml-age-toggle form-control form-control-sm"
                     disabled={memberOnly}
-                    value={ageTo}
-                    onChange={(e) => setAgeTo(e.target.value)}
-                  />
+                    aria-expanded={ageOpen}
+                    onClick={() => setAgeOpen((v) => !v)}
+                  >
+                    <span>Filter Age</span>
+                    <Icon name="chevron-down" />
+                  </button>
+                  {ageOpen ? (
+                    <div className="rml-age-menu" role="dialog" aria-label="Age range">
+                      <div className="rml-age-menu-title">Range</div>
+                      <div className="rml-age-menu-row">
+                        <input
+                          type="number"
+                          min="0"
+                          className="form-control form-control-sm"
+                          placeholder="0"
+                          value={ageFrom}
+                          onChange={(e) => setAgeFrom(e.target.value)}
+                        />
+                        <span className="text-soft">-</span>
+                        <input
+                          type="number"
+                          min="0"
+                          className="form-control form-control-sm"
+                          placeholder="0"
+                          value={ageTo}
+                          onChange={(e) => setAgeTo(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
                 <div className="rml-f" style={{ minWidth: 120 }}>
                   <RSelect

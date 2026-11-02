@@ -66,10 +66,10 @@ const AccessGuard = ({ moduleCode, permission = "VIEW", children }) => {
           permission_code: permission,
         });
         const allowed = resolveAllowed(res);
+        /* Only cache definitive answers — never poison cache on transient/network errors */
         writeCache(moduleCode, permission, allowed);
         if (mounted) setState({ loading: false, allowed });
       } catch {
-        writeCache(moduleCode, permission, false);
         if (mounted) setState({ loading: false, allowed: false });
       }
     };
