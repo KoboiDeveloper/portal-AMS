@@ -20,7 +20,7 @@ import {
 import { extractRows, isSuccess } from "../../../lib/response";
 import "./reg-omni-realtime.css";
 
-/** Legacy module/omni/realtime_stock.aspx — store picker + Redis realtime qty by PLU. */
+/** Legacy module/omni/realtime_stock.aspx UI — store picker + SQL realtime qty (same formula as Varian). */
 const svc = createRegionalService("rpt/omni/realtime-stock", { crud: false });
 
 const nf0 = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 });
@@ -192,7 +192,7 @@ const RegOmniRealtimePage = () => {
                   Realtime Stock
                 </BlockTitle>
                 <BlockDes className="text-soft">
-                  Stok realtime per store dari Redis (parity omni realtime stock)
+                  Stok realtime per store (SQL closing + mutasi, seperti Varian Stock)
                 </BlockDes>
               </BlockHeadContent>
             </BlockBetween>
