@@ -52,7 +52,8 @@
 
 .dgs-komisi-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 12px; padding: 8px 10px; background: #f5f6fa; border: 1px solid #dbdfea; }
 .dgs-komisi-strip-title { font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #8094ae; letter-spacing: 0.06em; margin-right: 4px; }
-.dgs-komisi-chip { font-size: 0.75rem; padding: 2px 8px; background: #fff; border: 1px solid #dbdfea; border-radius: 999px; color: #364a63; }
+.dgs-komisi-chip { font-size: 0.75rem; padding: 2px 10px 2px 4px; background: #fff; border: 1px solid #dbdfea; border-radius: 999px; color: #364a63; display: inline-flex; align-items: center; gap: 5px; }
+.dgs-komisi-logo { width: 18px; height: 18px; object-fit: contain; border-radius: 50%; }
 .dgs-komisi-chip strong { color: #1d4ed8; }
 
 .dgs-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }

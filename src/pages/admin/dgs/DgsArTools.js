@@ -12,20 +12,16 @@ import {
   parseInvoiceFile,
   todayYmd,
 } from "./dgsUtils";
+import { mpLogo } from "./mpLogos";
 import "./dgs.css";
 
 const KOMISI_LABELS = [
+  ["blibli", "Blibli"],
+  ["lazada", "Lazada"],
   ["shopee", "Shopee"],
+  ["zilingo", "Zilingo"],
   ["tokopedia", "Tokopedia"],
   ["tiktok", "TikTok"],
-  ["lazada", "Lazada"],
-  ["zalora", "Zalora"],
-  ["blibli", "Blibli"],
-  ["bukalapak", "Bukalapak"],
-  ["jd_id", "JD.ID"],
-  ["zilingo", "Zilingo"],
-  ["direct_selling", "Direct Selling"],
-  ["blanja_com", "Blanja"],
 ];
 
 /** Komisi terbaru per marketplace (legacy info strip on Ar_List). */
@@ -46,13 +42,16 @@ export const DgsKomisiStrip = () => {
   return (
     <div className="dgs-komisi-strip" title="Komisi terbaru per marketplace (%)">
       <span className="dgs-komisi-strip-title">Komisi</span>
-      {KOMISI_LABELS.map(([k, label]) =>
-        info[k] != null && info[k] !== "" ? (
+      {KOMISI_LABELS.map(([k, label]) => {
+        const has = info[k] != null && info[k] !== "";
+        const logo = mpLogo(label);
+        return (
           <span key={k} className="dgs-komisi-chip">
-            {label} <strong>{Number(info[k])}%</strong>
+            {logo ? <img src={logo} alt="" className="dgs-komisi-logo" /> : null}
+            {label} <strong>{has ? `${Number(info[k])}%` : "-"}</strong>
           </span>
-        ) : null
-      )}
+        );
+      })}
     </div>
   );
 };
