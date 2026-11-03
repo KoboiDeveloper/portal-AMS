@@ -116,7 +116,7 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={onClose} className="modal-dialog-centered rsd-detail-modal" size="lg">
+    <Modal isOpen={isOpen} toggle={onClose} className="modal-dialog-centered rsd-detail-modal" size="lg" contentClassName="dgs-modal-content">
       <div className="rsd-detail-hero">
         <div>
           <h5 className="rsd-detail-title">Konfirmasi Retur</h5>
@@ -129,7 +129,7 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
           <Icon name="cross" />
         </button>
       </div>
-      <ModalBody className="rsd-detail-body">
+      <ModalBody className="rsd-detail-body dgs-modal-body">
         {error ? <div className="reg-ar-err">{error}</div> : null}
         {loading ? (
           <div className="dgs-hint">Memuat…</div>
@@ -196,7 +196,8 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
             ) : null}
           </>
         )}
-        <div className="dgs-actions">
+      </ModalBody>
+      <div className="dgs-modal-foot">
           <span className="dgs-spacer" />
           <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={onClose}>
             Batal
@@ -204,8 +205,7 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
           <button type="button" className="reg-ar-btn" disabled={busy || loading} onClick={submit}>
             {busy ? "Menyimpan…" : "Simpan"}
           </button>
-        </div>
-      </ModalBody>
+      </div>
     </Modal>
   );
 };

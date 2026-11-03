@@ -135,7 +135,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={close} size="lg" className="modal-dialog-centered rsd-detail-modal">
+    <Modal isOpen={isOpen} toggle={close} size="lg" className="modal-dialog-centered rsd-detail-modal" contentClassName="dgs-modal-content">
       <div className="rsd-detail-hero">
         <div>
           <h5 className="rsd-detail-title">Confirm Sales</h5>
@@ -149,7 +149,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
           <Icon name="cross" />
         </button>
       </div>
-      <ModalBody className="rsd-detail-body">
+      <ModalBody className="rsd-detail-body dgs-modal-body">
         {error ? <div className="reg-ar-err">{error}</div> : null}
         {loading ? <div className="text-soft small mb-2">Memuat…</div> : null}
 
@@ -212,8 +212,10 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
           </table>
         </div>
 
+      </ModalBody>
+      <div className="dgs-modal-foot">
         {isNew ? (
-          <div className="dgs-actions">
+          <>
             {returMode ? (
               <div className="dgs-retur-box">
                 <input
@@ -256,7 +258,6 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
                 >
                   <Icon name="undo" /> Retur ({selected.size})
                 </button>
-                <span className="dgs-spacer" />
                 <button
                   type="button"
                   className="reg-ar-btn dgs-btn-proses"
@@ -268,9 +269,14 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
                 </button>
               </>
             )}
-          </div>
+          </>
         ) : null}
-      </ModalBody>
+        {!isNew ? <span className="dgs-hint">Transaksi sudah diproses — tidak ada aksi.</span> : null}
+        <span className="dgs-spacer" />
+        <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={close}>
+          Tutup
+        </button>
+      </div>
     </Modal>
   );
 };

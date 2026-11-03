@@ -131,3 +131,28 @@
 .dgs-th-sort { cursor: pointer; user-select: none; }
 .dgs-th-sort:hover { color: #364a63; }
 
+/* Modal: header tetap, body scroll, footer (tombol aksi) selalu terlihat */
+.dgs-modal-content { display: flex; flex-direction: column; max-height: calc(100vh - 2rem); }
+.dgs-modal-content .rsd-detail-body.dgs-modal-body { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; overflow-x: hidden; }
+.dgs-modal-content .dgs-table-wrap { max-height: none; overflow-x: auto; overflow-y: visible; }
+.dgs-modal-foot { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 18px; border-top: 1px solid #e5e9f2; background: #f8f9fc; }
+.dgs-modal-foot .dgs-retur-box { flex: 1 1 320px; }
+
+/* Edit AR: ringkasan + seksi kartu */
+.dgs-mini-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.dgs-mini-kpis > div { background: #f5f6fa; border: 1px solid #e5e9f2; border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+.dgs-mini-kpis span { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8094ae; }
+.dgs-mini-kpis strong { font-size: 0.9375rem; color: #364a63; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
+.dgs-mini-kpis .is-main { background: #eef2ff; border-color: #cdd9ff; }
+.dgs-mini-kpis .is-main strong { color: #1d4ed8; }
+.dgs-sec { border: 1px solid #e5e9f2; border-radius: 6px; padding: 12px 14px; margin-bottom: 12px; background: #fff; }
+.dgs-sec--flush { padding: 0; overflow: hidden; }
+.dgs-sec-title { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #526484; }
+.dgs-sec-title small { font-weight: 500; text-transform: none; letter-spacing: 0; color: #8094ae; font-size: 0.75rem; }
+.dgs-sec-title--pad { margin: 0; padding: 10px 14px; background: #f8f9fc; border-bottom: 1px solid #e5e9f2; }
+.dgs-sec-checks { margin-left: auto; display: inline-flex; gap: 14px; text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 0.8125rem; color: #364a63; }
+.dgs-sec-checks label { margin: 0; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.dgs-sec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 12px; }
+.dgs-sec--flush .dgs-table-wrap { border: 0; }
+.dgs-table--items .dgs-desc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.dgs-cell-input { width: 96px; }

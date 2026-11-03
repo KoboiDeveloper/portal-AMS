@@ -189,8 +189,18 @@ const STORE_COLS = [
   { key: "NO_INVOICE", label: "No. Invoice", alts: ["no_invoice", "INVOICE"] },
   { key: "TGL_TRANSAKSI", label: "Tgl Transaksi", alts: ["tgl_transaksi"] },
   { key: "GRAND_TOTAL", label: "Total", alts: ["grand_total", "TOTAL"], num: true },
+  { key: "REALISASI_STATUS", label: "Realisasi", alts: ["realisasi_status"], realisasi: true },
   { key: "RETUR", label: "Status", alts: ["status", "STATUS"] },
 ];
+
+/** Info realisasi AR: SUDAH (pelunasan masuk) / BELUM (AR sudah diinput) / BELUM AR. */
+const realisasiInfo = (row) => {
+  const done = /done|sudah/i.test(String(cell(row, "REALISASI_STATUS", ["realisasi_status"]) || ""));
+  if (done) return { text: "SUDAH", tone: "is-ok" };
+  const arStatus = String(cell(row, "AR_STATUS", ["ar_status"]) || "");
+  if (/sudah/i.test(arStatus)) return { text: "BELUM", tone: "is-warn" };
+  return { text: "BELUM AR", tone: "is-muted" };
+};
 
 const PLU_PREFERRED = [
   "BRAND",
@@ -634,6 +644,7 @@ const RegMpArListPage = ({ dgs = false }) => {
       ws.addRow([
         idx + 1,
         ...columns.map((c) => {
+          if (c.realisasi) return realisasiInfo(r).text;
           const v = cell(r, c.key, c.alts || []);
           if (c.num) return Number(v) || 0;
           if (String(c.key).toUpperCase().includes("TGL") || String(c.key).toUpperCase().includes("DATE")) {
@@ -650,6 +661,10 @@ const RegMpArListPage = ({ dgs = false }) => {
   }, [sortedRows, columns, isStoreMode, storeId, mode, fromDate, toDate]);
 
   const renderCell = (row, col) => {
+    if (col.realisasi) {
+      const info = realisasiInfo(row);
+      return <span className={`reg-ar-real ${info.tone}`}>{info.text}</span>;
+    }
     const v = cell(row, col.key, col.alts || []);
     if (col.num) return fmtNum(v);
     if (String(col.key).toUpperCase().includes("TGL") || String(col.key).toUpperCase().includes("DATE")) {

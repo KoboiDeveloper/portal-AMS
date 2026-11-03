@@ -183,7 +183,13 @@ const DgsArEditModal = ({ isOpen, trId, onClose, onSaved }) => {
   );
 
   return (
-    <Modal isOpen={isOpen} toggle={onClose} size="xl" className="modal-dialog-centered rsd-detail-modal dgs-modal-xl">
+    <Modal
+      isOpen={isOpen}
+      toggle={onClose}
+      size="xl"
+      className="modal-dialog-centered rsd-detail-modal dgs-modal-xl"
+      contentClassName="dgs-modal-content"
+    >
       <div className="rsd-detail-hero">
         <div>
           <h5 className="rsd-detail-title">{exists ? "Edit AR" : "Input AR"}</h5>
@@ -196,166 +202,206 @@ const DgsArEditModal = ({ isOpen, trId, onClose, onSaved }) => {
           <Icon name="cross" />
         </button>
       </div>
-      <ModalBody className="rsd-detail-body">
+      <ModalBody className="rsd-detail-body dgs-modal-body">
         {error ? <div className="reg-ar-err">{error}</div> : null}
         {loading ? <div className="text-soft small mb-2">Memuat…</div> : null}
 
         {!loading && !error ? (
           <>
-            <div className="dgs-form-grid">
-              <div className="dgs-field">
-                <label>No Order</label>
-                <input
-                  className="form-control form-control-sm"
-                  value={form.NO_ORDER || ""}
-                  maxLength={64}
-                  onChange={(e) => setF("NO_ORDER", e.target.value)}
-                />
+            <div className="dgs-mini-kpis">
+              <div>
+                <span>Total Sales</span>
+                <strong>{fmtDec(sums.TOTAL_SALES)}</strong>
               </div>
-              <div className="dgs-field">
-                <label>No Resi</label>
-                <input
-                  className="form-control form-control-sm"
-                  value={form.NOMOR_RESI || ""}
-                  maxLength={50}
-                  onChange={(e) => setF("NOMOR_RESI", e.target.value)}
-                />
+              <div>
+                <span>Komisi</span>
+                <strong>{fmtNum(sums.KOMISI_AWAL)}</strong>
               </div>
-              {[
-                ["TGL_PO", "Tgl PO"],
-                ["TGL_KIRIM", "Tgl Kirim"],
-                ["TGL_SAMPAI", "Tgl Sampai"],
-              ].map(([k, label]) => (
-                <div className="dgs-field" key={k}>
-                  <label>{label}</label>
+              <div>
+                <span>DPP Komisi</span>
+                <strong>{fmtNum(sums.KOMISI_NILAI)}</strong>
+              </div>
+              <div>
+                <span>PPN</span>
+                <strong>{fmtNum(sums.PPN)}</strong>
+              </div>
+              <div>
+                <span>PPh23</span>
+                <strong>{fmtNum(sums.PPH23)}</strong>
+              </div>
+              <div>
+                <span>Total Item</span>
+                <strong>{fmtNum(sums.TOTAL)}</strong>
+              </div>
+              <div className="is-main">
+                <span>Total AR (tersimpan)</span>
+                <strong>{form.TOTALAR === "" || form.TOTALAR == null ? "—" : fmtNum(form.TOTALAR)}</strong>
+              </div>
+            </div>
+
+            <section className="dgs-sec">
+              <h6 className="dgs-sec-title">Pengiriman</h6>
+              <div className="dgs-sec-grid">
+                <div className="dgs-field">
+                  <label>No Order</label>
                   <input
-                    type="date"
                     className="form-control form-control-sm"
-                    value={form[k] || ""}
-                    onChange={(e) => setF(k, e.target.value)}
+                    value={form.NO_ORDER || ""}
+                    maxLength={64}
+                    onChange={(e) => setF("NO_ORDER", e.target.value)}
                   />
                 </div>
-              ))}
-              <div className="dgs-field">
-                <label>Tipe Ongkir</label>
-                <select
-                  className="form-control form-control-sm"
-                  value={form.TIPE_ONGKIR || "NORMAL"}
-                  onChange={(e) => setF("TIPE_ONGKIR", e.target.value)}
-                >
-                  <option value="NORMAL">NORMAL</option>
-                  <option value="SUBSIDI">SUBSIDI</option>
-                </select>
-              </div>
-              {FEE_FIELDS.map(([k, label]) => numInput(k, label))}
-              <div className="dgs-field dgs-check">
-                <label>
+                <div className="dgs-field">
+                  <label>No Resi</label>
                   <input
-                    type="checkbox"
-                    checked={Boolean(form.DPP_CHECK)}
-                    onChange={(e) => setF("DPP_CHECK", e.target.checked)}
-                  />{" "}
-                  DPP
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(form.PPN_CHECK)}
-                    onChange={(e) => setF("PPN_CHECK", e.target.checked)}
-                  />{" "}
-                  PPN
-                </label>
+                    className="form-control form-control-sm"
+                    value={form.NOMOR_RESI || ""}
+                    maxLength={50}
+                    onChange={(e) => setF("NOMOR_RESI", e.target.value)}
+                  />
+                </div>
+                {[
+                  ["TGL_PO", "Tgl PO"],
+                  ["TGL_KIRIM", "Tgl Kirim"],
+                  ["TGL_SAMPAI", "Tgl Sampai"],
+                ].map(([k, label]) => (
+                  <div className="dgs-field" key={k}>
+                    <label>{label}</label>
+                    <input
+                      type="date"
+                      className="form-control form-control-sm"
+                      value={form[k] || ""}
+                      onChange={(e) => setF(k, e.target.value)}
+                    />
+                  </div>
+                ))}
+                <div className="dgs-field">
+                  <label>Tipe Ongkir</label>
+                  <select
+                    className="form-control form-control-sm"
+                    value={form.TIPE_ONGKIR || "NORMAL"}
+                    onChange={(e) => setF("TIPE_ONGKIR", e.target.value)}
+                  >
+                    <option value="NORMAL">NORMAL</option>
+                    <option value="SUBSIDI">SUBSIDI</option>
+                  </select>
+                </div>
               </div>
-              <div className="dgs-field">
-                <label>Total AR (tersimpan)</label>
-                <div className="dgs-readonly">{form.TOTALAR === "" || form.TOTALAR == null ? "—" : fmtNum(form.TOTALAR)}</div>
+            </section>
+
+            <section className="dgs-sec">
+              <h6 className="dgs-sec-title">
+                Biaya
+                <span className="dgs-sec-checks">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(form.DPP_CHECK)}
+                      onChange={(e) => setF("DPP_CHECK", e.target.checked)}
+                    />{" "}
+                    DPP
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(form.PPN_CHECK)}
+                      onChange={(e) => setF("PPN_CHECK", e.target.checked)}
+                    />{" "}
+                    PPN
+                  </label>
+                </span>
+              </h6>
+              <div className="dgs-sec-grid">{FEE_FIELDS.map(([k, label]) => numInput(k, label))}</div>
+            </section>
+
+            <section className="dgs-sec dgs-sec--flush">
+              <h6 className="dgs-sec-title dgs-sec-title--pad">
+                Item
+                <small>
+                  {hasFormula ? `rumus komisi ${mp}` : `${mp || "marketplace"} tanpa rumus otomatis`}
+                </small>
+              </h6>
+              <div className="dgs-table-wrap">
+                <table className="dgs-table dgs-table--items">
+                  <thead>
+                    <tr>
+                      <th>PLU</th>
+                      <th>Deskripsi</th>
+                      <th className="num">Qty</th>
+                      <th className="num">Harga POS</th>
+                      <th className="num">Harga MP</th>
+                      <th className="num">Diskon</th>
+                      <th className="num">Subsidi</th>
+                      <th className="num">Komisi %</th>
+                      <th className="num">Total Sales</th>
+                      <th className="num">Komisi</th>
+                      <th className="num">DPP</th>
+                      <th className="num">PPN</th>
+                      <th className="num">PPh23</th>
+                      <th className="num">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((it, i) => {
+                      const c = computed[i];
+                      const editable = Number(it.ID) > 0;
+                      const inp = (k) => (
+                        <input
+                          type="number"
+                          step="any"
+                          className="form-control form-control-sm dgs-cell-input"
+                          disabled={!editable}
+                          value={it[k]}
+                          onChange={(e) => setItem(i, k, e.target.value)}
+                        />
+                      );
+                      return (
+                        <tr key={cellOf(it, "ID_TR_SALES_DETAIL") || i}>
+                          <td>{cellOf(it, "PLU")}</td>
+                          <td className="dgs-desc">{cellOf(it, "DESKRIPSI")}</td>
+                          <td className="num">{fmtNum(it.QTY)}</td>
+                          <td className="num">{fmtNum(it.PRICE_POS)}</td>
+                          <td className="num">{inp("HARGA_JUAL")}</td>
+                          <td className="num">{inp("DISKON")}</td>
+                          <td className="num">{inp("SUBSIDI")}</td>
+                          <td className="num">{inp("KOMISI")}</td>
+                          <td className="num">{fmtDec(c.TOTAL_SALES)}</td>
+                          <td className="num">{fmtNum(c.KOMISI_AWAL)}</td>
+                          <td className="num">{fmtNum(c.KOMISI_NILAI)}</td>
+                          <td className="num">{fmtNum(c.PPN)}</td>
+                          <td className="num">{fmtNum(c.PPH23)}</td>
+                          <td className="num">{fmtNum(c.TOTAL)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={8}>TOTAL</td>
+                      <td className="num">{fmtDec(sums.TOTAL_SALES)}</td>
+                      <td className="num">{fmtNum(sums.KOMISI_AWAL)}</td>
+                      <td className="num">{fmtNum(sums.KOMISI_NILAI)}</td>
+                      <td className="num">{fmtNum(sums.PPN)}</td>
+                      <td className="num">{fmtNum(sums.PPH23)}</td>
+                      <td className="num">{fmtNum(sums.TOTAL)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-            </div>
-
-            <div className="dgs-section-title">
-              Item {hasFormula ? <small>· rumus komisi {mp}</small> : <small>· {mp || "marketplace"} tanpa rumus otomatis</small>}
-            </div>
-            <div className="dgs-table-wrap">
-              <table className="dgs-table dgs-table--items">
-                <thead>
-                  <tr>
-                    <th>PLU</th>
-                    <th>Deskripsi</th>
-                    <th className="num">Qty</th>
-                    <th className="num">Harga POS</th>
-                    <th className="num">Harga MP</th>
-                    <th className="num">Diskon</th>
-                    <th className="num">Subsidi</th>
-                    <th className="num">Komisi %</th>
-                    <th className="num">Total Sales</th>
-                    <th className="num">Komisi</th>
-                    <th className="num">DPP</th>
-                    <th className="num">PPN</th>
-                    <th className="num">PPH23</th>
-                    <th className="num">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((it, i) => {
-                    const c = computed[i];
-                    const editable = Number(it.ID) > 0;
-                    const inp = (k) => (
-                      <input
-                        type="number"
-                        step="any"
-                        className="form-control form-control-sm dgs-cell-input"
-                        disabled={!editable}
-                        value={it[k]}
-                        onChange={(e) => setItem(i, k, e.target.value)}
-                      />
-                    );
-                    return (
-                      <tr key={cellOf(it, "ID_TR_SALES_DETAIL") || i}>
-                        <td>{cellOf(it, "PLU")}</td>
-                        <td>{cellOf(it, "DESKRIPSI")}</td>
-                        <td className="num">{fmtNum(it.QTY)}</td>
-                        <td className="num">{fmtNum(it.PRICE_POS)}</td>
-                        <td className="num">{inp("HARGA_JUAL")}</td>
-                        <td className="num">{inp("DISKON")}</td>
-                        <td className="num">{inp("SUBSIDI")}</td>
-                        <td className="num">{inp("KOMISI")}</td>
-                        <td className="num">{fmtDec(c.TOTAL_SALES)}</td>
-                        <td className="num">{fmtNum(c.KOMISI_AWAL)}</td>
-                        <td className="num">{fmtNum(c.KOMISI_NILAI)}</td>
-                        <td className="num">{fmtNum(c.PPN)}</td>
-                        <td className="num">{fmtNum(c.PPH23)}</td>
-                        <td className="num">{fmtNum(c.TOTAL)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan={8}>TOTAL</td>
-                    <td className="num">{fmtDec(sums.TOTAL_SALES)}</td>
-                    <td className="num">{fmtNum(sums.KOMISI_AWAL)}</td>
-                    <td className="num">{fmtNum(sums.KOMISI_NILAI)}</td>
-                    <td className="num">{fmtNum(sums.PPN)}</td>
-                    <td className="num">{fmtNum(sums.PPH23)}</td>
-                    <td className="num">{fmtNum(sums.TOTAL)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            <div className="dgs-actions">
-              <span className="dgs-hint">Total AR dihitung ulang server dari item &amp; biaya saat disimpan.</span>
-              <span className="dgs-spacer" />
-              <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={onClose}>
-                Batal
-              </button>
-              <button type="button" className="reg-ar-btn" disabled={saving} onClick={save}>
-                <Icon name="save" /> {saving ? "Menyimpan…" : exists ? "Simpan" : "Buat AR"}
-              </button>
-            </div>
+            </section>
           </>
         ) : null}
       </ModalBody>
+      <div className="dgs-modal-foot">
+        <span className="dgs-hint">Total AR dihitung ulang server dari item &amp; biaya saat disimpan.</span>
+        <span className="dgs-spacer" />
+        <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={onClose}>
+          Batal
+        </button>
+        <button type="button" className="reg-ar-btn" disabled={saving || loading || Boolean(error)} onClick={save}>
+          <Icon name="save" /> {saving ? "Menyimpan…" : exists ? "Simpan" : "Buat AR"}
+        </button>
+      </div>
     </Modal>
   );
 };

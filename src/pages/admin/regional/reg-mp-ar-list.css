@@ -736,6 +736,33 @@
   flex-wrap: wrap;
 }
 
+.reg-ar-real {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  background: #e5e9f2;
+  color: #526484;
+}
+
+.reg-ar-real.is-ok {
+  background: #d9f6ea;
+  color: #0b7a4b;
+}
+
+.reg-ar-real.is-warn {
+  background: #fde8d4;
+  color: #b3500a;
+}
+
+.reg-ar-real.is-muted {
+  background: #eef0f5;
+  color: #8094ae;
+}
+
 .reg-ar-act-btn {
   display: inline-flex;
   align-items: center;
