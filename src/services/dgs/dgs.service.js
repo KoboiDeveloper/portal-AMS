@@ -5,6 +5,8 @@ const base = "/dgs/mp";
 
 export const getDgsDashboard = (params = {}) => api.get(`${base}/dashboard`, { params });
 export const getDgsMarketplaces = () => api.get(`${base}/marketplaces`);
+export const getDgsProductAnalysis = (params = {}) =>
+  api.get(`${base}/analisa-barang`, { params, timeout: 120000 });
 
 export const getDgsPrasales = (params = {}) => api.get(`${base}/prasales`, { params });
 export const getDgsPrasalesItems = (id) =>

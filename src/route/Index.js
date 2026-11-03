@@ -287,6 +287,7 @@ import {
 } from "../pages/admin/regional/pages";
 import DgsDashboardPage from "../pages/admin/dgs/DgsDashboardPage";
 import DgsPrasalesPage from "../pages/admin/dgs/DgsPrasalesPage";
+import DgsProductAnalysisPage from "../pages/admin/dgs/DgsProductAnalysisPage";
 import DgsKomisiSettingPage from "../pages/admin/dgs/DgsKomisiSettingPage";
 import { appPath } from "../lib/paths";
 
@@ -638,6 +639,7 @@ const Router = () => {
           <Route path="dgs">
             <Route index element={<Navigate to={appPath("/dgs/dashboard")} replace />} />
             <Route path="dashboard" element={<DgsDashboardPage />} />
+            <Route path="analisa-barang" element={<DgsProductAnalysisPage />} />
             <Route path="prasales" element={<DgsPrasalesPage />} />
             <Route path="ar-list" element={<RegMpArListPage dgs />} />
             <Route path="ar-realisasi" element={<RegMpArRealisasiPage dgs />} />

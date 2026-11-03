@@ -20,7 +20,7 @@ const RbacLogin = () => {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    defaultValues: { username: "admin", password: "Admin@123" },
+    defaultValues: { username: "", password: "" },
   });
 
   useEffect(() => {

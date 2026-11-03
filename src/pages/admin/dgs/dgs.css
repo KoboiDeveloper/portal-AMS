@@ -98,3 +98,18 @@
 .dgs-img-slot { border: 1px dashed #c4cbdb; padding: 8px; text-align: center; font-size: 0.75rem; background: #fafbfd; }
 .dgs-img-slot img { max-width: 100%; max-height: 110px; display: block; margin: 0 auto 6px; object-fit: contain; }
 .dgs-img-slot .ph { height: 110px; display: flex; align-items: center; justify-content: center; color: #b5bdd0; }
+
+/* analisa barang */
+.dgs-actions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.dgs-insight { text-align: left; background: #fff; border: 1px solid #dbdfea; padding: 10px 12px; cursor: pointer; font: inherit; display: flex; flex-direction: column; gap: 4px; }
+.dgs-insight:hover { border-color: #6576ff; background: #f7f8ff; }
+.dgs-insight.is-active { border-color: #6576ff; box-shadow: 0 0 0 2px rgba(101, 118, 255, 0.25); background: #f1f3ff; }
+.dgs-insight.is-empty { opacity: 0.55; }
+.dgs-insight .top { display: flex; justify-content: space-between; align-items: center; }
+.dgs-insight .top strong { font-size: 1.25rem; color: #364a63; }
+.dgs-insight .rule { font-size: 0.75rem; color: #8094ae; }
+.dgs-insight .act { font-size: 0.8125rem; color: #364a63; }
+.dgs-insight .qty { font-size: 0.6875rem; font-weight: 700; color: #8094ae; text-transform: uppercase; letter-spacing: 0.04em; }
+.dgs-th-sort { cursor: pointer; user-select: none; }
+.dgs-th-sort:hover { color: #364a63; }
+
