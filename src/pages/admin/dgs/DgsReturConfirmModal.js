@@ -199,10 +199,10 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
       </ModalBody>
       <div className="dgs-modal-foot">
           <span className="dgs-spacer" />
-          <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={onClose}>
+          <button type="button" className="dgs-btn dgs-btn--ghost" onClick={onClose}>
             Batal
           </button>
-          <button type="button" className="reg-ar-btn" disabled={busy || loading} onClick={submit}>
+          <button type="button" className="dgs-btn" disabled={busy || loading} onClick={submit}>
             {busy ? "Menyimpan…" : "Simpan"}
           </button>
       </div>

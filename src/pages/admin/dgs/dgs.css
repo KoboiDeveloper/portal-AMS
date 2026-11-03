@@ -38,9 +38,6 @@
 .dgs-hint { color: #8094ae; font-size: 0.75rem; }
 .dgs-retur-box { display: flex; flex: 1 1 auto; gap: 8px; align-items: center; }
 .dgs-retur-box input { flex: 1 1 auto; }
-.dgs-btn-proses { background: #0b7a4b !important; border-color: #0b7a4b !important; color: #fff !important; }
-.dgs-btn-proses:disabled { opacity: 0.45; }
-
 .dgs-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-bottom: 14px; }
 .dgs-field label { display: block; font-size: 0.6875rem; font-weight: 700; color: #8094ae; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
 .dgs-field.dgs-check { display: flex; align-items: flex-end; gap: 16px; padding-bottom: 6px; }
@@ -138,6 +135,54 @@
 .dgs-modal-foot { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 18px; border-top: 1px solid #e5e9f2; background: #f8f9fc; }
 .dgs-modal-foot .dgs-retur-box { flex: 1 1 320px; }
 
+/* Tombol aksi DGS — class sendiri, warna solid selalu terlihat (tanpa hover) */
+.dgs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  border: 1px solid #0f2b5b;
+  background: #0f2b5b;
+  color: #fff;
+}
+.dgs-btn .icon { color: #fff; }
+.dgs-btn:disabled {
+  background: #9aa8c0;
+  border-color: #9aa8c0;
+  color: #fff;
+  cursor: not-allowed;
+}
+.dgs-btn:disabled .icon { color: #fff; }
+.dgs-btn--ghost {
+  background: #fff;
+  border-color: #0f2b5b;
+  color: #0f2b5b;
+}
+.dgs-btn--ghost .icon { color: #0f2b5b; }
+.dgs-btn--ghost:disabled {
+  background: #fff;
+  border-color: #b7c2d6;
+  color: #8094ae;
+}
+.dgs-btn--ghost:disabled .icon { color: #8094ae; }
+.dgs-btn--ok {
+  background: #0b7a4b;
+  border-color: #0b7a4b;
+  color: #fff;
+}
+.dgs-btn--ok .icon { color: #fff; }
+.dgs-btn--ok:disabled {
+  background: #8fbfa8;
+  border-color: #8fbfa8;
+  color: #fff;
+}
+
 /* Edit AR: ringkasan + seksi kartu */
 .dgs-mini-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
 .dgs-mini-kpis > div { background: #f5f6fa; border: 1px solid #e5e9f2; border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
@@ -156,3 +201,50 @@
 .dgs-sec--flush .dgs-table-wrap { border: 0; }
 .dgs-table--items .dgs-desc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .dgs-cell-input { width: 96px; }
+
+/* Edit AR — layout cart.aspx */
+.dgs-cart-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e5e9f2; background: #f8f9fc; }
+.dgs-cart-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; flex: 1 1 auto; min-width: 0; }
+.dgs-cart-meta > div { min-width: 0; }
+.dgs-cart-meta span { display: block; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8094ae; margin-bottom: 2px; }
+.dgs-cart-meta strong { display: block; font-size: 0.875rem; color: #364a63; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dgs-cart-meta .form-control-wrap { max-width: 260px; }
+.dgs-cart-hero-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.dgs-cart-body { padding-top: 12px !important; }
+.dgs-cart-table-wrap { overflow: auto; border: 1px solid #c5cedd; margin-bottom: 10px; background: #fff; }
+.dgs-cart-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+.dgs-cart-table th, .dgs-cart-table td { padding: 5px 7px; border-bottom: 1px solid #e3e8f0; white-space: nowrap; vertical-align: middle; }
+.dgs-cart-table thead th { background: #7a8f3d; color: #fff; font-weight: 700; text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.02em; position: sticky; top: 0; z-index: 1; }
+.dgs-cart-table tbody tr:nth-child(even) { background: #f3f7e8; }
+.dgs-cart-table tbody tr:nth-child(odd) { background: #fff; }
+.dgs-cart-table tfoot td { background: #eef2d8; font-weight: 700; }
+.dgs-cart-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.dgs-cart-table .dgs-desc { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+.dgs-cart-table .dgs-cart-cell { width: 96px; min-width: 84px; height: 30px; text-align: right; padding: 2px 6px; font-size: 0.75rem; }
+.dgs-cart-note { font-size: 0.75rem; color: #a4600a; margin: -4px 0 10px; }
+.dgs-cart-panels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.dgs-cart-fs { margin: 0; border: 1px solid #c5cedd; padding: 10px 12px 12px; background: #fff; min-width: 0; }
+.dgs-cart-fs legend { float: none; width: auto; font-size: 0.75rem; font-weight: 700; color: #526484; padding: 0 6px; margin-left: 4px; }
+.dgs-cart-row { display: grid; grid-template-columns: 1fr 1.15fr; gap: 6px 8px; align-items: center; margin-top: 8px; }
+.dgs-cart-row .form-label { margin: 0; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #8094ae; }
+.dgs-cart-row .form-control-wrap { width: 100%; min-width: 0; }
+.dgs-cart-row .form-control,
+.dgs-cart-row .react-datepicker-wrapper,
+.dgs-cart-row .react-datepicker__input-container,
+.dgs-cart-row .react-datepicker__input-container input { width: 100%; }
+.dgs-cart-row--radio { align-items: start; }
+.dgs-cart-radios { display: flex; flex-direction: column; gap: 4px; }
+.dgs-cart-radios label { text-transform: none; font-weight: 600; color: #364a63; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; }
+.dgs-cart-radios label.is-on { color: #0b7a4b; }
+.dgs-cart-row--total strong { font-size: 0.9375rem; color: #364a63; text-align: right; font-variant-numeric: tabular-nums; }
+.dgs-cart-checks { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.dgs-cart-checks label { margin: 0; font-size: 0.875rem; font-weight: 600; color: #364a63; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.dgs-cart-saved { font-size: 0.9375rem; color: #1d4ed8; text-align: right; font-variant-numeric: tabular-nums; }
+.dgs-cart-status { margin-top: 8px; font-size: 0.75rem; font-weight: 700; color: #0b7a4b; }
+.dgs-cart-hint { margin: 10px 0 0; font-size: 0.6875rem; color: #b42318; }
+@media (max-width: 1100px) { .dgs-cart-panels { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) {
+  .dgs-cart-meta { grid-template-columns: 1fr; }
+  .dgs-cart-panels { grid-template-columns: 1fr; }
+  .dgs-cart-hero { flex-direction: column; }
+}

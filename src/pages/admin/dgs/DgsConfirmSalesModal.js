@@ -226,12 +226,12 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
                   onChange={(e) => setReturNote(e.target.value)}
                   autoFocus
                 />
-                <button type="button" className="reg-ar-btn" disabled={busy} onClick={() => runAction("retur")}>
+                <button type="button" className="dgs-btn" disabled={busy} onClick={() => runAction("retur")}>
                   Simpan Retur ({selected.size})
                 </button>
                 <button
                   type="button"
-                  className="reg-ar-btn reg-ar-btn--ghost"
+                  className="dgs-btn dgs-btn--ghost"
                   onClick={() => {
                     setReturMode(false);
                     setReturNote("");
@@ -244,7 +244,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
               <>
                 <button
                   type="button"
-                  className="reg-ar-btn"
+                  className="dgs-btn"
                   disabled={busy || !selected.size}
                   onClick={() => runAction("approve")}
                 >
@@ -252,7 +252,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
                 </button>
                 <button
                   type="button"
-                  className="reg-ar-btn reg-ar-btn--ghost"
+                  className="dgs-btn dgs-btn--ghost"
                   disabled={busy || !selected.size}
                   onClick={() => setReturMode(true)}
                 >
@@ -260,7 +260,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
                 </button>
                 <button
                   type="button"
-                  className="reg-ar-btn dgs-btn-proses"
+                  className="dgs-btn dgs-btn--ok"
                   disabled={busy || !canProses}
                   title={canProses ? "Proses transaksi" : "Semua item harus di-approve / diretur dulu"}
                   onClick={proses}
@@ -273,7 +273,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
         ) : null}
         {!isNew ? <span className="dgs-hint">Transaksi sudah diproses — tidak ada aksi.</span> : null}
         <span className="dgs-spacer" />
-        <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={close}>
+        <button type="button" className="dgs-btn dgs-btn--ghost" onClick={close}>
           Tutup
         </button>
       </div>

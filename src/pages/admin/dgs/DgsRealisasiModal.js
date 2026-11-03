@@ -44,7 +44,13 @@ const DgsRealisasiModal = ({ isOpen, invoice, marketplace, onClose, onSaved }) =
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={onClose} className="modal-dialog-centered" size="sm">
+    <Modal
+      isOpen={isOpen}
+      toggle={onClose}
+      className="modal-dialog-centered rsd-detail-modal"
+      size="sm"
+      contentClassName="dgs-modal-content"
+    >
       <div className="rsd-detail-hero">
         <div>
           <h5 className="rsd-detail-title">Realisasi AR</h5>
@@ -57,22 +63,22 @@ const DgsRealisasiModal = ({ isOpen, invoice, marketplace, onClose, onSaved }) =
           <Icon name="cross" />
         </button>
       </div>
-      <ModalBody className="rsd-detail-body">
+      <ModalBody className="rsd-detail-body dgs-modal-body">
         {error ? <div className="reg-ar-err">{error}</div> : null}
         <div className="dgs-field">
           <label>Tanggal Pelunasan</label>
           <input type="date" className="form-control" value={tgl} onChange={(e) => setTgl(e.target.value)} />
         </div>
-        <div className="dgs-actions">
-          <span className="dgs-spacer" />
-          <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={onClose}>
-            Batal
-          </button>
-          <button type="button" className="reg-ar-btn" disabled={busy} onClick={save}>
-            {busy ? "Menyimpan…" : "Simpan"}
-          </button>
-        </div>
       </ModalBody>
+      <div className="dgs-modal-foot">
+        <span className="dgs-spacer" />
+        <button type="button" className="dgs-btn dgs-btn--ghost" onClick={onClose}>
+          Batal
+        </button>
+        <button type="button" className="dgs-btn" disabled={busy} onClick={save}>
+          {busy ? "Menyimpan…" : "Simpan"}
+        </button>
+      </div>
     </Modal>
   );
 };

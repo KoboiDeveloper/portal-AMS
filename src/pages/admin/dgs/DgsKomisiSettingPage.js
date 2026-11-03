@@ -178,12 +178,12 @@ const DgsKomisiSettingPage = () => {
                   isSearchable
                 />
               </div>
-              <button type="button" className="reg-ar-btn" disabled={loading} onClick={load}>
+              <button type="button" className="dgs-btn" disabled={loading} onClick={load}>
                 <Icon name="search" /> Search
               </button>
               <button
                 type="button"
-                className="reg-ar-btn reg-ar-btn--ghost"
+                className="dgs-btn dgs-btn--ghost"
                 disabled={!mp}
                 title={mp ? "Tambah komisi baru" : "Pilih marketplace dulu"}
                 onClick={() => {
@@ -193,7 +193,7 @@ const DgsKomisiSettingPage = () => {
               >
                 <Icon name="plus" /> Add
               </button>
-              <button type="button" className="reg-ar-btn reg-ar-btn--ghost" disabled={!sel.size} onClick={remove}>
+              <button type="button" className="dgs-btn dgs-btn--ghost" disabled={!sel.size} onClick={remove}>
                 <Icon name="trash" /> Delete{sel.size ? ` (${sel.size})` : ""}
               </button>
             </div>
@@ -274,7 +274,13 @@ const DgsKomisiSettingPage = () => {
           </div>
         </PageSmoothScroll>
 
-        <Modal isOpen={Boolean(form)} toggle={() => setForm(null)} className="modal-dialog-centered" size="sm">
+        <Modal
+          isOpen={Boolean(form)}
+          toggle={() => setForm(null)}
+          className="modal-dialog-centered rsd-detail-modal"
+          size="sm"
+          contentClassName="dgs-modal-content"
+        >
           <div className="rsd-detail-hero">
             <div>
               <h5 className="rsd-detail-title">{form?.id ? "Edit Komisi" : "Tambah Komisi"}</h5>
@@ -284,7 +290,7 @@ const DgsKomisiSettingPage = () => {
               <Icon name="cross" />
             </button>
           </div>
-          <ModalBody className="rsd-detail-body">
+          <ModalBody className="rsd-detail-body dgs-modal-body">
             {formErr ? <div className="reg-ar-err">{formErr}</div> : null}
             <div className="dgs-field">
               <label>% Komisi (0–100)</label>
@@ -297,16 +303,16 @@ const DgsKomisiSettingPage = () => {
                 onKeyDown={(e) => e.key === "Enter" && save()}
               />
             </div>
-            <div className="dgs-actions">
-              <span className="dgs-spacer" />
-              <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={() => setForm(null)}>
-                Batal
-              </button>
-              <button type="button" className="reg-ar-btn" disabled={busy} onClick={save}>
-                {busy ? "Menyimpan…" : "Simpan"}
-              </button>
-            </div>
           </ModalBody>
+          <div className="dgs-modal-foot">
+            <span className="dgs-spacer" />
+            <button type="button" className="dgs-btn dgs-btn--ghost" onClick={() => setForm(null)}>
+              Batal
+            </button>
+            <button type="button" className="dgs-btn" disabled={busy} onClick={save}>
+              {busy ? "Menyimpan…" : "Simpan"}
+            </button>
+          </div>
         </Modal>
       </Content>
     </AccessGuard>
