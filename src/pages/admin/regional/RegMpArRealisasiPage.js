@@ -252,7 +252,7 @@ const RegMpArRealisasiPage = ({ dgs = false }) => {
 
             <Block>
               <div className="reg-ar-toolbar">
-                <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
+                <div className={`reg-ar-toolbar-grid reg-ar-toolbar-grid--rz ${isSudah ? "reg-ar-toolbar-grid--rz-sudah" : ""}`}>
                   <div className="reg-ar-f-item">
                     <label>Status</label>
                     <RSelect
@@ -303,9 +303,6 @@ const RegMpArRealisasiPage = ({ dgs = false }) => {
                       placeholder="Opsional"
                     />
                   </div>
-                </div>
-
-                <div className={`reg-ar-toolbar-grid ${isSudah ? "reg-ar-toolbar-grid--3" : "reg-ar-toolbar-grid--actions-only"}`}>
                   {isSudah ? (
                     <div className="reg-ar-f-item">
                       <label>Periode Pelunasan</label>
@@ -321,7 +318,6 @@ const RegMpArRealisasiPage = ({ dgs = false }) => {
                       />
                     </div>
                   ) : null}
-                  {isSudah ? <div /> : null}
                   <div className="reg-ar-f-item reg-ar-f-actions">
                     <label className="reg-ar-f-actions-label">&nbsp;</label>
                     <div className="reg-ar-actions">
