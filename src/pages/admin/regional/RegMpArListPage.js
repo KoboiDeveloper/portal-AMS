@@ -339,6 +339,7 @@ const RegMpArListPage = ({ dgs = false }) => {
   const [marketplace, setMarketplace] = useState("ALL");
   const [status, setStatus] = useState("ALL");
   const [invoice, setInvoice] = useState("");
+  const [hideRetur, setHideRetur] = useState(true);
   const [reportStore, setReportStore] = useState("ALL");
   const [tipe, setTipe] = useState("tgl_sampai");
   const [rows, setRows] = useState([]);
@@ -569,11 +570,19 @@ const RegMpArListPage = ({ dgs = false }) => {
     });
   }, [isStoreMode, rows, mode]);
 
+  const isReturRow = (row) => {
+    const st = String(cell(row, "RETUR", ["status", "STATUS"]) || "").trim();
+    if (!st || st === "-" || st === "—") return false;
+    return /retur/i.test(st) || Number(cell(row, "TOTAL_RETUR", ["total_retur"])) > 0;
+  };
+
   const sortedRows = useMemo(() => {
-    if (!sortConfig.key) return rows;
+    const base =
+      isStoreMode && hideRetur ? rows.filter((r) => !isReturRow(r)) : rows;
+    if (!sortConfig.key) return base;
     if (sortConfig.key === "__rowtotal" && mode === "total") {
       const numKeys = columns.filter((c) => c.num).map((c) => c.key);
-      const next = [...rows];
+      const next = [...base];
       next.sort((a, b) => {
         const sumA = numKeys.reduce((s, k) => s + (Number(cell(a, k)) || 0), 0);
         const sumB = numKeys.reduce((s, k) => s + (Number(cell(b, k)) || 0), 0);
@@ -581,12 +590,12 @@ const RegMpArListPage = ({ dgs = false }) => {
       });
       return next;
     }
-    const next = [...rows];
+    const next = [...base];
     next.sort((a, b) =>
       compareCell(cell(a, sortConfig.key), cell(b, sortConfig.key), sortConfig.direction)
     );
     return next;
-  }, [rows, sortConfig, mode, columns]);
+  }, [rows, sortConfig, mode, columns, isStoreMode, hideRetur]);
 
   const displayRows = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -598,6 +607,10 @@ const RegMpArListPage = ({ dgs = false }) => {
     if (page > pages) setPage(pages);
   }, [sortedRows.length, page]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [hideRetur]);
+
   const handleSort = useCallback((key) => {
     setSortConfig((prev) =>
       prev.key === key
@@ -608,13 +621,13 @@ const RegMpArListPage = ({ dgs = false }) => {
   }, []);
 
   const footerSums = useMemo(() => {
-    if (!columns.length || !rows.length) return null;
+    if (!columns.length || !sortedRows.length) return null;
     const sums = {};
     let any = false;
     columns.forEach((col) => {
       if (!col.num) return;
       let sum = 0;
-      rows.forEach((r) => {
+      sortedRows.forEach((r) => {
         const v = Number(cell(r, col.key, col.alts || []));
         if (Number.isFinite(v)) sum += v;
       });
@@ -622,17 +635,23 @@ const RegMpArListPage = ({ dgs = false }) => {
       any = true;
     });
     return any ? sums : null;
-  }, [columns, rows]);
+  }, [columns, sortedRows]);
 
   const titleMeta = useMemo(() => {
     if (!loaded) return "Pilih store / report, filter periode, lalu cari";
-    const n = rows.length.toLocaleString("id-ID");
+    const n = sortedRows.length.toLocaleString("id-ID");
     const pageInfo =
-      rows.length > PAGE_SIZE ? ` · halaman ${page}/${Math.ceil(rows.length / PAGE_SIZE)}` : "";
-    if (isStoreMode) return `${n} baris${pageInfo} · ${storeId} · ${fromDate} s/d ${toDate}`;
+      sortedRows.length > PAGE_SIZE
+        ? ` · halaman ${page}/${Math.ceil(sortedRows.length / PAGE_SIZE)}`
+        : "";
+    const hidden =
+      isStoreMode && hideRetur && rows.length > sortedRows.length
+        ? ` · hide retur ${rows.length - sortedRows.length}`
+        : "";
+    if (isStoreMode) return `${n} baris${pageInfo}${hidden} · ${storeId} · ${fromDate} s/d ${toDate}`;
     const label = REPORT_MODES.find((m) => m.id === mode)?.label || mode;
     return `${n} baris${pageInfo} · ${label} · ${fromDate} s/d ${toDate}`;
-  }, [loaded, isStoreMode, rows.length, storeId, fromDate, toDate, mode, page]);
+  }, [loaded, isStoreMode, sortedRows.length, rows.length, hideRetur, storeId, fromDate, toDate, mode, page]);
 
   const exportExcel = useCallback(async () => {
     if (!sortedRows.length || !columns.length) return;
@@ -974,26 +993,64 @@ const RegMpArListPage = ({ dgs = false }) => {
 
             {error ? <div className="reg-ar-err">{error}</div> : null}
 
-            <div className="reg-ar-quick">
-              <Icon name="search" className="reg-ar-quick-ico" />
-              <input
-                className="reg-ar-quick-input"
-                value={invoice}
-                onChange={(e) => setInvoice(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") loadData();
-                }}
-                placeholder="Pencarian cepat No. Invoice / Order ID"
-              />
-              {String(invoice || "").trim() ? (
-                <button
-                  type="button"
-                  className="reg-ar-quick-clear"
-                  aria-label="Clear search"
-                  onClick={() => setInvoice("")}
-                >
-                  ×
-                </button>
+            <div className="reg-ar-quick-row">
+              <div className="reg-ar-quick">
+                <Icon name="search" className="reg-ar-quick-ico" />
+                <input
+                  className="reg-ar-quick-input"
+                  value={invoice}
+                  onChange={(e) => setInvoice(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") loadData();
+                  }}
+                  placeholder="Pencarian cepat No. Invoice / Order ID"
+                />
+                {String(invoice || "").trim() ? (
+                  <button
+                    type="button"
+                    className="reg-ar-quick-clear"
+                    aria-label="Clear search"
+                    onClick={() => setInvoice("")}
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </div>
+
+              {isStoreMode ? (
+                <div className="reg-ar-retur-toggle" role="radiogroup" aria-label="Tampilkan status retur">
+                  <label className={hideRetur ? "is-on" : ""}>
+                    <input
+                      type="radio"
+                      name="ar-retur-vis"
+                      checked={hideRetur}
+                      onChange={() => setHideRetur(true)}
+                    />
+                    Hide Retur
+                  </label>
+                  <label className={!hideRetur ? "is-on" : ""}>
+                    <input
+                      type="radio"
+                      name="ar-retur-vis"
+                      checked={!hideRetur}
+                      onChange={() => setHideRetur(false)}
+                    />
+                    Tampilkan Retur
+                  </label>
+                </div>
+              ) : (
+                <span className="reg-ar-quick-spacer" />
+              )}
+
+              {sortedRows.length > PAGE_SIZE ? (
+                <SimplePager page={page} total={sortedRows.length} size={PAGE_SIZE} onChange={setPage} />
+              ) : loaded && sortedRows.length > 0 ? (
+                <span className="reg-ar-record-info">
+                  {sortedRows.length.toLocaleString("id-ID")} baris
+                  {isStoreMode && hideRetur && rows.length !== sortedRows.length
+                    ? ` · retur disembunyikan (${(rows.length - sortedRows.length).toLocaleString("id-ID")})`
+                    : ""}
+                </span>
               ) : null}
             </div>
 
@@ -1002,17 +1059,15 @@ const RegMpArListPage = ({ dgs = false }) => {
             ) : null}
 
             {loaded && !loading && !sortedRows.length ? (
-              <div className="reg-ar-empty">Tidak ada data untuk filter ini.</div>
+              <div className="reg-ar-empty">
+                {isStoreMode && hideRetur && rows.length
+                  ? "Semua baris tersembunyi (Hide Retur aktif). Pilih Tampilkan Retur untuk melihat data retur."
+                  : "Tidak ada data untuk filter ini."}
+              </div>
             ) : null}
 
             {sortedRows.length > 0 && columns.length > 0 ? (
               <>
-                <SimplePager
-                  page={page}
-                  total={sortedRows.length}
-                  size={PAGE_SIZE}
-                  onChange={setPage}
-                />
                 <div className="reg-ar-table-wrap">
                   <table ref={tableRef} className="reg-ar-table">
                     <thead>

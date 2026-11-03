@@ -260,12 +260,16 @@
 .reg-ar-quick-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 0 0 10px;
-  padding: 4px 0 0;
-  border-bottom: 0;
+  gap: 16px 20px;
+  margin: 0 0 12px;
+  padding: 0;
   min-height: 40px;
+  flex-wrap: wrap;
+}
+
+.reg-ar-quick-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .reg-ar-record-info {
@@ -275,7 +279,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ams-steel);
-  line-height: 32px;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
@@ -284,22 +288,54 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 10px;
-  padding: 4px 0 8px;
+  margin: 0;
+  padding: 0 0 6px;
   border-bottom: 1px solid var(--ams-hair);
   width: 280px;
   max-width: 100%;
-}
-
-.reg-ar-quick-row .reg-ar-quick {
-  margin: 0;
-  padding: 4px 0 8px;
-  border-bottom: 1px solid var(--ams-hair);
   flex: 0 0 auto;
+  align-self: center;
 }
 
 .reg-ar-quick-row .reg-ar-quick:focus-within {
   border-bottom-color: var(--ams-navy);
+}
+
+.reg-ar-retur-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+
+.reg-ar-retur-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ams-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.reg-ar-retur-toggle label.is-on {
+  color: var(--ams-navy);
+}
+
+.reg-ar-retur-toggle input {
+  margin: 0;
+  accent-color: var(--ams-navy);
+}
+
+.reg-ar-quick-row .reg-ar-pager {
+  margin: 0;
+  padding: 0;
+  margin-left: auto;
 }
 
 .reg-ar-quick-ico {
