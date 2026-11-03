@@ -60,6 +60,18 @@
 .dgs-preview span { font-size: 0.6875rem; color: #8094ae; text-transform: uppercase; font-weight: 700; }
 .dgs-preview strong { font-size: 1.05rem; }
 
+/* Ar_List: UPLOAD INVOICE / UPLOAD AR */
+.dgs-upl { margin: 0 0 14px; }
+.dgs-upl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; }
+.dgs-upl-card { background: #fff; border: 1px solid #dbdfea; padding: 12px 14px; }
+.dgs-upl-title { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.04em; color: #364a63; }
+.dgs-upl-store { margin-left: auto; font-size: 0.6875rem; padding: 1px 8px; background: #eef2ff; color: #1d4ed8; border-radius: 999px; }
+.dgs-upl-row { display: flex; align-items: center; gap: 8px; }
+.dgs-upl-file { flex: 1 1 auto; min-width: 0; }
+.dgs-upl-alert { margin-top: 10px; padding: 8px 12px; background: #fdecea; border: 1px solid #f5c2bd; color: #b3261e; font-size: 0.8125rem; }
+.dgs-upl-sum { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 0.75rem; color: #8094ae; }
+.dgs-upl-sum strong { color: #364a63; font-size: 0.875rem; }
+
 /* dashboard */
 .dgs-dash .dgs-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px; }
 .dgs-kpi { background: #fff; border: 1px solid #dbdfea; padding: 12px 14px; position: relative; overflow: hidden; }

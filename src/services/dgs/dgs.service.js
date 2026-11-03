@@ -19,8 +19,8 @@ export const getDgsAr = (idTrSalesHeader) =>
   api.get(`${base}/ar/${encodeURIComponent(idTrSalesHeader)}`);
 export const postDgsArSave = (payload) => api.post(`${base}/ar/save`, payload);
 export const postDgsArTemplate = (invoices) => api.post(`${base}/ar/template`, { invoices });
-export const postDgsArUpload07E = (payload) =>
-  api.post(`${base}/ar/upload-07e`, payload, { timeout: 300000 });
+export const postDgsArUpload = (payload) =>
+  api.post(`${base}/ar/upload`, payload, { timeout: 300000 });
 
 export const postDgsArRealisasiSave = (payload) => api.post(`${base}/ar-realisasi/save`, payload);
 

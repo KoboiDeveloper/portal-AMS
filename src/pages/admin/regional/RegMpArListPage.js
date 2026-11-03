@@ -29,7 +29,7 @@ import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
 import DgsConfirmSalesModal from "../dgs/DgsConfirmSalesModal";
 import DgsArEditModal from "../dgs/DgsArEditModal";
-import { DgsKomisiStrip, DgsArTemplateModal, DgsArUploadModal } from "../dgs/DgsArTools";
+import { DgsKomisiStrip, DgsArUploadPanel, AR_UPLOAD_STORES } from "../dgs/DgsArTools";
 import "./reg-mp-ar-list.css";
 import "./reg-sales-detail.css";
 
@@ -322,8 +322,6 @@ const isSummaryRow = (row) => {
 const RegMpArListPage = ({ dgs = false }) => {
   const [confirmId, setConfirmId] = useState("");
   const [arEditId, setArEditId] = useState("");
-  const [templateOpen, setTemplateOpen] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
   const [mode, setMode] = useState("store"); // store | total | detail | plu | transaksi
   const [storeId, setStoreId] = useState("02E");
   const [fromDate, setFromDate] = useState(monthStartYmd());
@@ -942,30 +940,6 @@ const RegMpArListPage = ({ dgs = false }) => {
                     <Icon name="download" />
                     Export Excel
                   </button>
-                  {dgs ? (
-                    <>
-                      <button
-                        type="button"
-                        className="reg-ar-btn reg-ar-btn--ghost"
-                        title="Download template AR dari daftar invoice"
-                        onClick={() => setTemplateOpen(true)}
-                      >
-                        <Icon name="file-xls" />
-                        AR Template
-                      </button>
-                      {isStoreMode && storeId === "07E" ? (
-                        <button
-                          type="button"
-                          className="reg-ar-btn reg-ar-btn--ghost"
-                          title="Upload AR toko 07E"
-                          onClick={() => setUploadOpen(true)}
-                        >
-                          <Icon name="upload" />
-                          Upload AR 07E
-                        </button>
-                      ) : null}
-                    </>
-                  ) : null}
                   <button
                     type="button"
                     className="reg-ar-btn"
@@ -978,6 +952,10 @@ const RegMpArListPage = ({ dgs = false }) => {
                 </div>
               </div>
             </div>
+
+            {dgs && isStoreMode && AR_UPLOAD_STORES.includes(storeId) ? (
+              <DgsArUploadPanel store={storeId} onDone={loadData} />
+            ) : null}
 
             {error ? <div className="reg-ar-err">{error}</div> : null}
 
@@ -1142,12 +1120,6 @@ const RegMpArListPage = ({ dgs = false }) => {
                 trId={arEditId}
                 onClose={() => setArEditId("")}
                 onSaved={loadData}
-              />
-              <DgsArTemplateModal isOpen={templateOpen} onClose={() => setTemplateOpen(false)} />
-              <DgsArUploadModal
-                isOpen={uploadOpen}
-                onClose={() => setUploadOpen(false)}
-                onDone={loadData}
               />
             </>
           ) : null}

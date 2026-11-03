@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Modal, ModalBody } from "reactstrap";
 import { toast } from "react-toastify";
 import { Icon } from "../../../components/Component";
-import { getDgsKomisiInfo, postDgsArTemplate, postDgsArUpload07E } from "../../../services/dgs/dgs.service";
+import { getDgsKomisiInfo, postDgsArTemplate, postDgsArUpload } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import {
   buildArTemplateWorkbook,
@@ -11,7 +10,6 @@ import {
   fmtNum,
   parseArUploadFile,
   parseInvoiceFile,
-  parseInvoiceText,
   todayYmd,
 } from "./dgsUtils";
 import "./dgs.css";
@@ -59,38 +57,61 @@ export const DgsKomisiStrip = () => {
   );
 };
 
-/** AR TEMPLATE: paste/upload invoice list → xlsx with sheets AR + DETAIL. */
-export const DgsArTemplateModal = ({ isOpen, onClose }) => {
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
-  const fileRef = useRef(null);
+/** Toko yang punya section UPLOAD INVOICE / UPLOAD AR di Ar_List.aspx. */
+export const AR_UPLOAD_STORES = ["01E", "02E", "03E", "04E", "05E", "06E", "07E", "08E", "09E", "10E", "11E"];
 
+/**
+ * Parity Ar_List.aspx (per tab toko): section "UPLOAD INVOICE" (+ AR TEMPLATE) dan "UPLOAD AR".
+ * - AR TEMPLATE: file kolom 1 = INVOICE → xlsx sheet AR + DETAIL.
+ * - UPLOAD AR: file template yang sudah diisi → temp table toko → xsp_export_ar_market_place_<store>.
+ */
+export const DgsArUploadPanel = ({ store, onDone }) => {
+  const invRef = useRef(null);
+  const arRef = useRef(null);
+  const [invFile, setInvFile] = useState(null);
+  const [arFile, setArFile] = useState(null);
+  const [tplBusy, setTplBusy] = useState(false);
+  const [upBusy, setUpBusy] = useState(false);
+  const [parsed, setParsed] = useState(null);
+  const [error, setError] = useState("");
+
+  // ganti toko → bersihkan pilihan file
   useEffect(() => {
-    if (isOpen) setText("");
-  }, [isOpen]);
+    setInvFile(null);
+    setArFile(null);
+    setParsed(null);
+    setError("");
+    if (invRef.current) invRef.current.value = "";
+    if (arRef.current) arRef.current.value = "";
+  }, [store]);
 
-  const invoices = parseInvoiceText(text);
-
-  const onFile = async (e) => {
-    const f = e.target.files?.[0];
-    e.target.value = "";
+  const onArFile = useCallback(async (e) => {
+    const f = e.target.files?.[0] || null;
+    setArFile(f);
+    setParsed(null);
+    setError("");
     if (!f) return;
     try {
-      const list = await parseInvoiceFile(f);
-      setText(list.join("\n"));
-      toast.info(`${list.length} invoice dibaca dari file`);
+      if (!/\.xlsx$/i.test(f.name)) throw new Error("Gunakan file .xlsx (hasil AR Template)");
+      setParsed(await parseArUploadFile(f));
     } catch (err) {
-      toast.error(errMsg(err, "Gagal membaca file"));
+      setError(errMsg(err, "Gagal membaca file"));
     }
-  };
+  }, []);
 
-  const generate = async () => {
-    if (!invoices.length) {
-      toast.warn("Isi daftar invoice dulu");
+  const makeTemplate = async () => {
+    if (!invFile) {
+      toast.warn("Pilih file invoice dulu");
       return;
     }
-    setBusy(true);
+    setTplBusy(true);
+    setError("");
     try {
+      const invoices = await parseInvoiceFile(invFile);
+      if (!invoices.length) {
+        toast.warn("Kolom 1 file tidak berisi INVOICE");
+        return;
+      }
       const res = await postDgsArTemplate(invoices);
       if (!isSuccess(res)) {
         toast.error(res?.responseMessage || "Gagal membuat template");
@@ -103,104 +124,42 @@ export const DgsArTemplateModal = ({ isOpen, onClose }) => {
         return;
       }
       const wb = buildArTemplateWorkbook({ ar, detail });
-      await downloadWorkbook(wb, `AR_TEMPLATE_${todayYmd()}.xlsx`);
+      await downloadWorkbook(wb, `AR_TEMPLATE_${store}_${todayYmd()}.xlsx`);
       const found = new Set(detail.map((d) => String(d.NO_INVOICE).toUpperCase()));
       const miss = invoices.filter((i) => !found.has(i)).length;
       toast.success(`Template: ${detail.length} invoice, ${ar.length} item${miss ? ` · ${miss} invoice tidak ditemukan` : ""}`);
-      onClose?.();
     } catch (err) {
-      toast.error(errMsg(err));
+      toast.error(errMsg(err, "Gagal membaca file invoice"));
     } finally {
-      setBusy(false);
+      setTplBusy(false);
     }
   };
 
-  return (
-    <Modal isOpen={isOpen} toggle={onClose} className="modal-dialog-centered rsd-detail-modal">
-      <div className="rsd-detail-hero">
-        <div>
-          <h5 className="rsd-detail-title">AR Template</h5>
-          <p className="rsd-detail-sub">Daftar No. Invoice → file Excel (sheet AR + DETAIL)</p>
-        </div>
-        <button type="button" className="btn btn-icon btn-trigger" onClick={onClose} aria-label="Tutup">
-          <Icon name="cross" />
-        </button>
-      </div>
-      <ModalBody className="rsd-detail-body">
-        <textarea
-          className="form-control dgs-textarea"
-          rows={8}
-          placeholder={"Tempel No. Invoice, satu per baris\n(atau pisahkan dengan koma / spasi)"}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <div className="dgs-actions">
-          <span className="dgs-hint">{invoices.length.toLocaleString("id-ID")} invoice unik (maks 1.500)</span>
-          <span className="dgs-spacer" />
-          <input ref={fileRef} type="file" accept=".xlsx,.csv,.txt" hidden onChange={onFile} />
-          <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={() => fileRef.current?.click()}>
-            <Icon name="upload" /> Dari File
-          </button>
-          <button type="button" className="reg-ar-btn" disabled={busy || !invoices.length} onClick={generate}>
-            <Icon name="download" /> {busy ? "Membuat…" : "Download Template"}
-          </button>
-        </div>
-      </ModalBody>
-    </Modal>
-  );
-};
-
-/** Upload AR (07E only): parse xlsx in browser, preview, then send JSON to API. */
-export const DgsArUploadModal = ({ isOpen, onClose, onDone }) => {
-  const [parsed, setParsed] = useState(null);
-  const [fileName, setFileName] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const fileRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      setParsed(null);
-      setFileName("");
-      setError("");
-    }
-  }, [isOpen]);
-
-  const onFile = useCallback(async (e) => {
-    const f = e.target.files?.[0];
-    e.target.value = "";
-    if (!f) return;
-    setError("");
-    setParsed(null);
-    setFileName(f.name);
-    try {
-      if (!/\.xlsx$/i.test(f.name)) throw new Error("Gunakan file .xlsx (hasil AR Template)");
-      setParsed(await parseArUploadFile(f));
-    } catch (err) {
-      setError(errMsg(err, "Gagal membaca file"));
-    }
-  }, []);
-
-  const send = async () => {
-    if (!parsed) return;
-    if (!window.confirm(`Upload ${parsed.ar.length} item AR & ${parsed.detail.length} invoice ke toko 07E? Data AR akan diperbarui.`)) {
+  const sendAr = async () => {
+    if (!arFile || !parsed) {
+      toast.warn("Pilih file AR dulu");
       return;
     }
-    setBusy(true);
+    if (!window.confirm(`Upload ${parsed.ar.length} item AR & ${parsed.detail.length} invoice ke toko ${store}? Data AR akan diperbarui.`)) {
+      return;
+    }
+    setUpBusy(true);
     setError("");
     try {
-      const res = await postDgsArUpload07E({ ar: parsed.ar, detail: parsed.detail });
+      const res = await postDgsArUpload({ store, ar: parsed.ar, detail: parsed.detail });
       if (!isSuccess(res)) {
         setError(res?.responseMessage || "Upload gagal");
         return;
       }
       toast.success("BERHASIL, JANGAN LUPA CEK LAGI!");
+      setArFile(null);
+      setParsed(null);
+      if (arRef.current) arRef.current.value = "";
       onDone?.();
-      onClose?.();
     } catch (err) {
       setError(errMsg(err, "Upload gagal"));
     } finally {
-      setBusy(false);
+      setUpBusy(false);
     }
   };
 
@@ -208,51 +167,64 @@ export const DgsArUploadModal = ({ isOpen, onClose, onDone }) => {
   const totalAr = parsed ? parsed.detail.reduce((s, d) => s + Number(d.TOTAL_AR_PLUS_ONGKIR || 0), 0) : 0;
 
   return (
-    <Modal isOpen={isOpen} toggle={onClose} className="modal-dialog-centered rsd-detail-modal">
-      <div className="rsd-detail-hero">
-        <div>
-          <h5 className="rsd-detail-title">Upload AR · 07E</h5>
-          <p className="rsd-detail-sub">File template (sheet AR + DETAIL) — hanya baris toko 07E yang diterima</p>
-        </div>
-        <button type="button" className="btn btn-icon btn-trigger" onClick={onClose} aria-label="Tutup">
-          <Icon name="cross" />
-        </button>
-      </div>
-      <ModalBody className="rsd-detail-body">
-        {error ? <div className="reg-ar-err">{error}</div> : null}
-        <input ref={fileRef} type="file" accept=".xlsx" hidden onChange={onFile} />
-        <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={() => fileRef.current?.click()}>
-          <Icon name="upload" /> Pilih File .xlsx
-        </button>
-        {fileName ? <span className="dgs-hint ml-2"> {fileName}</span> : null}
-
-        {parsed ? (
-          <div className="dgs-preview">
-            <div>
-              <span>Item AR</span>
-              <strong>{fmtNum(parsed.ar.length)}</strong>
-            </div>
-            <div>
-              <span>Invoice (DETAIL)</span>
-              <strong>{fmtNum(invoices)}</strong>
-            </div>
-            <div>
-              <span>Total AR + Ongkir</span>
-              <strong>{fmtNum(totalAr)}</strong>
-            </div>
+    <div className="dgs-upl">
+      {error ? <div className="reg-ar-err">{error}</div> : null}
+      <div className="dgs-upl-grid">
+        <section className="dgs-upl-card">
+          <h6 className="dgs-upl-title">
+            <Icon name="file-xls" /> UPLOAD INVOICE <span className="dgs-upl-store">{store}</span>
+          </h6>
+          <div className="dgs-upl-row">
+            <input
+              ref={invRef}
+              type="file"
+              className="form-control form-control-sm dgs-upl-file"
+              accept=".xlsx,.csv,.txt"
+              onChange={(e) => setInvFile(e.target.files?.[0] || null)}
+            />
+            <button type="button" className="reg-ar-btn" disabled={tplBusy} onClick={makeTemplate}>
+              <Icon name="download" /> {tplBusy ? "Membuat…" : "AR TEMPLATE"}
+            </button>
           </div>
-        ) : null}
+          <div className="dgs-upl-alert">
+            <strong>Heads up!</strong> PASTIKAN DI KOLOM 1 BERISI! INVOICE
+          </div>
+        </section>
 
-        <div className="dgs-actions">
-          <span className="dgs-spacer" />
-          <button type="button" className="reg-ar-btn reg-ar-btn--ghost" onClick={onClose}>
-            Batal
-          </button>
-          <button type="button" className="reg-ar-btn" disabled={!parsed || busy} onClick={send}>
-            <Icon name="upload-cloud" /> {busy ? "Mengupload…" : "Upload"}
-          </button>
-        </div>
-      </ModalBody>
-    </Modal>
+        <section className="dgs-upl-card">
+          <h6 className="dgs-upl-title">
+            <Icon name="upload" /> UPLOAD AR <span className="dgs-upl-store">{store}</span>
+          </h6>
+          <div className="dgs-upl-row">
+            <input
+              ref={arRef}
+              type="file"
+              className="form-control form-control-sm dgs-upl-file"
+              accept=".xlsx"
+              onChange={onArFile}
+            />
+            <button type="button" className="reg-ar-btn" disabled={upBusy || !parsed} onClick={sendAr}>
+              <Icon name="upload-cloud" /> {upBusy ? "Mengupload…" : "UPLOAD AR"}
+            </button>
+          </div>
+          {parsed ? (
+            <div className="dgs-upl-sum">
+              <span>
+                Item AR <strong>{fmtNum(parsed.ar.length)}</strong>
+              </span>
+              <span>
+                Invoice <strong>{fmtNum(invoices)}</strong>
+              </span>
+              <span>
+                Total AR + Ongkir <strong>{fmtNum(totalAr)}</strong>
+              </span>
+            </div>
+          ) : null}
+          <div className="dgs-upl-alert">
+            <strong>Heads up!</strong> PASTIKAN DATA SUDAH BENAR!!.
+          </div>
+        </section>
+      </div>
+    </div>
   );
 };
