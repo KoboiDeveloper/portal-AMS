@@ -255,7 +255,7 @@ const DgsDashboardPage = () => {
 
   return (
     <AccessGuard moduleCode="DGS_DASH">
-      <Head title="Dashboard Analisa" />
+      <Head title="Ringkasan Marketplace" />
       <Content>
         <PageSmoothScroll revision={`${loading}-${data?.built_at || ""}`} className="riv-page-scroll">
           <div className="reg-ar-wrap dgs-dash">
@@ -263,7 +263,7 @@ const DgsDashboardPage = () => {
               <BlockBetween>
                 <BlockHeadContent>
                   <BlockTitle page tag="h3">
-                    Dashboard Analisa
+                    Ringkasan Marketplace
                   </BlockTitle>
                   <BlockDes className="text-soft">
                     Prasales · AR · Retur marketplace

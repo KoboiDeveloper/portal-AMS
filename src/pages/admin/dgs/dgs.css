@@ -60,21 +60,23 @@
 .dgs-preview span { font-size: 0.6875rem; color: #8094ae; text-transform: uppercase; font-weight: 700; }
 .dgs-preview strong { font-size: 1.05rem; }
 
-/* Ar_List: UPLOAD INVOICE / UPLOAD AR (parity panel collapsible Flatlab) */
+/* Ar_List: Upload Invoice / Upload AR — 2 kartu */
 .dgs-upl { margin: 0 0 14px; }
-.dgs-upl-panel { margin: 0; }
-.dgs-upl-head { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 8px 0; }
-.dgs-upl-toggle { background: none; border: 0; padding: 0 0 0 4px; font-size: 0.8125rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.dgs-upl-toggle:hover { color: #6c6c6c; }
-.dgs-upl-body { display: grid; grid-template-columns: 3fr 2fr 5fr; gap: 16px; align-items: start; padding: 14px 4px 16px; }
-.dgs-upl-col--btn { padding-top: 4px; }
-.dgs-upl-btn { background: #78c8f0; color: #fff; border: 0; border-bottom: 4px solid #55b0de; border-radius: 4px; padding: 7px 14px 5px; font-size: 0.875rem; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.dgs-upl-btn:hover { background: #62bde9; }
-.dgs-upl-btn:disabled { opacity: 0.6; cursor: wait; }
-.dgs-upl-alert { padding: 10px 14px; background: #ff6c60; border: 1px solid #ff6c60; color: #fff; font-size: 0.8125rem; border-radius: 4px; }
-.dgs-upl-sum { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 0.75rem; color: #8094ae; }
+.dgs-upl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 920px; }
+.dgs-upl-card { background: #fff; border: 1px solid #dbdfea; border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.dgs-upl-top { display: flex; align-items: center; gap: 10px; }
+.dgs-upl-ic { width: 34px; height: 34px; border-radius: 8px; background: #eef2ff; color: #1d4ed8; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; flex: 0 0 auto; }
+.dgs-upl-ic--ar { background: #e6f7ef; color: #0b7a4b; }
+.dgs-upl-title { margin: 0; font-size: 0.875rem; font-weight: 700; color: #364a63; }
+.dgs-upl-sub { margin: 0; font-size: 0.75rem; color: #8094ae; }
+.dgs-upl-pick { display: flex; align-items: stretch; gap: 8px; }
+.dgs-upl-drop { flex: 1 1 auto; min-width: 0; margin: 0; display: flex; align-items: center; gap: 8px; padding: 0 12px; min-height: 34px; border: 1px dashed #b7c2d6; border-radius: 4px; background: #f8f9fc; color: #8094ae; font-size: 0.8125rem; cursor: pointer; }
+.dgs-upl-drop:hover { border-color: #1d4ed8; background: #f3f6ff; }
+.dgs-upl-drop span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dgs-upl-drop span.has-file { color: #364a63; font-weight: 600; }
+.dgs-upl-sum { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.75rem; color: #8094ae; }
 .dgs-upl-sum strong { color: #364a63; font-size: 0.8125rem; }
-@media (max-width: 900px) { .dgs-upl-body { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .dgs-upl-grid { grid-template-columns: 1fr; } }
 /* dashboard */
 .dgs-dash .dgs-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px; }
 .dgs-kpi { background: #fff; border: 1px solid #dbdfea; padding: 12px 14px; position: relative; overflow: hidden; }
