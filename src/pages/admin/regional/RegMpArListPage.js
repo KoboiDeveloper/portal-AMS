@@ -114,6 +114,39 @@ const CHANNEL_OPTS_REPORT = [
   ...CHANNEL_OPTS,
 ];
 
+const PAGE_SIZE = 50;
+
+const SimplePager = ({ page, total, size, onChange }) => {
+  const pages = Math.max(1, Math.ceil(total / size) || 1);
+  if (total <= size) return null;
+  return (
+    <div className="reg-ar-pager">
+      <span className="reg-ar-pager-info">
+        {(page - 1) * size + 1}–{Math.min(page * size, total)} dari {total.toLocaleString("id-ID")} ·
+        Halaman {page}/{pages}
+      </span>
+      <div className="reg-ar-pager-btns">
+        <button
+          type="button"
+          className="reg-ar-pager-btn"
+          disabled={page <= 1}
+          onClick={() => onChange(page - 1)}
+        >
+          Sebelumnya
+        </button>
+        <button
+          type="button"
+          className="reg-ar-pager-btn"
+          disabled={page >= pages}
+          onClick={() => onChange(page + 1)}
+        >
+          Berikutnya
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const PRESETS = [
   { id: "today", label: "Hari Ini" },
   { id: "month", label: "Bulan Ini" },
@@ -301,6 +334,7 @@ const RegMpArListPage = () => {
   const [modalError, setModalError] = useState("");
   const [presetId, setPresetId] = useState("month");
   const [wide, setWide] = useState(false);
+  const [page, setPage] = useState(1);
   const wrapRef = useRef(null);
   const tableRef = useRef(null);
 
@@ -329,6 +363,7 @@ const RegMpArListPage = () => {
     setLoaded(false);
     setError("");
     setSortConfig({ key: "", direction: "asc" });
+    setPage(1);
   };
 
   const selectReport = (id) => {
@@ -443,10 +478,12 @@ const RegMpArListPage = () => {
       setRows(list);
       setLoaded(true);
       setSortConfig({ key: "", direction: "asc" });
+      setPage(1);
     } catch (e) {
       setError(e?.message || "Gagal memuat data");
       setRows([]);
       setLoaded(true);
+      setPage(1);
     } finally {
       setLoading(false);
     }
@@ -514,12 +551,32 @@ const RegMpArListPage = () => {
 
   const sortedRows = useMemo(() => {
     if (!sortConfig.key) return rows;
+    if (sortConfig.key === "__rowtotal" && mode === "total") {
+      const numKeys = columns.filter((c) => c.num).map((c) => c.key);
+      const next = [...rows];
+      next.sort((a, b) => {
+        const sumA = numKeys.reduce((s, k) => s + (Number(cell(a, k)) || 0), 0);
+        const sumB = numKeys.reduce((s, k) => s + (Number(cell(b, k)) || 0), 0);
+        return compareCell(sumA, sumB, sortConfig.direction);
+      });
+      return next;
+    }
     const next = [...rows];
     next.sort((a, b) =>
       compareCell(cell(a, sortConfig.key), cell(b, sortConfig.key), sortConfig.direction)
     );
     return next;
-  }, [rows, sortConfig]);
+  }, [rows, sortConfig, mode, columns]);
+
+  const displayRows = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return sortedRows.slice(start, start + PAGE_SIZE);
+  }, [sortedRows, page]);
+
+  useEffect(() => {
+    const pages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE) || 1);
+    if (page > pages) setPage(pages);
+  }, [sortedRows.length, page]);
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) =>
@@ -527,6 +584,7 @@ const RegMpArListPage = () => {
         ? { key, direction: prev.direction === "asc" ? "desc" : "asc" }
         : { key, direction: "asc" }
     );
+    setPage(1);
   }, []);
 
   const footerSums = useMemo(() => {
@@ -548,10 +606,13 @@ const RegMpArListPage = () => {
 
   const titleMeta = useMemo(() => {
     if (!loaded) return "Pilih store / report, filter periode, lalu cari";
-    if (isStoreMode) return `${rows.length.toLocaleString("id-ID")} baris · ${storeId} · ${fromDate} s/d ${toDate}`;
+    const n = rows.length.toLocaleString("id-ID");
+    const pageInfo =
+      rows.length > PAGE_SIZE ? ` · halaman ${page}/${Math.ceil(rows.length / PAGE_SIZE)}` : "";
+    if (isStoreMode) return `${n} baris${pageInfo} · ${storeId} · ${fromDate} s/d ${toDate}`;
     const label = REPORT_MODES.find((m) => m.id === mode)?.label || mode;
-    return `${rows.length.toLocaleString("id-ID")} baris · ${label} · ${fromDate} s/d ${toDate}`;
-  }, [loaded, isStoreMode, rows.length, storeId, fromDate, toDate, mode]);
+    return `${n} baris${pageInfo} · ${label} · ${fromDate} s/d ${toDate}`;
+  }, [loaded, isStoreMode, rows.length, storeId, fromDate, toDate, mode, page]);
 
   const exportExcel = useCallback(async () => {
     if (!sortedRows.length || !columns.length) return;
@@ -896,105 +957,111 @@ const RegMpArListPage = () => {
             ) : null}
 
             {sortedRows.length > 0 && columns.length > 0 ? (
-              <div className="reg-ar-table-wrap">
-                <table ref={tableRef} className="reg-ar-table">
-                  <thead>
-                    <tr>
-                      <th className="num reg-ar-no">No.</th>
-                      {columns.map((col) => (
-                        <th
-                          key={col.key}
-                          className={col.num ? "num" : ""}
-                          onClick={() => handleSort(col.key)}
-                        >
-                          {col.label}
-                          <span
-                            className={`reg-ar-sort-ico ${sortConfig.key === col.key ? "is-on" : ""}`}
-                          >
-                            {sortConfig.key === col.key
-                              ? sortConfig.direction === "asc"
-                                ? "▲"
-                                : "▼"
-                              : "↕"}
-                          </span>
-                        </th>
-                      ))}
-                      {mode === "total" ? (
-                        <th className="num" onClick={() => handleSort("__rowtotal")}>
-                          Row Total
-                          <span
-                            className={`reg-ar-sort-ico ${sortConfig.key === "__rowtotal" ? "is-on" : ""}`}
-                          >
-                            {sortConfig.key === "__rowtotal"
-                              ? sortConfig.direction === "asc"
-                                ? "▲"
-                                : "▼"
-                              : "↕"}
-                          </span>
-                        </th>
-                      ) : null}
-                      {isStoreMode ? (
-                        <th className="reg-ar-act-th" style={{ cursor: "default" }}>
-                          Action
-                        </th>
-                      ) : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(sortConfig.key === "__rowtotal" && mode === "total"
-                      ? [...sortedRows].sort((a, b) => {
-                          const sumA = columns
-                            .filter((c) => c.num)
-                            .reduce((s, c) => s + (Number(cell(a, c.key)) || 0), 0);
-                          const sumB = columns
-                            .filter((c) => c.num)
-                            .reduce((s, c) => s + (Number(cell(b, c.key)) || 0), 0);
-                          return compareCell(sumA, sumB, sortConfig.direction);
-                        })
-                      : sortedRows
-                    ).map((row, idx) => {
-                      const rowTotal =
-                        mode === "total"
-                          ? columns
-                              .filter((c) => c.num)
-                              .reduce((s, c) => s + (Number(cell(row, c.key)) || 0), 0)
-                          : 0;
-                      return (
-                        <tr key={idx}>
-                          <td className="num reg-ar-no">{idx + 1}</td>
-                          {columns.map((col) => (
-                            <td key={col.key} className={col.num ? "num" : ""}>
-                              {renderCell(row, col)}
-                            </td>
-                          ))}
-                          {mode === "total" ? <td className="num">{fmtNum(rowTotal)}</td> : null}
-                          {isStoreMode ? <td className="reg-ar-act-td">{renderActionInfo(row)}</td> : null}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  {footerSums ? (
-                    <tfoot>
+              <>
+                <SimplePager
+                  page={page}
+                  total={sortedRows.length}
+                  size={PAGE_SIZE}
+                  onChange={setPage}
+                />
+                <div className="reg-ar-table-wrap">
+                  <table ref={tableRef} className="reg-ar-table">
+                    <thead>
                       <tr>
-                        <td className="num reg-ar-no" />
-                        {columns.map((col, i) => (
-                          <td key={col.key} className={col.num ? "num" : ""}>
-                            {i === 0 ? "GRAND TOTAL" : col.num ? fmtNum(footerSums[col.key]) : ""}
-                          </td>
+                        <th className="num reg-ar-no">No.</th>
+                        {columns.map((col) => (
+                          <th
+                            key={col.key}
+                            className={col.num ? "num" : ""}
+                            onClick={() => handleSort(col.key)}
+                          >
+                            {col.label}
+                            <span
+                              className={`reg-ar-sort-ico ${sortConfig.key === col.key ? "is-on" : ""}`}
+                            >
+                              {sortConfig.key === col.key
+                                ? sortConfig.direction === "asc"
+                                  ? "▲"
+                                  : "▼"
+                                : "↕"}
+                            </span>
+                          </th>
                         ))}
                         {mode === "total" ? (
-                          <td className="num">
-                            {fmtNum(
-                              Object.values(footerSums).reduce((a, b) => a + (Number(b) || 0), 0)
-                            )}
-                          </td>
+                          <th className="num" onClick={() => handleSort("__rowtotal")}>
+                            Row Total
+                            <span
+                              className={`reg-ar-sort-ico ${sortConfig.key === "__rowtotal" ? "is-on" : ""}`}
+                            >
+                              {sortConfig.key === "__rowtotal"
+                                ? sortConfig.direction === "asc"
+                                  ? "▲"
+                                  : "▼"
+                                : "↕"}
+                            </span>
+                          </th>
                         ) : null}
-                        {isStoreMode ? <td /> : null}
+                        {isStoreMode ? (
+                          <th className="reg-ar-act-th" style={{ cursor: "default" }}>
+                            Action
+                          </th>
+                        ) : null}
                       </tr>
-                    </tfoot>
-                  ) : null}
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {displayRows.map((row, idx) => {
+                        const rowTotal =
+                          mode === "total"
+                            ? columns
+                                .filter((c) => c.num)
+                                .reduce((s, c) => s + (Number(cell(row, c.key)) || 0), 0)
+                            : 0;
+                        const no = (page - 1) * PAGE_SIZE + idx + 1;
+                        return (
+                          <tr key={no}>
+                            <td className="num reg-ar-no">{no}</td>
+                            {columns.map((col) => (
+                              <td key={col.key} className={col.num ? "num" : ""}>
+                                {renderCell(row, col)}
+                              </td>
+                            ))}
+                            {mode === "total" ? <td className="num">{fmtNum(rowTotal)}</td> : null}
+                            {isStoreMode ? (
+                              <td className="reg-ar-act-td">{renderActionInfo(row)}</td>
+                            ) : null}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    {footerSums ? (
+                      <tfoot>
+                        <tr>
+                          <td className="num reg-ar-no" />
+                          {columns.map((col, i) => (
+                            <td key={col.key} className={col.num ? "num" : ""}>
+                              {i === 0 ? "GRAND TOTAL" : col.num ? fmtNum(footerSums[col.key]) : ""}
+                            </td>
+                          ))}
+                          {mode === "total" ? (
+                            <td className="num">
+                              {fmtNum(
+                                Object.values(footerSums).reduce((a, b) => a + (Number(b) || 0), 0)
+                              )}
+                            </td>
+                          ) : null}
+                          {isStoreMode ? <td /> : null}
+                        </tr>
+                      </tfoot>
+                    ) : null}
+                  </table>
+                </div>
+                <SimplePager
+                  page={page}
+                  total={sortedRows.length}
+                  size={PAGE_SIZE}
+                  onChange={setPage}
+                />
+              </>
             ) : null}
 
             <RivStickyThead
