@@ -74,6 +74,7 @@ export const DgsArUploadPanel = ({ store, onDone }) => {
   const [upBusy, setUpBusy] = useState(false);
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState("");
+  const [open, setOpen] = useState({ inv: false, ar: false });
 
   // ganti toko → bersihkan pilihan file
   useEffect(() => {
@@ -166,65 +167,75 @@ export const DgsArUploadPanel = ({ store, onDone }) => {
   const invoices = parsed ? new Set(parsed.detail.map((d) => d.NO_INVOICE)).size : 0;
   const totalAr = parsed ? parsed.detail.reduce((s, d) => s + Number(d.TOTAL_AR_PLUS_ONGKIR || 0), 0) : 0;
 
+  const toggle = (k) => setOpen((o) => ({ ...o, [k]: !o[k] }));
+
   return (
     <div className="dgs-upl">
       {error ? <div className="reg-ar-err">{error}</div> : null}
-      <div className="dgs-upl-grid">
-        <section className="dgs-upl-card">
-          <h6 className="dgs-upl-title">
-            <Icon name="file-xls" /> UPLOAD INVOICE <span className="dgs-upl-store">{store}</span>
-          </h6>
-          <div className="dgs-upl-row">
-            <input
-              ref={invRef}
-              type="file"
-              className="form-control form-control-sm dgs-upl-file"
-              accept=".xlsx,.csv,.txt"
-              onChange={(e) => setInvFile(e.target.files?.[0] || null)}
-            />
-            <button type="button" className="reg-ar-btn" disabled={tplBusy} onClick={makeTemplate}>
-              <Icon name="download" /> {tplBusy ? "Membuat…" : "AR TEMPLATE"}
-            </button>
-          </div>
-          <div className="dgs-upl-alert">
-            <strong>Heads up!</strong> PASTIKAN DI KOLOM 1 BERISI! INVOICE
-          </div>
-        </section>
 
-        <section className="dgs-upl-card">
-          <h6 className="dgs-upl-title">
-            <Icon name="upload" /> UPLOAD AR <span className="dgs-upl-store">{store}</span>
-          </h6>
-          <div className="dgs-upl-row">
-            <input
-              ref={arRef}
-              type="file"
-              className="form-control form-control-sm dgs-upl-file"
-              accept=".xlsx"
-              onChange={onArFile}
-            />
-            <button type="button" className="reg-ar-btn" disabled={upBusy || !parsed} onClick={sendAr}>
-              <Icon name="upload-cloud" /> {upBusy ? "Mengupload…" : "UPLOAD AR"}
-            </button>
-          </div>
-          {parsed ? (
-            <div className="dgs-upl-sum">
-              <span>
-                Item AR <strong>{fmtNum(parsed.ar.length)}</strong>
-              </span>
-              <span>
-                Invoice <strong>{fmtNum(invoices)}</strong>
-              </span>
-              <span>
-                Total AR + Ongkir <strong>{fmtNum(totalAr)}</strong>
-              </span>
+      <section className="dgs-upl-panel">
+        <header className="dgs-upl-head">
+          <button type="button" className="dgs-upl-toggle" aria-expanded={open.inv} onClick={() => toggle("inv")}>
+            <Icon name={open.inv ? "chevron-down" : "chevron-up"} /> UPLOAD INVOICE
+          </button>
+        </header>
+        <div className="dgs-upl-body" style={{ display: open.inv ? undefined : "none" }}>
+            <div className="dgs-upl-col dgs-upl-col--file">
+              <input
+                ref={invRef}
+                type="file"
+                accept=".xlsx,.csv,.txt"
+                onChange={(e) => setInvFile(e.target.files?.[0] || null)}
+              />
             </div>
-          ) : null}
-          <div className="dgs-upl-alert">
-            <strong>Heads up!</strong> PASTIKAN DATA SUDAH BENAR!!.
-          </div>
-        </section>
-      </div>
+            <div className="dgs-upl-col dgs-upl-col--btn">
+              <button type="button" className="dgs-upl-btn" disabled={tplBusy} onClick={makeTemplate}>
+                <Icon name="download-cloud" /> {tplBusy ? "MEMBUAT…" : "AR TEMPLATE"}
+              </button>
+            </div>
+            <div className="dgs-upl-col dgs-upl-col--alert">
+              <div className="dgs-upl-alert">
+                <strong>Heads up!</strong> PASTIKAN DI KOLOM 1 BERISI! <strong>INVOICE</strong>
+              </div>
+            </div>
+        </div>
+      </section>
+
+      <section className="dgs-upl-panel">
+        <header className="dgs-upl-head">
+          <button type="button" className="dgs-upl-toggle" aria-expanded={open.ar} onClick={() => toggle("ar")}>
+            <Icon name={open.ar ? "chevron-down" : "chevron-up"} /> UPLOAD AR
+          </button>
+        </header>
+        <div className="dgs-upl-body" style={{ display: open.ar ? undefined : "none" }}>
+            <div className="dgs-upl-col dgs-upl-col--file">
+              <input ref={arRef} type="file" accept=".xlsx" onChange={onArFile} />
+              {parsed ? (
+                <div className="dgs-upl-sum">
+                  <span>
+                    Item AR <strong>{fmtNum(parsed.ar.length)}</strong>
+                  </span>
+                  <span>
+                    Invoice <strong>{fmtNum(invoices)}</strong>
+                  </span>
+                  <span>
+                    Total AR + Ongkir <strong>{fmtNum(totalAr)}</strong>
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            <div className="dgs-upl-col dgs-upl-col--btn">
+              <button type="button" className="dgs-upl-btn" disabled={upBusy} onClick={sendAr}>
+                {upBusy ? "UPLOADING..." : "UPLOAD AR"}
+              </button>
+            </div>
+            <div className="dgs-upl-col dgs-upl-col--alert">
+              <div className="dgs-upl-alert">
+                <strong>Heads up!</strong> PASTIKAN DATA SUDAH BENAR!!.
+              </div>
+            </div>
+        </div>
+      </section>
     </div>
   );
 };
