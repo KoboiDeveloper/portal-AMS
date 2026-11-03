@@ -27,6 +27,9 @@ import {
 import { extractRow, extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
+import DgsConfirmSalesModal from "../dgs/DgsConfirmSalesModal";
+import DgsArEditModal from "../dgs/DgsArEditModal";
+import { DgsKomisiStrip, DgsArTemplateModal, DgsArUploadModal } from "../dgs/DgsArTools";
 import "./reg-mp-ar-list.css";
 import "./reg-sales-detail.css";
 
@@ -88,6 +91,10 @@ const MP_OPTS = [
   { value: "LAZADA", label: "LAZADA" },
   { value: "BUKALAPAK", label: "BUKALAPAK" },
   { value: "BLIBLI", label: "BLIBLI" },
+  { value: "ZALORA", label: "ZALORA" },
+  { value: "JD.ID", label: "JD.ID" },
+  { value: "ZILINGO", label: "ZILINGO" },
+  { value: "DIRECT SELLING", label: "DIRECT SELLING" },
 ];
 
 const CHANNEL_OPTS = [
@@ -311,7 +318,12 @@ const isSummaryRow = (row) => {
   return false;
 };
 
-const RegMpArListPage = () => {
+/** `dgs` = akun DigitalSales (/dgs/ar-list): Confirm Sales, edit AR, template & upload 07E aktif. */
+const RegMpArListPage = ({ dgs = false }) => {
+  const [confirmId, setConfirmId] = useState("");
+  const [arEditId, setArEditId] = useState("");
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [mode, setMode] = useState("store"); // store | total | detail | plu | transaksi
   const [storeId, setStoreId] = useState("02E");
   const [fromDate, setFromDate] = useState(monthStartYmd());
@@ -696,7 +708,26 @@ const RegMpArListPage = () => {
     }
   }, []);
 
-  /** View-only action strip — opens info modal (no confirm/approve). */
+  const openDgsConfirm = (row) => {
+    const id = String(cell(row, "ID_PRASALES_HEADER", ["id_prasales_header"]) || "").trim();
+    if (!id) {
+      setError("ID prasales tidak ditemukan pada baris ini.");
+      return;
+    }
+    setConfirmId(id);
+  };
+
+  const openDgsAr = (row) => {
+    const id = String(cell(row, "ID_TR_SALES_HEADER", ["id_tr_sales_header"]) || "").trim();
+    if (!id) {
+      setError("Transaksi belum diproses — lakukan Confirm Sales (PROSES) dulu sebelum input AR.");
+      return;
+    }
+    setError("");
+    setArEditId(id);
+  };
+
+  /** Action strip: view-only for REG, full Confirm Sales / AR edit for DigitalSales. */
   const renderActionInfo = (row) => {
     const salesStatus = String(cell(row, "PRA_SALES_STATUS", ["pra_sales_status"]) || "Confirm Sales");
     const arStatus = String(cell(row, "AR_STATUS", ["ar_status"]) || "");
@@ -711,8 +742,8 @@ const RegMpArListPage = () => {
         <button
           type="button"
           className={`reg-ar-act-btn ${salesTone}`}
-          title={`${salesStatus} — lihat info`}
-          onClick={() => openSalesInfo(row)}
+          title={dgs ? `${salesStatus} — buka Confirm Sales` : `${salesStatus} — lihat info`}
+          onClick={() => (dgs ? openDgsConfirm(row) : openSalesInfo(row))}
         >
           <Icon name="setting" />
           <span>{salesStatus}</span>
@@ -720,11 +751,11 @@ const RegMpArListPage = () => {
         <button
           type="button"
           className="reg-ar-act-btn is-info"
-          title={arStatus || "AR Detail"}
-          onClick={() => openArDetail(row)}
+          title={arStatus || (dgs ? "Input / Edit AR" : "AR Detail")}
+          onClick={() => (dgs ? openDgsAr(row) : openArDetail(row))}
         >
           <Icon name="check-round-cut" />
-          <span>AR Detail</span>
+          <span>{dgs ? "AR" : "AR Detail"}</span>
         </button>
       </div>
     );
@@ -733,7 +764,7 @@ const RegMpArListPage = () => {
   const scrollRevision = `${loading ? "loading" : "ready"}-${sortedRows.length}-${mode}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
-    <AccessGuard moduleCode="REG_MP_AR_LIST">
+    <AccessGuard moduleCode={dgs ? "DGS_AR_LIST" : "REG_MP_AR_LIST"}>
       <Head title="AR List" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
@@ -762,6 +793,7 @@ const RegMpArListPage = () => {
           </BlockHead>
 
           <Block>
+            {dgs ? <DgsKomisiStrip /> : null}
             <div className="reg-ar-report">
               <span className="reg-ar-nav-label">Report</span>
               <div className="reg-ar-chips">
@@ -910,6 +942,30 @@ const RegMpArListPage = () => {
                     <Icon name="download" />
                     Export Excel
                   </button>
+                  {dgs ? (
+                    <>
+                      <button
+                        type="button"
+                        className="reg-ar-btn reg-ar-btn--ghost"
+                        title="Download template AR dari daftar invoice"
+                        onClick={() => setTemplateOpen(true)}
+                      >
+                        <Icon name="file-xls" />
+                        AR Template
+                      </button>
+                      {isStoreMode && storeId === "07E" ? (
+                        <button
+                          type="button"
+                          className="reg-ar-btn reg-ar-btn--ghost"
+                          title="Upload AR toko 07E"
+                          onClick={() => setUploadOpen(true)}
+                        >
+                          <Icon name="upload" />
+                          Upload AR 07E
+                        </button>
+                      ) : null}
+                    </>
+                  ) : null}
                   <button
                     type="button"
                     className="reg-ar-btn"
@@ -1072,6 +1128,29 @@ const RegMpArListPage = () => {
           </Block>
         </div>
         </PageSmoothScroll>
+
+          {dgs ? (
+            <>
+              <DgsConfirmSalesModal
+                isOpen={Boolean(confirmId)}
+                idPrasales={confirmId}
+                onClose={() => setConfirmId("")}
+                onChanged={loadData}
+              />
+              <DgsArEditModal
+                isOpen={Boolean(arEditId)}
+                trId={arEditId}
+                onClose={() => setArEditId("")}
+                onSaved={loadData}
+              />
+              <DgsArTemplateModal isOpen={templateOpen} onClose={() => setTemplateOpen(false)} />
+              <DgsArUploadModal
+                isOpen={uploadOpen}
+                onClose={() => setUploadOpen(false)}
+                onDone={loadData}
+              />
+            </>
+          ) : null}
 
           <Modal
             isOpen={modalOpen}

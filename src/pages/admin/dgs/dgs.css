@@ -1,0 +1,100 @@
+/* DigitalSales (/dgs) */
+.dgs-modal-xl.modal-dialog { max-width: min(1280px, 96vw); }
+
+.dgs-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: #e5e9f2;
+  color: #526484;
+  white-space: nowrap;
+}
+.dgs-pill.is-new { background: #e1ecff; color: #1d4ed8; }
+.dgs-pill.is-ok { background: #d9f6ea; color: #0b7a4b; }
+.dgs-pill.is-warn { background: #fff0d6; color: #a4600a; }
+.dgs-pill.is-bad { background: #fde1e1; color: #b42318; }
+
+.dgs-table-wrap { overflow: auto; max-height: 52vh; border: 1px solid #dbdfea; background: #fff; }
+.dgs-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.dgs-table th, .dgs-table td { padding: 7px 10px; border-bottom: 1px solid #edf0f7; white-space: nowrap; vertical-align: middle; }
+.dgs-table thead th { position: sticky; top: 0; background: #f5f6fa; color: #526484; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; z-index: 1; }
+.dgs-table tfoot td { position: sticky; bottom: 0; background: #f5f6fa; font-weight: 700; }
+.dgs-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.dgs-table td.dgs-note { white-space: normal; max-width: 260px; color: #8094ae; }
+.dgs-empty { text-align: center; color: #8094ae; padding: 22px !important; }
+
+.dgs-cell-input { width: 108px; text-align: right; padding: 2px 6px; height: 28px; }
+.dgs-table--items td { padding: 4px 8px; }
+
+.dgs-cs-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin-bottom: 10px; }
+.dgs-cs-count { color: #526484; font-size: 0.8125rem; }
+.dgs-cs-total { margin-left: auto; font-weight: 700; }
+
+.dgs-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.dgs-spacer { flex: 1 1 auto; }
+.dgs-hint { color: #8094ae; font-size: 0.75rem; }
+.dgs-retur-box { display: flex; flex: 1 1 auto; gap: 8px; align-items: center; }
+.dgs-retur-box input { flex: 1 1 auto; }
+.dgs-btn-proses { background: #0b7a4b !important; border-color: #0b7a4b !important; color: #fff !important; }
+.dgs-btn-proses:disabled { opacity: 0.45; }
+
+.dgs-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-bottom: 14px; }
+.dgs-field label { display: block; font-size: 0.6875rem; font-weight: 700; color: #8094ae; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+.dgs-field.dgs-check { display: flex; align-items: flex-end; gap: 16px; padding-bottom: 6px; }
+.dgs-field.dgs-check label { text-transform: none; font-size: 0.8125rem; color: #364a63; margin: 0; }
+.dgs-readonly { min-height: 31px; display: flex; align-items: center; font-weight: 700; }
+.dgs-section-title { font-weight: 700; margin: 6px 0; }
+.dgs-section-title small { font-weight: 400; color: #8094ae; }
+.dgs-textarea { font-family: ui-monospace, Consolas, monospace; font-size: 0.8125rem; }
+
+.dgs-komisi-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 12px; padding: 8px 10px; background: #f5f6fa; border: 1px solid #dbdfea; }
+.dgs-komisi-strip-title { font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #8094ae; letter-spacing: 0.06em; margin-right: 4px; }
+.dgs-komisi-chip { font-size: 0.75rem; padding: 2px 8px; background: #fff; border: 1px solid #dbdfea; border-radius: 999px; color: #364a63; }
+.dgs-komisi-chip strong { color: #1d4ed8; }
+
+.dgs-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.dgs-preview > div { background: #f5f6fa; border: 1px solid #dbdfea; padding: 10px 12px; display: flex; flex-direction: column; }
+.dgs-preview span { font-size: 0.6875rem; color: #8094ae; text-transform: uppercase; font-weight: 700; }
+.dgs-preview strong { font-size: 1.05rem; }
+
+/* dashboard */
+.dgs-dash .dgs-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.dgs-kpi { background: #fff; border: 1px solid #dbdfea; padding: 12px 14px; position: relative; overflow: hidden; }
+.dgs-kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--dgs-accent, #6576ff); }
+.dgs-kpi .t { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8094ae; }
+.dgs-kpi .v { font-size: 1.4rem; font-weight: 800; color: #364a63; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.dgs-kpi .s { font-size: 0.75rem; color: #8094ae; }
+.dgs-kpi.is-warn { --dgs-accent: #f4a417; }
+.dgs-kpi.is-bad { --dgs-accent: #e5484d; }
+.dgs-kpi.is-ok { --dgs-accent: #1ca36c; }
+.dgs-kpi.is-info { --dgs-accent: #3b82f6; }
+
+.dgs-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.dgs-card { background: #fff; border: 1px solid #dbdfea; padding: 12px 14px; min-width: 0; }
+.dgs-card h6 { font-size: 0.8125rem; font-weight: 800; color: #364a63; margin: 0 0 8px; }
+.dgs-card h6 small { font-weight: 400; color: #8094ae; margin-left: 6px; }
+.dgs-chart { position: relative; height: 270px; }
+.dgs-chart--tall { height: 330px; }
+.dgs-card .dgs-table-wrap { max-height: 320px; }
+.dgs-age-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+.dgs-age-cell { flex: 1 1 110px; background: #f5f6fa; border: 1px solid #dbdfea; padding: 8px 10px; }
+.dgs-age-cell .t { font-size: 0.6875rem; font-weight: 700; color: #8094ae; text-transform: uppercase; }
+.dgs-age-cell .v { font-weight: 800; font-size: 1.1rem; }
+.dgs-age-cell .s { font-size: 0.75rem; color: #8094ae; }
+.dgs-age-cell.is-late { background: #fff4f4; border-color: #f3c6c6; }
+.dgs-asof { color: #8094ae; font-size: 0.75rem; }
+
+.dgs-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; margin-bottom: 12px; }
+.dgs-filters .reg-ar-f-item { min-width: 190px; }
+.dgs-link { color: #3b82f6; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
+.dgs-link:hover { text-decoration: underline; }
+.dgs-row-click { cursor: pointer; }
+.dgs-row-click:hover td { background: #f1f5ff; }
+
+.dgs-img-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.dgs-img-slot { border: 1px dashed #c4cbdb; padding: 8px; text-align: center; font-size: 0.75rem; background: #fafbfd; }
+.dgs-img-slot img { max-width: 100%; max-height: 110px; display: block; margin: 0 auto 6px; object-fit: contain; }
+.dgs-img-slot .ph { height: 110px; display: flex; align-items: center; justify-content: center; color: #b5bdd0; }

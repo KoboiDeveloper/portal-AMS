@@ -19,6 +19,7 @@ import { getRegMpReturBadge, getRegMpReturList } from "../../../services/regiona
 import { extractRow, extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
+import DgsReturConfirmModal from "../dgs/DgsReturConfirmModal";
 import "./reg-mp-ar-list.css";
 
 const MP_OPTS = [
@@ -30,6 +31,8 @@ const MP_OPTS = [
   { value: "BUKALAPAK", label: "BUKALAPAK" },
   { value: "BLIBLI", label: "BLIBLI" },
   { value: "ZALORA", label: "ZALORA" },
+  { value: "JD.ID", label: "JD.ID" },
+  { value: "ZILINGO", label: "ZILINGO" },
   { value: "DIRECT SELLING", label: "DIRECT SELLING" },
 ];
 
@@ -179,7 +182,8 @@ const pickBadge = (badge, keys) => {
   return "—";
 };
 
-const RegMpReturPage = () => {
+const RegMpReturPage = ({ dgs = false }) => {
+  const [confirmRow, setConfirmRow] = useState(null);
   const [marketplace, setMarketplace] = useState("0");
   const [brand, setBrand] = useState("ALL");
   const [dateBy, setDateBy] = useState("Tanggal Transaksi");
@@ -352,7 +356,7 @@ const RegMpReturPage = () => {
         : "";
 
   return (
-    <AccessGuard moduleCode="REG_MP_RETUR">
+    <AccessGuard moduleCode={dgs ? "DGS_RETUR" : "REG_MP_RETUR"}>
       <Head title="MP Retur" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
@@ -363,7 +367,9 @@ const RegMpReturPage = () => {
                   <BlockTitle page tag="h3">
                     MP Retur
                   </BlockTitle>
-                  <BlockDes className="text-soft">View-only · retur gudang marketplace</BlockDes>
+                  <BlockDes className="text-soft">
+                    {dgs ? "Retur gudang marketplace · klik baris untuk konfirmasi retur" : "View-only · retur gudang marketplace"}
+                  </BlockDes>
                 </BlockHeadContent>
                 <BlockHeadContent>
                   <button
@@ -583,7 +589,21 @@ const RegMpReturPage = () => {
                       </tr>
                     ) : (
                       shown.map((r, i) => (
-                        <tr key={rowOffset + i}>
+                        <tr
+                          key={rowOffset + i}
+                          className={dgs ? "dgs-row-click" : undefined}
+                          title={dgs ? "Klik untuk konfirmasi retur" : undefined}
+                          onClick={
+                            dgs
+                              ? () =>
+                                  setConfirmRow({
+                                    invoice: String(cell(r, "NO_INVOICE")),
+                                    plu: String(cell(r, "PLU")),
+                                    deskripsi: String(cell(r, "DESKRIPSI")),
+                                  })
+                              : undefined
+                          }
+                        >
                           <td className="col-no">{rowOffset + i + 1}</td>
                           {COLS.map((c) => {
                             const v = cell(r, c.key);
@@ -641,6 +661,16 @@ const RegMpReturPage = () => {
             </Block>
           </div>
         </PageSmoothScroll>
+        {dgs ? (
+          <DgsReturConfirmModal
+            isOpen={Boolean(confirmRow)}
+            invoice={confirmRow?.invoice}
+            plu={confirmRow?.plu}
+            deskripsi={confirmRow?.deskripsi}
+            onClose={() => setConfirmRow(null)}
+            onSaved={loadData}
+          />
+        ) : null}
       </Content>
     </AccessGuard>
   );

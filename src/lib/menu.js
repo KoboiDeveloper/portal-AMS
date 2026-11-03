@@ -39,6 +39,7 @@ const FOLDER_LABELS = {
   HRD_GRP_SYS_PARAM: "System Param",
   HRD_GRP_MASTER: "Master",
   HRD_GRP_EOM: "End Of Month",
+  DGS_MP: "Marketplace",
   REG_DASHBOARD: "Dashboard",
   REG_OPS: "Ops",
   REG_COMMERCE: "Commerce",
@@ -85,6 +86,7 @@ const FOLDER_MODULE_CODES = new Set([
   "HRD_GRP_MASTER",
   "HRD_GRP_EOM",
   /* REG_DASHBOARD is a leaf page — keep path /admin/regional/dashboard */
+  "DGS_MP",
   "REG_OPS",
   "REG_COMMERCE",
   "REG_MP",
@@ -126,6 +128,7 @@ const ADMIN_FOLDER_PATHS = new Set([
   "/admin/regional/analist",
   "/admin/regional/util",
   "/admin/regional/commerce",
+  "/dgs",
 ]);
 
 const LEGACY_MODULE_GROUPS = [

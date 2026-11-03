@@ -19,6 +19,7 @@ import { getRegMpArRealisasiList } from "../../../services/regional/regional.ser
 import { extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
+import DgsRealisasiModal from "../dgs/DgsRealisasiModal";
 import "./reg-mp-ar-list.css";
 
 const MP_OPTS = [
@@ -30,6 +31,8 @@ const MP_OPTS = [
   { value: "BUKALAPAK", label: "BUKALAPAK" },
   { value: "BLIBLI", label: "BLIBLI" },
   { value: "ZALORA", label: "ZALORA" },
+  { value: "JD.ID", label: "JD.ID" },
+  { value: "ZILINGO", label: "ZILINGO" },
 ];
 
 const BRAND_OPTS = [
@@ -100,7 +103,8 @@ const todayYmd = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 
-const RegMpArRealisasiPage = () => {
+const RegMpArRealisasiPage = ({ dgs = false }) => {
+  const [realRow, setRealRow] = useState(null);
   const [status, setStatus] = useState("belum");
   const [marketplace, setMarketplace] = useState("");
   const [brand, setBrand] = useState("");
@@ -216,7 +220,7 @@ const RegMpArRealisasiPage = () => {
         : "";
 
   return (
-    <AccessGuard moduleCode="REG_MP_AR_REALISASI">
+    <AccessGuard moduleCode={dgs ? "DGS_AR_REALISASI" : "REG_MP_AR_REALISASI"}>
       <Head title="AR Realisasi" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
@@ -227,7 +231,9 @@ const RegMpArRealisasiPage = () => {
                   <BlockTitle page tag="h3">
                     AR Realisasi
                   </BlockTitle>
-                  <BlockDes className="text-soft">View-only · pelunasan AR marketplace</BlockDes>
+                  <BlockDes className="text-soft">
+                    {dgs ? "Pelunasan AR marketplace · klik baris 'Belum' untuk simpan realisasi" : "View-only · pelunasan AR marketplace"}
+                  </BlockDes>
                 </BlockHeadContent>
                 <BlockHeadContent>
                   <button
@@ -380,7 +386,16 @@ const RegMpArRealisasiPage = () => {
                       shown.map((r, i) => {
                         const st = String(cell(r, "STATUS_REALISASI", ["STATUS_PELUNASAN", "STATUS"])).toLowerCase();
                         return (
-                          <tr key={rowOffset + i}>
+                          <tr
+                            key={rowOffset + i}
+                            className={dgs && !st.includes("sudah") ? "dgs-row-click" : undefined}
+                            title={dgs && !st.includes("sudah") ? "Klik untuk simpan realisasi" : undefined}
+                            onClick={
+                              dgs && !st.includes("sudah")
+                                ? () => setRealRow({ invoice: String(cell(r, "NO_INVOICE", ["INVOICE"])), mp: String(cell(r, "NAMA_MP", ["MARKETPLACE"])) })
+                                : undefined
+                            }
+                          >
                             <td className="col-no">{rowOffset + i + 1}</td>
                             {COLS.map((c) => {
                               const v = cell(r, c.key, c.alts || []);
@@ -437,6 +452,15 @@ const RegMpArRealisasiPage = () => {
             </Block>
           </div>
         </PageSmoothScroll>
+        {dgs ? (
+          <DgsRealisasiModal
+            isOpen={Boolean(realRow)}
+            invoice={realRow?.invoice}
+            marketplace={realRow?.mp}
+            onClose={() => setRealRow(null)}
+            onSaved={loadData}
+          />
+        ) : null}
       </Content>
     </AccessGuard>
   );

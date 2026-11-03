@@ -37,6 +37,9 @@ export const getDefaultHomePath = (user, navigation) => {
     return "/admin/dashboard";
   }
   const roles = getUserRoleCodes(user);
+  if (roles.includes("DIGITAL_SALES")) {
+    return "/dgs/dashboard";
+  }
   if (roles.includes("REGIONAL")) {
     return "/admin/regional/dashboard";
   }

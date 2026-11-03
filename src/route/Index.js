@@ -285,6 +285,9 @@ import {
   RegPrintSsrPage,
   RegPassSoPage,
 } from "../pages/admin/regional/pages";
+import DgsDashboardPage from "../pages/admin/dgs/DgsDashboardPage";
+import DgsPrasalesPage from "../pages/admin/dgs/DgsPrasalesPage";
+import DgsKomisiSettingPage from "../pages/admin/dgs/DgsKomisiSettingPage";
 import { appPath } from "../lib/paths";
 
 const LegacyUserMenuRedirect = () => {
@@ -631,6 +634,15 @@ const Router = () => {
             <Route path="regional/util/print-outstanding" element={<RegPrintOutstandingPage />} />
             <Route path="regional/util/print-ssr" element={<RegPrintSsrPage />} />
             <Route path="regional/util/pass-so" element={<RegPassSoPage />} />
+          </Route>
+          <Route path="dgs">
+            <Route index element={<Navigate to={appPath("/dgs/dashboard")} replace />} />
+            <Route path="dashboard" element={<DgsDashboardPage />} />
+            <Route path="prasales" element={<DgsPrasalesPage />} />
+            <Route path="ar-list" element={<RegMpArListPage dgs />} />
+            <Route path="ar-realisasi" element={<RegMpArRealisasiPage dgs />} />
+            <Route path="retur" element={<RegMpReturPage dgs />} />
+            <Route path="komisi-setting" element={<DgsKomisiSettingPage />} />
           </Route>
           <Route path="dashboard" element={<Navigate to={appPath("/admin/dashboard")} replace />} />
           <Route path="profile" element={<AdminProfilePage />} />
