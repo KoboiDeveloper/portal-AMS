@@ -73,11 +73,16 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
   }, [isOpen, invoice, plu]);
 
   const isBatal = kategori === "Batal Retur";
-  const showImages = kategori !== "Barang Layak Jual" && !isBatal;
+  /* ASP MP_confirm_retur: foto panel hidden only for Barang Layak Jual */
+  const showImages = kategori !== "Barang Layak Jual";
 
   const submit = async () => {
     if (!isBatal && !tgl) {
       setError("Tanggal kembali wajib diisi");
+      return;
+    }
+    if (!ket.trim()) {
+      setError("Keterangan wajib diisi");
       return;
     }
     if (ket.length > 200) {
@@ -148,19 +153,21 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
               </div>
               {!isBatal ? (
                 <div className="dgs-field">
-                  <label>Tanggal Kembali</label>
-                  <input type="date" className="form-control" value={tgl} onChange={(e) => setTgl(e.target.value)} />
+                  <label>Tanggal Diterima</label>
+                  <input type="date" className="form-control" value={tgl} readOnly title="Mengikuti tanggal sistem (MP_confirm_retur)" />
                 </div>
               ) : null}
             </div>
             <div className="dgs-field">
-              <label>Keterangan ({ket.length}/200)</label>
+              <label>Keterangan * ({ket.length}/200)</label>
               <textarea
                 className="form-control"
                 rows={2}
                 maxLength={200}
                 value={ket}
                 onChange={(e) => setKet(e.target.value)}
+                placeholder="Wajib diisi"
+                required
               />
             </div>
 

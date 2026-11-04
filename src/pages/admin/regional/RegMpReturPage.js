@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ExcelJS from "exceljs";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -21,19 +22,21 @@ import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
 import DgsReturConfirmModal from "../dgs/DgsReturConfirmModal";
 import "./reg-mp-ar-list.css";
+import "./reg-mp-retur.css";
 
 const MP_OPTS = [
   { value: "0", label: "All Marketplace" },
-  { value: "TIKTOK", label: "TIKTOK" },
-  { value: "SHOPEE", label: "SHOPEE" },
-  { value: "TOKOPEDIA", label: "TOKOPEDIA" },
-  { value: "LAZADA", label: "LAZADA" },
-  { value: "BUKALAPAK", label: "BUKALAPAK" },
+  { value: "BLANJA.COM", label: "BLANJA.COM" },
   { value: "BLIBLI", label: "BLIBLI" },
-  { value: "ZALORA", label: "ZALORA" },
-  { value: "JD.ID", label: "JD.ID" },
-  { value: "ZILINGO", label: "ZILINGO" },
+  { value: "BUKALAPAK", label: "BUKALAPAK" },
   { value: "DIRECT SELLING", label: "DIRECT SELLING" },
+  { value: "JD.ID", label: "JD.ID" },
+  { value: "LAZADA", label: "LAZADA" },
+  { value: "SHOPEE", label: "SHOPEE" },
+  { value: "TIKTOK", label: "TIKTOK" },
+  { value: "TOKOPEDIA", label: "TOKOPEDIA" },
+  { value: "ZALORA", label: "ZALORA" },
+  { value: "ZILINGO", label: "ZILINGO" },
 ];
 
 const BRAND_OPTS = [
@@ -73,10 +76,11 @@ const COLS = [
   { key: "PLU", label: "PLU" },
   { key: "DESKRIPSI", label: "Deskripsi" },
   { key: "PRICE_POS", label: "Price POS", num: true },
-  { key: "TANGGAL_RETUR", label: "Tgl Retur", date: true },
-  { key: "KETERANGAN_ADMIN", label: "Ket. Admin" },
-  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali", date: true },
-  { key: "KETERANGAN_GUDANG", label: "Ket. Gudang" },
+  { key: "TANGGAL_RETUR", label: "Tgl Retur", date: true, tone: "retur" },
+  { key: "KETERANGAN_ADMIN", label: "Ket. Admin", tone: "retur" },
+  { key: "RETUR_BY", label: "Retur Oleh", tone: "retur" },
+  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali", date: true, tone: "gudang" },
+  { key: "KETERANGAN_GUDANG", label: "Ket. Gudang", tone: "gudang" },
   { key: "SISA_HARI_RETUR", label: "Sisa Hari", sortNum: true },
 ];
 
@@ -182,15 +186,22 @@ const pickBadge = (badge, keys) => {
   return "—";
 };
 
+const deltaTone = (v) => {
+  const s = String(v ?? "");
+  if (!s || s === "—") return "";
+  return s.includes("-") ? "is-down" : "is-up";
+};
+
 const RegMpReturPage = ({ dgs = false }) => {
   const accessModules = dgs ? ["DGS_RETUR", "DGS_RETUR_GUDANG"] : ["REG_MP_RETUR"];
   const pageTitle = dgs ? "Gudang Retur" : "MP Retur";
+  const [searchParams] = useSearchParams();
   const [confirmRow, setConfirmRow] = useState(null);
   const [marketplace, setMarketplace] = useState("0");
   const [brand, setBrand] = useState("ALL");
   const [dateBy, setDateBy] = useState("Tanggal Transaksi");
   const [ketGudang, setKetGudang] = useState("Semua Barang");
-  const [keywords, setKeywords] = useState("");
+  const [keywords, setKeywords] = useState(() => String(searchParams.get("kw") || "").trim());
   const [fromDate, setFromDate] = useState(monthStartYmd());
   const [toDate, setToDate] = useState(todayYmd());
   const [rows, setRows] = useState([]);
@@ -205,6 +216,8 @@ const RegMpReturPage = ({ dgs = false }) => {
   const [sort, setSort] = useState({ key: "", dir: "asc" });
   const tableRef = useRef(null);
   const wrapRef = useRef(null);
+  const autoLoaded = useRef(false);
+  const tableCols = useMemo(() => (dgs ? COLS : COLS.filter((c) => c.key !== "RETUR_BY")), [dgs]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -253,7 +266,8 @@ const RegMpReturPage = ({ dgs = false }) => {
       brand,
       tipe: dateBy,
       kategori: ketGudang,
-      keywords: keywords.trim(),
+      /* ASP MP_gudang: empty search → "-" */
+      keywords: keywords.trim() || "-",
     }),
     [fromDate, toDate, marketplace, brand, dateBy, ketGudang, keywords]
   );
@@ -291,14 +305,22 @@ const RegMpReturPage = ({ dgs = false }) => {
     }
   }, [baseParams, fromDate, toDate]);
 
+  useEffect(() => {
+    if (!dgs || autoLoaded.current) return undefined;
+    if (!fromDate || !toDate) return undefined;
+    autoLoaded.current = true;
+    loadData();
+    return undefined;
+  }, [dgs, fromDate, toDate, loadData]);
+
   const filtered = useMemo(() => {
     const q = quick.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((r) => COLS.some((c) => String(cell(r, c.key)).toLowerCase().includes(q)));
-  }, [rows, quick]);
+    return rows.filter((r) => tableCols.some((c) => String(cell(r, c.key)).toLowerCase().includes(q)));
+  }, [rows, quick, tableCols]);
 
   const sorted = useMemo(() => {
-    const col = COLS.find((c) => c.key === sort.key);
+    const col = tableCols.find((c) => c.key === sort.key);
     if (!col) return filtered;
     const mul = sort.dir === "desc" ? -1 : 1;
     const numeric = Boolean(col.date || col.num || col.sortNum);
@@ -312,7 +334,7 @@ const RegMpReturPage = ({ dgs = false }) => {
         return c !== 0 ? c * mul : a.i - b.i;
       })
       .map((x) => x.r);
-  }, [filtered, sort]);
+  }, [filtered, sort, tableCols]);
 
   useEffect(() => {
     setPage(1);
@@ -342,12 +364,21 @@ const RegMpReturPage = ({ dgs = false }) => {
   const exportExcel = async () => {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("Retur");
-    ws.addRow(["NO", ...COLS.map((c) => c.label)]);
+    ws.addRow(["NO", ...tableCols.map((c) => c.label)]);
     sorted.forEach((r, i) => {
-      ws.addRow([i + 1, ...COLS.map((c) => cell(r, c.key))]);
+      ws.addRow([i + 1, ...tableCols.map((c) => cell(r, c.key))]);
     });
     await saveXlsxFile(wb, `MP_RETUR_${todayYmd()}.xlsx`);
   };
+
+  const openConfirm = (r) =>
+    setConfirmRow({
+      invoice: String(cell(r, "NO_INVOICE")),
+      plu: String(cell(r, "PLU")),
+      deskripsi: String(cell(r, "DESKRIPSI")),
+    });
+
+  const colSpan = tableCols.length + 1 + (dgs ? 1 : 0);
 
   const tableMessage = loading
     ? "Memuat…"
@@ -370,7 +401,9 @@ const RegMpReturPage = ({ dgs = false }) => {
                   {pageTitle}
                 </BlockTitle>
                 <BlockDes className="text-soft">
-                    {dgs ? "Konfirmasi barang retur di gudang · klik baris untuk aksi" : "View-only · retur gudang marketplace"}
+                    {dgs
+                      ? "Retur List · konfirmasi gudang (referensi MP_gudang) · tombol Edit per baris"
+                      : "View-only · retur gudang marketplace"}
                   </BlockDes>
                 </BlockHeadContent>
                 <BlockHeadContent>
@@ -508,27 +541,34 @@ const RegMpReturPage = ({ dgs = false }) => {
               </div>
 
               {badge ? (
-                <div className="reg-ar-stats">
+                <div className="reg-ar-stats reg-mp-retur-stats">
                   <div className="reg-ar-stat">
-                    <span className="reg-ar-stat-label">Retur periode</span>
-                    <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_total", "retur_Total"])}</span>
-                    <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_retur_total_presentase"])}</span>
-                  </div>
-                  <div className="reg-ar-stat">
-                    <span className="reg-ar-stat-label">Retur all-time</span>
+                    <span className="reg-ar-stat-label">Total Retur</span>
                     <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_all_time_total"])}</span>
+                    <span className="reg-ar-stat-sub">all time</span>
                   </div>
                   <div className="reg-ar-stat">
-                    <span className="reg-ar-stat-label">Barang balik</span>
+                    <span className="reg-ar-stat-label">Total Retur by Periode</span>
+                    <span className="reg-ar-stat-val">{pickBadge(badge, ["retur_total", "retur_Total"])}</span>
+                    <span className={`reg-ar-stat-sub ${deltaTone(pickBadge(badge, ["prev_retur_total_presentase", "prev_retur_Total_presentase"]))}`}>
+                      {pickBadge(badge, ["prev_retur_total_presentase", "prev_retur_Total_presentase"])} from last periode
+                    </span>
+                  </div>
+                  <div className="reg-ar-stat">
+                    <span className="reg-ar-stat-label">Barang Diterima</span>
                     <span className="reg-ar-stat-val">{pickBadge(badge, ["barang_balik_total", "barang_balik_Total"])}</span>
-                    <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_balik_total_presentase"])}</span>
+                    <span className={`reg-ar-stat-sub ${deltaTone(pickBadge(badge, ["prev_barang_balik_total_presentase", "prev_barang_balik_Total_presentase"]))}`}>
+                      {pickBadge(badge, ["prev_barang_balik_total_presentase", "prev_barang_balik_Total_presentase"])} from last periode
+                    </span>
                   </div>
                   <div className="reg-ar-stat">
-                    <span className="reg-ar-stat-label">Belum balik</span>
+                    <span className="reg-ar-stat-label">Belum Diterima</span>
                     <span className="reg-ar-stat-val">
                       {pickBadge(badge, ["barang_belum_balik_total", "barang_belum_balik_Total"])}
                     </span>
-                    <span className="reg-ar-stat-sub">{pickBadge(badge, ["prev_barang_belum_balik_total_presentase"])}</span>
+                    <span className={`reg-ar-stat-sub ${deltaTone(pickBadge(badge, ["prev_barang_belum_balik_total_presentase", "prev_barang_belum_balik_Total_presentase"]))}`}>
+                      {pickBadge(badge, ["prev_barang_belum_balik_total_presentase", "prev_barang_belum_balik_Total_presentase"])} from last periode
+                    </span>
                   </div>
                 </div>
               ) : null}
@@ -556,16 +596,16 @@ const RegMpReturPage = ({ dgs = false }) => {
               {error ? <div className="reg-ar-error">{error}</div> : null}
 
               <div className="reg-ar-table-wrap">
-                <table ref={tableRef} className="reg-ar-table">
+                <table ref={tableRef} className="reg-ar-table reg-mp-retur-table">
                   <thead>
                     <tr>
                       <th className="col-no">No.</th>
-                      {COLS.map((c) => {
+                      {tableCols.map((c) => {
                         const active = sort.key === c.key;
                         return (
                           <th
                             key={c.key}
-                            className={`reg-ar-sortable${active ? " is-sorted" : ""}${c.num ? " num" : ""}`}
+                            className={`reg-ar-sortable${active ? " is-sorted" : ""}${c.num ? " num" : ""}${c.tone ? ` is-${c.tone}` : ""}`}
                             onClick={() => toggleSort(c.key)}
                             aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
                             title="Klik untuk urutkan"
@@ -580,47 +620,45 @@ const RegMpReturPage = ({ dgs = false }) => {
                           </th>
                         );
                       })}
+                      {dgs ? <th className="reg-mp-retur-action-th">Action</th> : null}
                     </tr>
                   </thead>
                   <tbody>
                     {tableMessage ? (
                       <tr>
-                        <td colSpan={COLS.length + 1} className="reg-ar-empty">
+                        <td colSpan={colSpan} className="reg-ar-empty">
                           {tableMessage}
                         </td>
                       </tr>
                     ) : (
                       shown.map((r, i) => (
-                        <tr
-                          key={rowOffset + i}
-                          className={dgs ? "dgs-row-click" : undefined}
-                          title={dgs ? "Klik untuk konfirmasi retur" : undefined}
-                          onClick={
-                            dgs
-                              ? () =>
-                                  setConfirmRow({
-                                    invoice: String(cell(r, "NO_INVOICE")),
-                                    plu: String(cell(r, "PLU")),
-                                    deskripsi: String(cell(r, "DESKRIPSI")),
-                                  })
-                              : undefined
-                          }
-                        >
+                        <tr key={rowOffset + i}>
                           <td className="col-no">{rowOffset + i + 1}</td>
-                          {COLS.map((c) => {
+                          {tableCols.map((c) => {
                             const v = cell(r, c.key);
                             const isNote = c.key === "KETERANGAN_ADMIN" || c.key === "KETERANGAN_GUDANG";
                             return (
                               <td
                                 key={c.key}
-                                className={[c.num ? "num" : "", isNote ? "reg-ar-note-cell" : ""]
+                                className={[c.num ? "num" : "", isNote ? "reg-ar-note-cell" : "", c.tone ? `is-${c.tone}` : ""]
                                   .filter(Boolean)
                                   .join(" ")}
                               >
-                                {c.num ? fmtNum(v) : v === "" || v == null ? "—" : String(v)}
+                                {c.num ? fmtNum(v) : v === "" || v == null || v === "-" ? "—" : String(v)}
                               </td>
                             );
                           })}
+                          {dgs ? (
+                            <td className="reg-mp-retur-action">
+                              <button
+                                type="button"
+                                className="reg-ar-btn reg-ar-btn--ghost reg-mp-retur-edit"
+                                onClick={() => openConfirm(r)}
+                              >
+                                Edit
+                              </button>
+                            </td>
+                          ) : null}
                         </tr>
                       ))
                     )}

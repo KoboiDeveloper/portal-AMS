@@ -1,0 +1,31 @@
+/* Gudang Retur — parity accents with legacy MP_gudang.aspx */
+
+.reg-mp-retur-stats .reg-ar-stat-sub.is-up {
+  color: #1ca36c;
+  font-weight: 600;
+}
+.reg-mp-retur-stats .reg-ar-stat-sub.is-down {
+  color: #e5484d;
+  font-weight: 600;
+}
+
+.reg-mp-retur-table td.is-retur,
+.reg-mp-retur-table th.is-retur {
+  background: #e4efe7;
+}
+.reg-mp-retur-table td.is-gudang,
+.reg-mp-retur-table th.is-gudang {
+  background: #fdf7f4;
+}
+
+.reg-mp-retur-action-th,
+.reg-mp-retur-action {
+  text-align: center;
+  white-space: nowrap;
+  width: 88px;
+}
+.reg-mp-retur-edit {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}

@@ -287,6 +287,7 @@ import {
 } from "../pages/admin/regional/pages";
 import DgsDashboardPage from "../pages/admin/dgs/DgsDashboardPage";
 import DgsReturDashboardPage from "../pages/admin/dgs/DgsReturDashboardPage";
+import DgsGudangReturPage from "../pages/admin/dgs/DgsGudangReturPage";
 import DgsPrasalesPage from "../pages/admin/dgs/DgsPrasalesPage";
 import DgsProductAnalysisPage from "../pages/admin/dgs/DgsProductAnalysisPage";
 import DgsKomisiSettingPage from "../pages/admin/dgs/DgsKomisiSettingPage";
@@ -646,7 +647,7 @@ const Router = () => {
             <Route path="ar-list" element={<RegMpArListPage dgs />} />
             <Route path="retur-list" element={<RegMpArListPage dgsReturOnly />} />
             <Route path="ar-realisasi" element={<RegMpArRealisasiPage dgs />} />
-            <Route path="retur" element={<RegMpReturPage dgs />} />
+            <Route path="retur" element={<DgsGudangReturPage />} />
             <Route path="komisi-setting" element={<DgsKomisiSettingPage />} />
           </Route>
           <Route path="dashboard" element={<Navigate to={appPath("/admin/dashboard")} replace />} />
