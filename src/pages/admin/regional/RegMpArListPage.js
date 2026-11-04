@@ -36,7 +36,6 @@ import {
   ScEmptyState,
   ScNotice,
   ScPageHeader,
-  ScSettlementStrip,
   ScViewToggle,
 } from "../dgs/sc";
 import DgsContentShell from "../dgs/shell/DgsContentShell";
@@ -426,6 +425,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
   const loadedRef = useRef(false);
   const rowsLenRef = useRef(0);
   const lastQuickFetchRef = useRef("");
+  const lastLoadOptsRef = useRef({ ignoreInvoice: true });
   const quickTimerRef = useRef(null);
 
   loadedRef.current = loaded;
@@ -519,10 +519,12 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
    * opts.invoiceOverride — pakai invoice ini (pencarian cepat).
    * opts.ignoreInvoice — Terapkan Filter: jangan kirim invoice ke API.
    * opts.relaxFilters — pencarian cepat sebelum list: abaikan status/MP/periode ketat.
+   * opts.keepView — refresh data tanpa reset page/sort (setelah Confirm Sales).
    */
   const loadData = useCallback(
     async (opts = {}) => {
       const relax = Boolean(opts.relaxFilters);
+      const keepView = Boolean(opts.keepView);
       const from = relax ? addDaysYmd(todayYmd(), -730) : fromDate;
       const to = relax ? todayYmd() : toDate;
       if (!from || !to) {
@@ -543,7 +545,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
 
       setLoading(true);
       setError("");
-      setListQuery("");
+      if (!keepView) setListQuery("");
       try {
         const base = {
           from_date: from,
@@ -600,8 +602,15 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
         setTotalsRow(totals);
         setRows(list);
         setLoaded(true);
-        setSortConfig({ key: "", direction: "asc" });
-        setPage(1);
+        if (!keepView) {
+          setSortConfig({ key: "", direction: "asc" });
+          setPage(1);
+        }
+        lastLoadOptsRef.current = {
+          invoiceOverride: opts.invoiceOverride,
+          ignoreInvoice: Boolean(opts.ignoreInvoice),
+          relaxFilters: relax,
+        };
         if (relax && invParam && invParam !== "-") {
           lastQuickFetchRef.current = invParam;
         } else if (opts.ignoreInvoice) {
@@ -612,7 +621,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
         setRows([]);
         setTotalsRow(null);
         setLoaded(true);
-        setPage(1);
+        if (!keepView) setPage(1);
       } finally {
         setLoading(false);
       }
@@ -631,6 +640,22 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
       tipe,
     ]
   );
+
+  /** Refresh list dengan parameter fetch terakhir (bukan reload filter toolbar). */
+  const refreshCurrentList = useCallback(() => {
+    const last = lastLoadOptsRef.current || {};
+    const next = { keepView: true };
+    if (last.invoiceOverride !== undefined && last.invoiceOverride !== null) {
+      next.invoiceOverride = last.invoiceOverride;
+      next.relaxFilters = Boolean(last.relaxFilters);
+    } else if (lastQuickFetchRef.current) {
+      next.invoiceOverride = lastQuickFetchRef.current;
+      next.relaxFilters = true;
+    } else {
+      next.ignoreInvoice = true;
+    }
+    loadData(next);
+  }, [loadData]);
 
   /**
    * Pencarian cepat:
@@ -658,7 +683,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
           return;
         }
         if (lastQuickFetchRef.current === q && loadedRef.current) return;
-        loadData({ invoiceOverride: q, relaxFilters: true });
+        loadData({ invoiceOverride: q, relaxFilters: true, keepView: true });
       };
       if (immediate) {
         exec();
@@ -995,7 +1020,8 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
     );
   };
 
-  const scrollRevision = `${loading ? "loading" : "ready"}-${sortedRows.length}-${mode}-${wide ? "w" : "n"}-${error || "ok"}`;
+  // Jangan ikut loading/jumlah baris — biar pencarian cepat / refresh tidak loncat ke atas.
+  const scrollRevision = `${mode}-${wide ? "w" : "n"}`;
 
   return (
     <AccessGuard moduleCode={dgsReturOnly ? "DGS_RETUR_LIST" : dgsFull ? "DGS_AR_LIST" : "REG_MP_AR_LIST"}>
@@ -1066,17 +1092,6 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
               <ScNotice tone="warn">
                 Mode pengembalian: fokus ke item retur. Default tampilan Kartu seperti Seller Center.
               </ScNotice>
-            ) : null}
-            {dgsFull && loaded && sortedRows.length > 0 ? (
-              <ScSettlementStrip
-                items={[
-                  { id: "rows", label: "Baris tampil", value: fmtNum(sortedRows.length) },
-                  { id: "total", label: "Filter aktif", value: status === "ALL" ? "Semua status" : status },
-                  { id: "mp", label: "Marketplace", value: marketplaceValue || "ALL" },
-                  { id: "store", label: "Store", value: isStoreMode ? storeId : reportStore || "—" },
-                ]}
-                operators={["·", "·", "·"]}
-              />
             ) : null}
             {dgsFull ? <DgsKomisiStrip /> : null}
             {!dgsReturOnly ? (
@@ -1517,7 +1532,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                 isOpen={Boolean(confirmId)}
                 idPrasales={confirmId}
                 onClose={() => setConfirmId("")}
-                onChanged={() => loadData({ ignoreInvoice: true })}
+                onChanged={refreshCurrentList}
                 returOnly={dgsReturOnly}
               />
               {dgsFull ? (
@@ -1525,7 +1540,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                   isOpen={Boolean(arEditId)}
                   trId={arEditId}
                   onClose={() => setArEditId("")}
-                  onSaved={() => loadData({ ignoreInvoice: true })}
+                  onSaved={refreshCurrentList}
                 />
               ) : null}
             </>
