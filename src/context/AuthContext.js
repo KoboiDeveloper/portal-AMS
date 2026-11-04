@@ -10,16 +10,59 @@ import { clearAccessCache } from "../components/admin/AccessGuard";
 const AuthContext = createContext(null);
 
 const readStoredUser = () => storage.getUser();
-const hasValidSession = () => !!(storage.getToken() && readStoredUser()?.nik);
+
+const isTokenUsable = (token) => {
+  if (!token || typeof token !== "string") return false;
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(window.atob(base64));
+    if (payload?.exp && payload.exp * 1000 <= Date.now()) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const isLoginPath = () => {
+  if (typeof window === "undefined") return false;
+  const p = window.location.pathname || "";
+  return p === "/login" || p.endsWith("/login") || p.endsWith("/auth-login");
+};
+
+const hasValidSession = () => !!(isTokenUsable(storage.getToken()) && readStoredUser()?.nik);
+
+const initSessionState = () => {
+  if (isLoginPath() || !hasValidSession()) {
+    storage.clearToken();
+    storage.clearUser();
+    storage.clearMenu();
+    storage.clearStoreScope();
+    return { user: null, menuRows: [], storeScope: [], bootstrapping: false };
+  }
+  return {
+    user: readStoredUser(),
+    menuRows: storage.getMenu(),
+    storeScope: storage.getStoreScope(),
+    bootstrapping: true,
+  };
+};
 
 export const AuthProvider = ({ children }) => {
   const bootstrappedRef = useRef(null);
   const menuBootstrapAttemptRef = useRef(null);
-  const [user, setUser] = useState(() => readStoredUser());
-  const [menuRows, setMenuRows] = useState(() => storage.getMenu());
-  const [storeScope, setStoreScope] = useState(() => storage.getStoreScope());
+  const initialRef = useRef(null);
+  if (!initialRef.current) {
+    initialRef.current = initSessionState();
+  }
+  const [user, setUser] = useState(initialRef.current.user);
+  const [menuRows, setMenuRows] = useState(initialRef.current.menuRows);
+  const [storeScope, setStoreScope] = useState(initialRef.current.storeScope);
   const [loading, setLoading] = useState(false);
-  const [bootstrapping, setBootstrapping] = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(initialRef.current.bootstrapping);
 
   const purgeSession = useCallback(() => {
     bootstrappedRef.current = null;
@@ -97,9 +140,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(
     async (username, password) => {
+      purgeSession();
       setLoading(true);
       try {
-        purgeSession();
         const res = await authService.login(username, password);
         const nextUser = storage.getUser();
         if (!nextUser?.nik || !storage.getToken()) {
@@ -107,6 +150,8 @@ export const AuthProvider = ({ children }) => {
             responseMessage: "Login response incomplete (missing token or user profile).",
           };
         }
+        const sessionKey = `${nextUser.nik}:${storage.getToken() || ""}`;
+        menuBootstrapAttemptRef.current = sessionKey;
         setUser(nextUser);
         const rows = await bootstrapSession(nextUser);
         if (!storage.getToken()) {
@@ -117,9 +162,7 @@ export const AuthProvider = ({ children }) => {
         if (!rows.length) {
           console.warn("[Auth] menu empty after login for", nextUser.nik);
         }
-        bootstrappedRef.current = rows.length
-          ? `${nextUser.nik}:${storage.getToken() || ""}`
-          : null;
+        bootstrappedRef.current = sessionKey;
         const nav = isStoreLoginUser(nextUser)
           ? buildStoreNavigation(rows)
           : buildAdminNavigation(rows);
@@ -164,21 +207,22 @@ export const AuthProvider = ({ children }) => {
     if (!hasValidSession() || !user?.nik) {
       bootstrappedRef.current = null;
       menuBootstrapAttemptRef.current = null;
+      setBootstrapping(false);
       return;
     }
 
     const sessionKey = `${user.nik}:${storage.getToken() || ""}`;
-    if (menuRows.length > 0) {
-      bootstrappedRef.current = sessionKey;
+    if (bootstrappedRef.current === sessionKey) {
+      setBootstrapping(false);
       return;
     }
 
-    if (bootstrapping || loading) return;
+    if (loading) return;
     if (menuBootstrapAttemptRef.current === sessionKey) return;
 
     menuBootstrapAttemptRef.current = sessionKey;
     bootstrapSession(user).then((rows) => {
-      if (rows.length) {
+      if (storage.getToken() && rows.length >= 0) {
         bootstrappedRef.current = sessionKey;
       }
     });

@@ -1,4 +1,4 @@
-/* Gudang Retur — parity accents with legacy MP_gudang.aspx */
+/* Gudang Retur — single-row table (seperti MP_gudang.aspx), wrap pada kolom teks agar tidak scroll horizontal */
 
 .reg-mp-retur-stats .reg-ar-stat-sub.is-up {
   color: #1ca36c;
@@ -9,23 +9,74 @@
   font-weight: 600;
 }
 
-.reg-mp-retur-table td.is-retur,
-.reg-mp-retur-table th.is-retur {
-  background: #e4efe7;
+.reg-ar-table-wrap:has(.reg-mp-retur-table) {
+  overflow-x: hidden;
 }
-.reg-mp-retur-table td.is-gudang,
-.reg-mp-retur-table th.is-gudang {
-  background: #fdf7f4;
+
+.reg-mp-retur-table {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 0.78rem;
+}
+
+.reg-mp-retur-table th,
+.reg-mp-retur-table td {
+  padding: 8px 6px !important;
+  vertical-align: top;
+}
+
+.reg-mp-retur-table td.is-wrap {
+  white-space: normal !important;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.reg-mp-retur-table .col-no { width: 38px; }
+.reg-mp-retur-table .col-date { width: 86px; white-space: nowrap; }
+.reg-mp-retur-table .col-mp { width: 78px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reg-mp-retur-table .col-inv { width: 124px; white-space: normal; word-break: break-all; }
+.reg-mp-retur-table .col-plu-desc { width: 20%; }
+.reg-mp-retur-table .col-price { width: 80px; white-space: nowrap; }
+.reg-mp-retur-table .col-dt { width: 82px; white-space: normal; line-height: 1.25; }
+.reg-mp-retur-table .col-note { width: 19%; }
+.reg-mp-retur-table .col-by { width: 70px; white-space: normal; word-break: break-word; }
+.reg-mp-retur-table .col-gudang { width: 12%; }
+.reg-mp-retur-table .col-sisa { width: 46px; text-align: center; white-space: nowrap; }
+
+.reg-mp-retur-plu {
+  font-weight: 600;
+  color: #1c2b41;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.reg-mp-retur-desc {
+  margin-top: 2px;
+  color: #526484;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .reg-mp-retur-action-th,
 .reg-mp-retur-action {
   text-align: center;
   white-space: nowrap;
-  width: 88px;
+  width: 58px;
 }
 .reg-mp-retur-edit {
-  min-height: 30px;
-  padding: 4px 10px;
+  min-height: 28px;
+  padding: 3px 8px;
   font-size: 0.75rem;
+}
+
+@media (max-width: 1100px) {
+  .reg-ar-table-wrap:has(.reg-mp-retur-table) {
+    overflow-x: auto;
+  }
+  .reg-mp-retur-table {
+    min-width: 1020px;
+  }
 }

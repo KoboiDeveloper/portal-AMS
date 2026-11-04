@@ -21,11 +21,7 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      const onLoginPage = window.location.pathname.includes("/login");
       storage.clearAll();
-      if (!onLoginPage) {
-        window.location.href = appPath("/login");
-      }
     }
     const data = error.response?.data;
     return Promise.reject(

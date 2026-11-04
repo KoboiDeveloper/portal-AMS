@@ -69,20 +69,41 @@ const KET_GUDANG_OPTS = [
   { value: "Barang Tidak Kembali", label: "Tidak Kembali" },
 ];
 
+/** Satu baris per item (seperti tabel biasa) — PLU + Deskripsi digabung 1 kolom bertumpuk agar tidak mepet. */
 const COLS = [
-  { key: "TANGGAL_TRANSAKSI", label: "Tgl Transaksi", date: true },
-  { key: "MARKETPLACE", label: "Marketplace" },
+  { key: "TANGGAL_TRANSAKSI", label: "Tgl Transaksi", date: true, cls: "col-date" },
+  { key: "MARKETPLACE", label: "MP", cls: "col-mp" },
+  { key: "NO_INVOICE", label: "No Invoice", cls: "col-inv" },
+  { key: "PLU", subKey: "DESKRIPSI", label: "PLU / Deskripsi", cls: "col-plu-desc", wrap: true },
+  { key: "PRICE_POS", label: "Price POS", num: true, cls: "col-price" },
+  { key: "TANGGAL_RETUR", label: "Tgl Retur", date: true, cls: "col-dt" },
+  { key: "KETERANGAN_ADMIN", label: "Ket. Admin", cls: "col-note", wrap: true },
+  { key: "RETUR_BY", label: "Retur Oleh", cls: "col-by" },
+  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali", date: true, cls: "col-dt" },
+  { key: "KETERANGAN_GUDANG", label: "Ket. Gudang", cls: "col-gudang", wrap: true },
+  { key: "SISA_HARI_RETUR", label: "Sisa", sortNum: true, cls: "col-sisa" },
+];
+
+const EXPORT_COLS = [
+  { key: "TANGGAL_TRANSAKSI", label: "Tgl Transaksi" },
+  { key: "MARKETPLACE", label: "MP" },
   { key: "NO_INVOICE", label: "No Invoice" },
   { key: "PLU", label: "PLU" },
   { key: "DESKRIPSI", label: "Deskripsi" },
-  { key: "PRICE_POS", label: "Price POS", num: true },
-  { key: "TANGGAL_RETUR", label: "Tgl Retur", date: true, tone: "retur" },
-  { key: "KETERANGAN_ADMIN", label: "Ket. Admin", tone: "retur" },
-  { key: "RETUR_BY", label: "Retur Oleh", tone: "retur" },
-  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali", date: true, tone: "gudang" },
-  { key: "KETERANGAN_GUDANG", label: "Ket. Gudang", tone: "gudang" },
-  { key: "SISA_HARI_RETUR", label: "Sisa Hari", sortNum: true },
+  { key: "PRICE_POS", label: "Price POS" },
+  { key: "TANGGAL_RETUR", label: "Tgl Retur" },
+  { key: "KETERANGAN_ADMIN", label: "Ket. Admin" },
+  { key: "RETUR_BY", label: "Retur Oleh" },
+  { key: "TANGGAL_KEMBALI", label: "Tgl Kembali" },
+  { key: "KETERANGAN_GUDANG", label: "Ket. Gudang" },
+  { key: "SISA_HARI_RETUR", label: "Sisa" },
 ];
+
+const fmtCell = (c, v) => {
+  if (c.num) return fmtNum(v);
+  if (v === "" || v == null || v === "-") return "—";
+  return String(v);
+};
 
 const MONTHS = {
   jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mei: 5, jun: 6, jul: 7, aug: 8, agu: 8, agt: 8,
@@ -220,7 +241,14 @@ const RegMpReturPage = ({ dgs = false }) => {
   const tableRef = useRef(null);
   const wrapRef = useRef(null);
   const autoLoaded = useRef(false);
-  const tableCols = useMemo(() => (dgs ? COLS : COLS.filter((c) => c.key !== "RETUR_BY")), [dgs]);
+  const tableCols = useMemo(
+    () => (dgs ? COLS : COLS.filter((c) => c.key !== "RETUR_BY")),
+    [dgs]
+  );
+  const searchCols = useMemo(
+    () => (dgs ? EXPORT_COLS : EXPORT_COLS.filter((c) => c.key !== "RETUR_BY")),
+    [dgs]
+  );
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -319,11 +347,11 @@ const RegMpReturPage = ({ dgs = false }) => {
   const filtered = useMemo(() => {
     const q = quick.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((r) => tableCols.some((c) => String(cell(r, c.key)).toLowerCase().includes(q)));
-  }, [rows, quick, tableCols]);
+    return rows.filter((r) => searchCols.some((c) => String(cell(r, c.key)).toLowerCase().includes(q)));
+  }, [rows, quick, searchCols]);
 
   const sorted = useMemo(() => {
-    const col = tableCols.find((c) => c.key === sort.key);
+    const col = searchCols.find((c) => c.key === sort.key) || tableCols.find((c) => c.key === sort.key);
     if (!col) return filtered;
     const mul = sort.dir === "desc" ? -1 : 1;
     const numeric = Boolean(col.date || col.num || col.sortNum);
@@ -337,7 +365,7 @@ const RegMpReturPage = ({ dgs = false }) => {
         return c !== 0 ? c * mul : a.i - b.i;
       })
       .map((x) => x.r);
-  }, [filtered, sort, tableCols]);
+  }, [filtered, sort, searchCols, tableCols]);
 
   useEffect(() => {
     setPage(1);
@@ -367,9 +395,9 @@ const RegMpReturPage = ({ dgs = false }) => {
   const exportExcel = async () => {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("Retur");
-    ws.addRow(["NO", ...tableCols.map((c) => c.label)]);
+    ws.addRow(["NO", ...searchCols.map((c) => c.label)]);
     sorted.forEach((r, i) => {
-      ws.addRow([i + 1, ...tableCols.map((c) => cell(r, c.key))]);
+      ws.addRow([i + 1, ...searchCols.map((c) => cell(r, c.key))]);
     });
     await saveXlsxFile(wb, `MP_RETUR_${todayYmd()}.xlsx`);
   };
@@ -608,7 +636,14 @@ const RegMpReturPage = ({ dgs = false }) => {
                         return (
                           <th
                             key={c.key}
-                            className={`reg-ar-sortable${active ? " is-sorted" : ""}${c.num ? " num" : ""}${c.tone ? ` is-${c.tone}` : ""}`}
+                            className={[
+                              "reg-ar-sortable",
+                              active ? "is-sorted" : "",
+                              c.num ? "num" : "",
+                              c.cls || "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
                             onClick={() => toggleSort(c.key)}
                             aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
                             title="Klik untuk urutkan"
@@ -637,20 +672,23 @@ const RegMpReturPage = ({ dgs = false }) => {
                       shown.map((r, i) => (
                         <tr key={rowOffset + i}>
                           <td className="col-no">{rowOffset + i + 1}</td>
-                          {tableCols.map((c) => {
-                            const v = cell(r, c.key);
-                            const isNote = c.key === "KETERANGAN_ADMIN" || c.key === "KETERANGAN_GUDANG";
-                            return (
-                              <td
-                                key={c.key}
-                                className={[c.num ? "num" : "", isNote ? "reg-ar-note-cell" : "", c.tone ? `is-${c.tone}` : ""]
-                                  .filter(Boolean)
-                                  .join(" ")}
-                              >
-                                {c.num ? fmtNum(v) : v === "" || v == null || v === "-" ? "—" : String(v)}
-                              </td>
-                            );
-                          })}
+                          {tableCols.map((c) => (
+                            <td
+                              key={c.key}
+                              className={[c.num ? "num" : "", c.wrap ? "is-wrap" : "", c.cls || ""]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              {c.subKey ? (
+                                <>
+                                  <div className="reg-mp-retur-plu">{fmtCell(c, cell(r, c.key))}</div>
+                                  <div className="reg-mp-retur-desc">{fmtCell(c, cell(r, c.subKey))}</div>
+                                </>
+                              ) : (
+                                fmtCell(c, cell(r, c.key))
+                              )}
+                            </td>
+                          ))}
                           {dgs ? (
                             <td className="reg-mp-retur-action">
                               <button

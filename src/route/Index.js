@@ -314,7 +314,6 @@ const Router = () => {
       <Routes>
         
         <Route path={`${process.env.PUBLIC_URL}`} element={<Layout />}>
-          <Route index element={<RootRedirect />}></Route>
           <Route path="crypto" element={<Crypto />}></Route>
           <Route path="analytics" element={<Analytics />}></Route>
           <Route path="sales" element={<Sales />}></Route>
@@ -672,6 +671,7 @@ const Router = () => {
         </Route>
 
         <Route path={`${process.env.PUBLIC_URL}`} element={<LayoutNoSidebar />}>
+          <Route index element={<RootRedirect />}></Route>
           <Route path="login" element={<RbacLogin />}></Route>
           <Route path="auth-success" element={<Success />}></Route>
             <Route path="auth-reset" element={<ForgotPassword />}></Route>
