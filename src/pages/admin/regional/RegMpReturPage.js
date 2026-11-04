@@ -21,6 +21,9 @@ import { extractRow, extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
 import DgsReturConfirmModal from "../dgs/DgsReturConfirmModal";
+import { ScNotice, ScPageHeader } from "../dgs/sc";
+import DgsContentShell from "../dgs/shell/DgsContentShell";
+import "../dgs/dgs.css";
 import "./reg-mp-ar-list.css";
 import "./reg-mp-retur.css";
 
@@ -431,18 +434,36 @@ const RegMpReturPage = ({ dgs = false }) => {
       <Head title={pageTitle} />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
-        <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
-          <BlockHead size="sm">
-            <BlockBetween>
-              <BlockHeadContent>
-                <BlockTitle page tag="h3">
-                  {pageTitle}
-                </BlockTitle>
-                <BlockDes className="text-soft">
-                    {dgs
-                      ? "Retur List · konfirmasi gudang (referensi MP_gudang) · tombol Edit per baris"
-                      : "View-only · retur gudang marketplace"}
-                  </BlockDes>
+        {(() => {
+          const Shell = dgs ? DgsContentShell : React.Fragment;
+          return (
+        <Shell>
+        <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}${dgs ? " dgs-dash sc-scope" : ""}`}>
+          {dgs ? (
+            <ScPageHeader
+              title={pageTitle}
+              description="Retur List · konfirmasi gudang (referensi MP_gudang) · tombol Edit per baris"
+              actions={
+                <button
+                  type="button"
+                  className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
+                  title={wide ? "Lebar normal" : "Lebar penuh"}
+                  aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                  aria-pressed={wide}
+                  onClick={() => setWide((w) => !w)}
+                >
+                  <Icon name={wide ? "minimize" : "maximize"} />
+                </button>
+              }
+            />
+          ) : (
+            <BlockHead size="sm">
+              <BlockBetween>
+                <BlockHeadContent>
+                  <BlockTitle page tag="h3">
+                    {pageTitle}
+                  </BlockTitle>
+                  <BlockDes className="text-soft">View-only · retur gudang marketplace</BlockDes>
                 </BlockHeadContent>
                 <BlockHeadContent>
                   <button
@@ -458,8 +479,14 @@ const RegMpReturPage = ({ dgs = false }) => {
                 </BlockHeadContent>
               </BlockBetween>
             </BlockHead>
+          )}
 
             <Block>
+              {dgs ? (
+                <ScNotice tone="warn">
+                  Konfirmasi penerimaan barang retur lewat tombol Edit. Pastikan qty & kondisi sesuai sebelum simpan.
+                </ScNotice>
+              ) : null}
               <div className="reg-ar-toolbar">
                 <div className="reg-ar-toolbar-grid reg-ar-toolbar-grid--4">
                   <div className="reg-ar-f-item">
@@ -750,6 +777,9 @@ const RegMpReturPage = ({ dgs = false }) => {
               ) : null}
             </Block>
           </div>
+        </Shell>
+          );
+        })()}
         </PageSmoothScroll>
         {dgs ? (
           <DgsReturConfirmModal

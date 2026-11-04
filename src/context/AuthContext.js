@@ -6,6 +6,7 @@ import { extractRows, isSuccess } from "../lib/response";
 import { buildAdminNavigation, buildStoreNavigation } from "../lib/menu";
 import { getDefaultHomePath, pickActiveStore, isStoreLoginUser } from "../lib/userSession";
 import { clearAccessCache } from "../components/admin/AccessGuard";
+import { clearDgsNavAccessCache } from "../pages/admin/dgs/shell/useDgsNavAccess";
 
 const AuthContext = createContext(null);
 
@@ -68,6 +69,7 @@ export const AuthProvider = ({ children }) => {
     bootstrappedRef.current = null;
     menuBootstrapAttemptRef.current = null;
     clearAccessCache();
+    clearDgsNavAccessCache();
     authService.logout();
     setUser(null);
     setMenuRows([]);

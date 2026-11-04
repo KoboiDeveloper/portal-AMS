@@ -1,0 +1,94 @@
+/**
+ * Seller Center content tokens — DigitalSales only (.sc-root / .dgs-dash).
+ * Top bar AMS tidak di-override di sini.
+ * Tipografi: Inter (mirip screenshot Seller Center).
+ */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+.sc-root,
+.dgs-dash,
+.dgs-app-layout,
+.reg-ar-wrap.sc-scope,
+.dgs-modal-content {
+  --sc-accent: #009a94;
+  --sc-accent-hover: #00857f;
+  --sc-accent-soft: #e7f7f5;
+  --sc-interactive: #009a94;
+  --sc-interactive-hover: #00857f;
+  --sc-interactive-soft: #e7f7f5;
+
+  --sc-page: #f5f6f7;
+  --sc-surface: #ffffff;
+  --sc-surface-subtle: #f8f9fa;
+  --sc-border: #e3e5e7;
+  --sc-divider: #eceeef;
+
+  --sc-text: #31353b;
+  --sc-text-secondary: #6c727a;
+  --sc-text-muted: #8e959e;
+  --sc-success: #159d79;
+  --sc-warning: #e39a20;
+  --sc-danger: #e02d3c;
+  --sc-info: #3d84c9;
+  --sc-link: #009a94;
+
+  --sc-radius-xs: 4px;
+  --sc-radius-sm: 6px;
+  --sc-radius-md: 8px;
+  --sc-radius-lg: 10px;
+  --sc-control-height: 36px;
+  --sc-card-padding: 18px;
+  --sc-card-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --sc-focus-ring: 0 0 0 3px rgba(0, 154, 148, 0.22);
+
+  /* Type scale ≈ Seller Center */
+  --sc-font: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --sc-fs-display: 1.75rem;   /* 28px page hero */
+  --sc-fs-title: 1.375rem;    /* 22px page title */
+  --sc-fs-section: 1rem;      /* 16px section */
+  --sc-fs-body: 0.875rem;     /* 14px */
+  --sc-fs-caption: 0.75rem;   /* 12px */
+  --sc-fs-micro: 0.6875rem;   /* 11px */
+  --sc-fw-regular: 400;
+  --sc-fw-medium: 500;
+  --sc-fw-semibold: 600;
+  --sc-fw-bold: 700;
+  --sc-lh: 1.5;
+  --sc-lh-tight: 1.25;
+
+  --sc-space-1: 4px;
+  --sc-space-2: 8px;
+  --sc-space-3: 12px;
+  --sc-space-4: 16px;
+  --sc-space-5: 20px;
+  --sc-space-6: 24px;
+  --sc-space-8: 32px;
+
+  --sc-subnav-width: 220px;
+}
+
+.sc-root,
+.dgs-app-layout {
+  color: var(--sc-text);
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  font-weight: var(--sc-fw-regular);
+  line-height: var(--sc-lh);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sc-page-canvas {
+  background: var(--sc-page);
+  margin: -8px -12px 0;
+  padding: var(--sc-space-4) var(--sc-space-4) var(--sc-space-8);
+  min-height: calc(100vh - 120px);
+}
+
+@media (min-width: 1200px) {
+  .sc-page-canvas {
+    margin: -8px -20px 0;
+    padding: var(--sc-space-5) var(--sc-space-5) var(--sc-space-8);
+  }
+}

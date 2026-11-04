@@ -30,6 +30,17 @@ import { RivStickyThead } from "./RivStickyThead";
 import DgsConfirmSalesModal from "../dgs/DgsConfirmSalesModal";
 import DgsArEditModal from "../dgs/DgsArEditModal";
 import { DgsKomisiStrip, DgsArUploadPanel, AR_UPLOAD_STORES } from "../dgs/DgsArTools";
+import {
+  ScCaseCard,
+  ScCaseList,
+  ScEmptyState,
+  ScNotice,
+  ScPageHeader,
+  ScSettlementStrip,
+  ScViewToggle,
+} from "../dgs/sc";
+import DgsContentShell from "../dgs/shell/DgsContentShell";
+import "../dgs/dgs.css";
 import "./reg-mp-ar-list.css";
 import "./reg-sales-detail.css";
 
@@ -365,6 +376,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
   const [status, setStatus] = useState("ALL");
   const [invoice, setInvoice] = useState("");
   const [hideRetur, setHideRetur] = useState(!dgsReturOnly);
+  const [returView, setReturView] = useState(dgsReturOnly ? "cards" : "table"); // table | cards
   const [reportStore, setReportStore] = useState("ALL");
   const [tipe, setTipe] = useState("tgl_sampai");
   const [rows, setRows] = useState([]);
@@ -880,18 +892,23 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
       <Head title={dgsReturOnly ? "Retur" : "AR List"} />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
-        <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
-          <BlockHead size="sm">
-            <BlockBetween>
-              <BlockHeadContent>
-                <BlockTitle page tag="h3">
-                  {dgsReturOnly ? "Retur" : "AR List"}
-                </BlockTitle>
-                <BlockDes className="text-soft">
-                  {dgsReturOnly ? "Per store · retur item saja (tanpa AR / approve / upload)" : titleMeta}
-                </BlockDes>
-              </BlockHeadContent>
-              <BlockHeadContent>
+        {(() => {
+          const Shell = dgsAny ? DgsContentShell : React.Fragment;
+          return (
+        <Shell>
+        <div
+          ref={wrapRef}
+          className={`reg-ar-wrap${wide ? " is-wide" : ""}${dgsAny ? " dgs-dash sc-scope" : ""}`}
+        >
+          {dgsAny ? (
+            <ScPageHeader
+              title={dgsReturOnly ? "Kelola pengembalian" : "Transaksi AR"}
+              description={
+                dgsReturOnly
+                  ? "Per store · retur item saja (tanpa AR / approve / upload)"
+                  : titleMeta
+              }
+              actions={
                 <button
                   type="button"
                   className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
@@ -902,11 +919,55 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                 >
                   <Icon name={wide ? "minimize" : "maximize"} />
                 </button>
-              </BlockHeadContent>
-            </BlockBetween>
-          </BlockHead>
+              }
+            />
+          ) : (
+            <BlockHead size="sm">
+              <BlockBetween>
+                <BlockHeadContent>
+                  <BlockTitle page tag="h3">
+                    AR List
+                  </BlockTitle>
+                  <BlockDes className="text-soft">{titleMeta}</BlockDes>
+                </BlockHeadContent>
+                <BlockHeadContent>
+                  <button
+                    type="button"
+                    className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
+                    title={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-pressed={wide}
+                    onClick={() => setWide((w) => !w)}
+                  >
+                    <Icon name={wide ? "minimize" : "maximize"} />
+                  </button>
+                </BlockHeadContent>
+              </BlockBetween>
+            </BlockHead>
+          )}
 
           <Block>
+            {dgsFull ? (
+              <ScNotice tone="info">
+                Input & edit AR, confirm sales, dan upload invoice tersedia di mode store. Gunakan tab Report untuk ringkasan.
+              </ScNotice>
+            ) : null}
+            {dgsReturOnly ? (
+              <ScNotice tone="warn">
+                Mode pengembalian: fokus ke item retur. Default tampilan Kartu seperti Seller Center.
+              </ScNotice>
+            ) : null}
+            {dgsFull && loaded && sortedRows.length > 0 ? (
+              <ScSettlementStrip
+                items={[
+                  { id: "rows", label: "Baris tampil", value: fmtNum(sortedRows.length) },
+                  { id: "total", label: "Filter aktif", value: status === "ALL" ? "Semua status" : status },
+                  { id: "mp", label: "Marketplace", value: marketplaceValue || "ALL" },
+                  { id: "store", label: "Store", value: isStoreMode ? storeId : reportStore || "—" },
+                ]}
+                operators={["·", "·", "·"]}
+              />
+            ) : null}
             {dgsFull ? <DgsKomisiStrip /> : null}
             {!dgsReturOnly ? (
             <div className="reg-ar-report">
@@ -1138,19 +1199,81 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
               ) : null}
             </div>
 
-            {!loaded && !loading ? (
-              <div className="reg-ar-empty">Belum ada data. Atur filter lalu klik Cari.</div>
-            ) : null}
-
-            {loaded && !loading && !sortedRows.length ? (
-              <div className="reg-ar-empty">
-                {isStoreMode && hideRetur && rows.length
-                  ? "Semua baris tersembunyi (Hide Retur aktif). Pilih Tampilkan Retur untuk melihat data retur."
-                  : "Tidak ada data untuk filter ini."}
+            {dgsReturOnly && loaded && sortedRows.length > 0 ? (
+              <div className="sc-toolbar-row">
+                <span className="sc-section__meta">{sortedRows.length.toLocaleString("id-ID")} kasus</span>
+                <ScViewToggle
+                  value={returView}
+                  onChange={setReturView}
+                  options={[
+                    { id: "table", label: "Tabel" },
+                    { id: "cards", label: "Kartu" },
+                  ]}
+                />
               </div>
             ) : null}
 
-            {sortedRows.length > 0 && columns.length > 0 ? (
+            {!loaded && !loading ? (
+              dgsAny ? (
+                <ScEmptyState
+                  icon="file-docs"
+                  title="Belum ada data"
+                  hint="Atur filter store / periode lalu klik Cari."
+                />
+              ) : (
+                <div className="reg-ar-empty">Belum ada data. Atur filter lalu klik Cari.</div>
+              )
+            ) : null}
+
+            {loaded && !loading && !sortedRows.length ? (
+              dgsAny ? (
+                <ScEmptyState
+                  icon="search"
+                  title="Tidak ada data untuk filter ini"
+                  hint={
+                    isStoreMode && hideRetur && rows.length
+                      ? "Semua baris tersembunyi (Hide Retur aktif). Pilih Tampilkan Retur."
+                      : "Ubah filter atau periode, lalu cari lagi."
+                  }
+                />
+              ) : (
+                <div className="reg-ar-empty">
+                  {isStoreMode && hideRetur && rows.length
+                    ? "Semua baris tersembunyi (Hide Retur aktif). Pilih Tampilkan Retur untuk melihat data retur."
+                    : "Tidak ada data untuk filter ini."}
+                </div>
+              )
+            ) : null}
+
+            {dgsReturOnly && returView === "cards" && sortedRows.length > 0 ? (
+              <ScCaseList>
+                {displayRows.map((row, idx) => {
+                  const inv = cell(row, "NO_INVOICE", ["no_invoice", "INVOICE"]);
+                  const st = String(cell(row, "RETUR", ["status", "STATUS"]) || "—");
+                  const tone = /tidak|mismatch|tolak|reject/i.test(st)
+                    ? "bad"
+                    : /tunggu|wait|pending|9/i.test(st)
+                      ? "warn"
+                      : /terima|ok|sesuai|2/i.test(st)
+                        ? "ok"
+                        : "info";
+                  return (
+                    <ScCaseCard
+                      key={`${inv}-${idx}`}
+                      title={inv || `Baris ${(page - 1) * PAGE_SIZE + idx + 1}`}
+                      meta={`${cell(row, "NAMA_MP", ["marketplace"]) || "—"} · ${cell(row, "STORE", ["store"]) || "—"} · ${cell(row, "TGL_TRANSAKSI", ["tgl_transaksi"]) || "—"}`}
+                      status={st}
+                      statusTone={tone}
+                      reason={cell(row, "BRAND", ["brand"]) ? `Brand ${cell(row, "BRAND", ["brand"])}` : null}
+                      amount={`Rp ${fmtNum(cell(row, "GRAND_TOTAL", ["grand_total", "TOTAL"]))}`}
+                      onClick={() => openDgsConfirm(row)}
+                    />
+                  );
+                })}
+              </ScCaseList>
+            ) : null}
+
+            {sortedRows.length > 0 && columns.length > 0 && !(dgsReturOnly && returView === "cards") ? (
               <>
                 <div className="reg-ar-table-wrap">
                   <table ref={tableRef} className="reg-ar-table">
@@ -1268,6 +1391,9 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
             />
           </Block>
         </div>
+        </Shell>
+          );
+        })()}
         </PageSmoothScroll>
 
           {dgsAny ? (

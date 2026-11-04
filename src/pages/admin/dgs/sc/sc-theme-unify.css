@@ -1,0 +1,499 @@
+/**
+ * Unifikasi font + button di scope DigitalSales (Inter / Seller Center).
+ * Scope: .dgs-app-layout | .sc-root | .dgs-dash | .reg-ar-wrap.sc-scope
+ */
+
+.dgs-app-layout,
+.sc-root,
+.dgs-dash,
+.reg-ar-wrap.sc-scope,
+.dgs-modal-content {
+  --sc-btn-radius: 6px;
+  --sc-btn-height: 36px;
+  --sc-btn-fs: 0.875rem;
+  --sc-btn-fw: 600;
+
+  font-family: var(--sc-font, Inter, sans-serif);
+  font-size: var(--sc-fs-body, 0.875rem);
+  font-weight: var(--sc-fw-regular, 400);
+  line-height: var(--sc-lh, 1.5);
+  letter-spacing: -0.01em;
+  color: var(--sc-text, #31353b);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* —— Headings —— */
+.dgs-app-layout h1,
+.dgs-app-layout h2,
+.dgs-app-layout h3,
+.dgs-app-layout h4,
+.dgs-app-layout h5,
+.dgs-app-layout h6,
+.sc-root h1,
+.sc-root h2,
+.sc-root h3,
+.sc-root h4,
+.sc-root h5,
+.sc-root h6,
+.dgs-dash h1,
+.dgs-dash h2,
+.dgs-dash h3,
+.dgs-dash h4,
+.dgs-dash h5,
+.dgs-dash h6,
+.reg-ar-wrap.sc-scope h1,
+.reg-ar-wrap.sc-scope h2,
+.reg-ar-wrap.sc-scope h3,
+.reg-ar-wrap.sc-scope h4,
+.reg-ar-wrap.sc-scope h5,
+.reg-ar-wrap.sc-scope h6 {
+  font-family: var(--sc-font);
+  color: var(--sc-text);
+  letter-spacing: -0.02em;
+  line-height: var(--sc-lh-tight);
+  font-weight: var(--sc-fw-bold);
+}
+
+.sc-page-header__title {
+  font-family: var(--sc-font) !important;
+  font-size: var(--sc-fs-title) !important;
+  font-weight: var(--sc-fw-bold) !important;
+  letter-spacing: -0.03em !important;
+  color: #171a1c !important;
+  line-height: 1.2 !important;
+}
+
+.sc-page-header__desc,
+.sc-section__meta,
+.dgs-asof,
+.reg-ar-wrap.sc-scope .text-soft,
+.reg-ar-wrap.sc-scope .reg-ar-record-info,
+.reg-ar-wrap.sc-scope .reg-ar-pager-info {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-regular);
+  color: var(--sc-text-muted);
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.sc-section__title,
+.sc-card__title,
+.dgs-dash .dgs-card h6,
+.reg-ar-wrap.sc-scope .dgs-card h6 {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-section);
+  font-weight: var(--sc-fw-semibold);
+  letter-spacing: -0.015em;
+  color: #171a1c;
+}
+
+.sc-welcome__title {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-section);
+  font-weight: var(--sc-fw-semibold);
+  letter-spacing: -0.01em;
+  color: #fff !important;
+}
+
+.sc-welcome__sub {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-regular);
+  color: #fff !important;
+}
+
+/* Labels — SC style: smaller, medium weight, NOT all-caps aggressive */
+.dgs-app-layout label,
+.sc-root label,
+.dgs-dash label,
+.reg-ar-wrap.sc-scope label,
+.reg-ar-wrap.sc-scope .reg-ar-f-item label,
+.dgs-dash .dgs-field label {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-medium);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--sc-text-secondary);
+}
+
+.dgs-app-layout input,
+.dgs-app-layout select,
+.dgs-app-layout textarea,
+.dgs-app-layout .form-control,
+.sc-root .form-control,
+.dgs-dash .form-control,
+.reg-ar-wrap.sc-scope .form-control,
+.reg-ar-wrap.sc-scope .reg-ar-ctl {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  font-weight: var(--sc-fw-regular);
+  color: var(--sc-text);
+  border-radius: var(--sc-btn-radius) !important;
+  border-color: var(--sc-border);
+  min-height: var(--sc-btn-height);
+  letter-spacing: -0.01em;
+}
+
+.dgs-app-layout table,
+.sc-root table,
+.dgs-dash .dgs-table,
+.reg-ar-wrap.sc-scope .dgs-table,
+.reg-ar-wrap.sc-scope .reg-ar-table {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  letter-spacing: -0.01em;
+}
+
+.dgs-dash .dgs-table thead th,
+.reg-ar-wrap.sc-scope .dgs-table thead th,
+.reg-ar-wrap.sc-scope .reg-ar-table thead th {
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-medium);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--sc-text-secondary);
+  background: var(--sc-surface-subtle);
+}
+
+.sc-td-main {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  font-weight: var(--sc-fw-semibold);
+  letter-spacing: -0.01em;
+  color: #171a1c;
+}
+
+.sc-td-meta {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-regular);
+  color: var(--sc-text-muted);
+  letter-spacing: 0;
+}
+
+.sc-td-urgent {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-medium);
+}
+
+/* KPI / attention numbers — bold like SC */
+.sc-attn__value,
+.sc-kpi__value,
+.sc-action-card__value,
+.sc-settle__value {
+  font-family: var(--sc-font);
+  font-weight: var(--sc-fw-bold);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: #171a1c;
+}
+
+.sc-attn__label,
+.sc-kpi__label,
+.sc-action-card__label,
+.sc-settle__label {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-regular);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--sc-text-secondary);
+}
+
+.sc-attn__sub,
+.sc-kpi__sub,
+.sc-kpi__hint,
+.sc-action-card__cta,
+.sc-settle__hint {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-medium);
+}
+
+.dgs-subnav__label {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-micro);
+  font-weight: var(--sc-fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sc-text-muted);
+}
+
+.dgs-subnav__item,
+.dgs-subnav__child,
+.dgs-subnav__link {
+  font-family: var(--sc-font);
+  letter-spacing: -0.01em;
+}
+
+.dgs-subnav__item.is-active,
+.dgs-subnav__child.is-active,
+.dgs-subnav__link.is-active {
+  font-weight: var(--sc-fw-semibold);
+}
+
+/* —— Buttons —— */
+.sc-btn,
+.dgs-app-layout .dgs-btn,
+.dgs-app-layout .reg-ar-btn,
+.dgs-app-layout .reg-ar-pager-btn,
+.sc-root .dgs-btn,
+.sc-root .reg-ar-btn,
+.sc-root .reg-ar-pager-btn,
+.dgs-dash .dgs-btn,
+.dgs-dash .reg-ar-btn,
+.dgs-dash .reg-ar-pager-btn,
+.reg-ar-wrap.sc-scope .dgs-btn,
+.reg-ar-wrap.sc-scope .reg-ar-btn,
+.reg-ar-wrap.sc-scope .reg-ar-pager-btn,
+.dgs-modal-content .dgs-btn,
+.dgs-modal-foot .dgs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--sc-btn-height, 36px);
+  height: auto;
+  padding: 8px 16px;
+  border-radius: var(--sc-btn-radius, 6px) !important;
+  font-family: var(--sc-font, Inter, sans-serif);
+  font-size: var(--sc-btn-fs, 0.875rem);
+  font-weight: var(--sc-btn-fw, 600);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  border: 1px solid var(--sc-accent, #009a94);
+  background: var(--sc-accent, #009a94);
+  color: #fff !important;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.sc-btn .icon,
+.dgs-app-layout .dgs-btn .icon,
+.dgs-app-layout .reg-ar-btn .icon,
+.sc-root .dgs-btn .icon,
+.dgs-dash .dgs-btn .icon,
+.reg-ar-wrap.sc-scope .dgs-btn .icon,
+.reg-ar-wrap.sc-scope .reg-ar-btn .icon,
+.dgs-modal-content .dgs-btn .icon {
+  color: inherit;
+  font-size: 1rem;
+}
+
+.sc-btn:hover:not(:disabled),
+.dgs-app-layout .dgs-btn:hover:not(:disabled),
+.dgs-app-layout .reg-ar-btn:hover:not(:disabled),
+.sc-root .dgs-btn:hover:not(:disabled),
+.dgs-dash .dgs-btn:hover:not(:disabled),
+.reg-ar-wrap.sc-scope .dgs-btn:hover:not(:disabled),
+.reg-ar-wrap.sc-scope .reg-ar-btn:hover:not(:disabled),
+.dgs-modal-content .dgs-btn:hover:not(:disabled),
+.dgs-modal-foot .dgs-btn:hover:not(:disabled) {
+  background: var(--sc-accent-hover, #00857f);
+  border-color: var(--sc-accent-hover, #00857f);
+  color: #fff !important;
+}
+
+.sc-btn:disabled,
+.dgs-app-layout .dgs-btn:disabled,
+.dgs-app-layout .reg-ar-btn:disabled,
+.sc-root .dgs-btn:disabled,
+.dgs-dash .dgs-btn:disabled,
+.reg-ar-wrap.sc-scope .dgs-btn:disabled,
+.reg-ar-wrap.sc-scope .reg-ar-btn:disabled,
+.dgs-modal-content .dgs-btn:disabled,
+.dgs-modal-foot .dgs-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dgs-modal-content .dgs-btn:disabled:not(.dgs-btn--ghost),
+.dgs-modal-foot .dgs-btn:disabled:not(.dgs-btn--ghost),
+.sc-btn:disabled:not(.sc-btn--ghost):not(.sc-btn--soft) {
+  color: #fff !important;
+  background: var(--sc-accent, #009a94);
+  border-color: var(--sc-accent, #009a94);
+}
+
+.sc-btn--ghost,
+.dgs-app-layout .dgs-btn--ghost,
+.dgs-app-layout .reg-ar-btn--ghost,
+.sc-root .dgs-btn--ghost,
+.dgs-dash .dgs-btn--ghost,
+.reg-ar-wrap.sc-scope .dgs-btn--ghost,
+.reg-ar-wrap.sc-scope .reg-ar-btn--ghost,
+.dgs-modal-content .dgs-btn--ghost,
+.dgs-modal-foot .dgs-btn--ghost {
+  background: #fff;
+  border-color: var(--sc-border, #e3e5e7);
+  color: var(--sc-text, #31353b) !important;
+}
+
+.sc-btn--ghost:hover:not(:disabled),
+.dgs-app-layout .dgs-btn--ghost:hover:not(:disabled),
+.dgs-app-layout .reg-ar-btn--ghost:hover:not(:disabled),
+.sc-root .dgs-btn--ghost:hover:not(:disabled),
+.dgs-dash .dgs-btn--ghost:hover:not(:disabled),
+.reg-ar-wrap.sc-scope .dgs-btn--ghost:hover:not(:disabled),
+.reg-ar-wrap.sc-scope .reg-ar-btn--ghost:hover:not(:disabled),
+.dgs-modal-content .dgs-btn--ghost:hover:not(:disabled) {
+  background: var(--sc-accent-soft);
+  border-color: var(--sc-accent);
+  color: var(--sc-accent-hover);
+}
+
+.sc-btn--ghost .icon,
+.dgs-app-layout .dgs-btn--ghost .icon,
+.sc-root .dgs-btn--ghost .icon,
+.dgs-dash .dgs-btn--ghost .icon,
+.reg-ar-wrap.sc-scope .dgs-btn--ghost .icon,
+.dgs-modal-content .dgs-btn--ghost .icon {
+  color: inherit;
+}
+
+.sc-btn--soft,
+.dgs-app-layout .reg-ar-pager-btn,
+.sc-root .reg-ar-pager-btn,
+.dgs-dash .reg-ar-pager-btn,
+.reg-ar-wrap.sc-scope .reg-ar-pager-btn {
+  background: #fff !important;
+  border-color: var(--sc-border, #e3e5e7) !important;
+  color: #31353b !important;
+  font-weight: var(--sc-fw-medium, 500);
+}
+
+.sc-btn--soft .icon,
+.dgs-app-layout .reg-ar-pager-btn .icon,
+.sc-root .reg-ar-pager-btn .icon,
+.dgs-dash .reg-ar-pager-btn .icon,
+.reg-ar-wrap.sc-scope .reg-ar-pager-btn .icon {
+  color: #31353b !important;
+}
+
+.sc-btn--soft:hover:not(:disabled),
+.dgs-app-layout .reg-ar-pager-btn:hover:not(:disabled),
+.sc-root .reg-ar-pager-btn:hover:not(:disabled),
+.dgs-dash .reg-ar-pager-btn:hover:not(:disabled),
+.reg-ar-wrap.sc-scope .reg-ar-pager-btn:hover:not(:disabled) {
+  background: var(--sc-surface-subtle, #f8f9fa) !important;
+  border-color: var(--sc-accent, #009a94) !important;
+  color: var(--sc-accent-hover, #00857f) !important;
+}
+
+.sc-btn--soft:hover:not(:disabled) .icon,
+.dgs-app-layout .reg-ar-pager-btn:hover:not(:disabled) .icon {
+  color: var(--sc-accent-hover, #00857f) !important;
+}
+
+.dgs-app-layout .dgs-btn--ok,
+.sc-root .dgs-btn--ok,
+.dgs-dash .dgs-btn--ok,
+.reg-ar-wrap.sc-scope .dgs-btn--ok,
+.dgs-modal-content .dgs-btn--ok {
+  background: var(--sc-success);
+  border-color: var(--sc-success);
+  color: #fff;
+}
+
+.dgs-app-layout .dgs-btn--ok:hover:not(:disabled),
+.sc-root .dgs-btn--ok:hover:not(:disabled),
+.dgs-dash .dgs-btn--ok:hover:not(:disabled),
+.reg-ar-wrap.sc-scope .dgs-btn--ok:hover:not(:disabled),
+.dgs-modal-content .dgs-btn--ok:hover:not(:disabled) {
+  background: #0f8a68;
+  border-color: #0f8a68;
+}
+
+.sc-chip {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-caption);
+  font-weight: var(--sc-fw-medium);
+  letter-spacing: -0.01em;
+  border-radius: 999px;
+}
+
+/* Report tabs — underline lurus (jangan pill radius: biar border-bottom gak melengkung) */
+.reg-ar-wrap.sc-scope .reg-ar-chip {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  font-weight: var(--sc-fw-medium);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  border-radius: 0;
+  color: var(--sc-text-muted);
+  border-bottom: 2px solid transparent;
+}
+
+.reg-ar-wrap.sc-scope .reg-ar-chip:hover {
+  color: var(--sc-text);
+  border-bottom-color: var(--sc-border);
+}
+
+.reg-ar-wrap.sc-scope .reg-ar-chip.is-active {
+  color: var(--sc-accent, #009a94);
+  border-bottom-color: var(--sc-accent, #009a94);
+  font-weight: var(--sc-fw-semibold);
+}
+
+.sc-tab {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  font-weight: var(--sc-fw-medium);
+  letter-spacing: -0.01em;
+}
+
+.sc-tab.is-active {
+  font-weight: var(--sc-fw-semibold);
+}
+
+.dgs-app-layout .dgs-link,
+.sc-root .dgs-link,
+.dgs-dash .dgs-link,
+.reg-ar-wrap.sc-scope .dgs-link {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-body);
+  font-weight: var(--sc-fw-medium);
+  color: var(--sc-accent);
+  letter-spacing: -0.01em;
+}
+
+.dgs-pill,
+.sc-badge {
+  font-family: var(--sc-font);
+  font-size: var(--sc-fs-micro);
+  font-weight: var(--sc-fw-semibold);
+  letter-spacing: 0;
+}
+
+.dgs-dash .dgs-filters,
+.reg-ar-wrap.sc-scope .dgs-filters,
+.reg-ar-wrap.sc-scope .reg-ar-toolbar {
+  border-radius: var(--sc-radius-md);
+}
+
+.reg-ar-wrap.sc-scope .reg-ar-wide-btn {
+  border-radius: var(--sc-btn-radius);
+  border-color: var(--sc-border);
+  color: var(--sc-text-secondary);
+}
+
+.reg-ar-wrap.sc-scope .reg-ar-wide-btn:hover,
+.reg-ar-wrap.sc-scope .reg-ar-wide-btn.is-on {
+  color: var(--sc-accent-hover);
+  border-color: var(--sc-accent);
+  background: var(--sc-accent-soft);
+}
+
+/* React-select inside DGS */
+.dgs-dash .css-13cymwt-control,
+.reg-ar-wrap.sc-scope .css-13cymwt-control,
+.dgs-dash [class*="-control"],
+.reg-ar-wrap.sc-scope [class*="-control"] {
+  font-family: var(--sc-font) !important;
+  font-size: var(--sc-fs-body) !important;
+  min-height: var(--sc-btn-height) !important;
+  border-radius: var(--sc-btn-radius) !important;
+}

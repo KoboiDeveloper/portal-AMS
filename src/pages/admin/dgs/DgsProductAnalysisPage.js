@@ -13,15 +13,7 @@ import {
 } from "chart.js";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
-import {
-  BlockBetween,
-  BlockDes,
-  BlockHead,
-  BlockHeadContent,
-  BlockTitle,
-  Icon,
-  RSelect,
-} from "../../../components/Component";
+import { Icon, RSelect } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
@@ -29,6 +21,8 @@ import { exportStyledXlsx } from "../../../lib/exportStyledXlsx";
 import { getDgsProductAnalysis } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import { addDaysYmd, errMsg, fmtCompact, fmtDec, fmtNum, todayYmd } from "./dgsUtils";
+import { ScBtn, ScEmptyState, ScError, ScPageHeader } from "./sc";
+import DgsContentShell from "./shell/DgsContentShell";
 import "../regional/reg-mp-ar-list.css";
 import "./dgs.css";
 
@@ -300,20 +294,17 @@ const DgsProductAnalysisPage = () => {
       <Head title="Analisa Barang" />
       <Content>
         <PageSmoothScroll revision={`${loading}-${data?.built_at || ""}-${rows.length}-${safePage}`} className="riv-page-scroll">
-          <div className="reg-ar-wrap dgs-dash">
-            <BlockHead size="sm">
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle page tag="h3">
-                    Analisa Barang
-                  </BlockTitle>
-                  <BlockDes className="text-soft">
-                    Barang laku per marketplace · retur · margin · tren
-                    {data?.built_at ? <span className="dgs-asof"> · data per {data.built_at} (cache 5 menit)</span> : null}
-                  </BlockDes>
-                </BlockHeadContent>
-              </BlockBetween>
-            </BlockHead>
+          <DgsContentShell>
+          <div className="reg-ar-wrap dgs-dash sc-scope">
+            <ScPageHeader
+              title="Kelola analisa barang"
+              description={
+                <>
+                  Barang laku per marketplace · retur · margin · tren
+                  {data?.built_at ? <span className="dgs-asof"> · data per {data.built_at} (cache 5 menit)</span> : null}
+                </>
+              }
+            />
 
             <div className="dgs-filters">
               <div className="reg-ar-f-item">
@@ -357,13 +348,15 @@ const DgsProductAnalysisPage = () => {
                   onKeyDown={(e) => e.key === "Enter" && load(false)}
                 />
               </div>
-              <button type="button" className="reg-ar-btn" disabled={loading} onClick={() => load(false)}>
+              <ScBtn disabled={loading} onClick={() => load(false)}>
                 <Icon name="reload" /> {loading ? "Memuat…" : "Terapkan"}
-              </button>
+              </ScBtn>
             </div>
 
-            {error ? <div className="reg-ar-error">{error}</div> : null}
-            {loading && !data ? <div className="dgs-hint">Menganalisa data… (pertama kali bisa 5–10 detik)</div> : null}
+            {error ? <ScError message={error} onRetry={() => load(false)} /> : null}
+            {loading && !data ? (
+              <ScEmptyState icon="growth" title="Menganalisa data…" hint="Pertama kali bisa 5–10 detik. Mohon tunggu." />
+            ) : null}
 
             {data ? (
               <>
@@ -699,6 +692,7 @@ const DgsProductAnalysisPage = () => {
               </>
             ) : null}
           </div>
+          </DgsContentShell>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

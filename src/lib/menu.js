@@ -275,6 +275,52 @@ const markMegaMenus = (items) => {
   return items;
 };
 
+/** Temporarily hide from top/side nav (route may still exist). */
+const HIDDEN_MENU_MODULES = new Set([
+  "REG_RPT_OMNI_ORDER", // Order Online — hide dulu
+  "DGS_MP", // Marketplace folder — diganti sidebar DigitalSales (/dgs)
+  "DGS_RETUR", // Gudang Retur — pakai sidebar Pengembalian
+  "DGS_RETUR_GUDANG", // alias Gudang Retur
+  "DGS_RETUR_LIST", // top "Retur" — pakai sidebar Daftar retur
+]);
+
+/** Exact frontend routes to hide from AMS top menu (sidebar DGS tetap). */
+const HIDDEN_MENU_LINKS = new Set(["/dgs/retur", "/dgs/retur-list"]);
+
+const normalizeMenuLink = (link = "") => {
+  const raw = String(link || "").split("?")[0].toLowerCase();
+  const base = (process.env.PUBLIC_URL || "").replace(/\/$/, "").toLowerCase();
+  let path = base && raw.startsWith(base) ? raw.slice(base.length) : raw;
+  path = path.replace(/\/+$/, "") || "/";
+  return path.startsWith("/") ? path : `/${path}`;
+};
+
+const isHiddenMenuNode = (node) => {
+  const code = String(node?.moduleCode || "").toUpperCase();
+  const parent = String(node?.parentCode || "").toUpperCase();
+  if (HIDDEN_MENU_MODULES.has(code) || HIDDEN_MENU_MODULES.has(parent)) return true;
+  const link = normalizeMenuLink(node?.link);
+  if (HIDDEN_MENU_LINKS.has(link)) return true;
+  const label = String(node?.text || "").trim().toLowerCase();
+  if (label === "gudang retur") return true;
+  /* Top bar "Retur" leaf (bukan folder Pengembalian di sidebar) */
+  if (label === "retur" && (link === "/dgs/retur-list" || code === "DGS_RETUR_LIST")) return true;
+  return false;
+};
+
+const pruneHiddenMenuItems = (items = []) =>
+  items
+    .filter((item) => !isHiddenMenuNode(item))
+    .map((item) => {
+      if (!item.subMenu?.length) return item;
+      const subMenu = pruneHiddenMenuItems(item.subMenu);
+      if (!subMenu.length) {
+        const { subMenu: _drop, ...rest } = item;
+        return rest;
+      }
+      return { ...item, subMenu };
+    });
+
 const buildMenuTree = (nodes) => {
   const availableCodes = new Set(nodes.map((node) => node.moduleCode));
   const normalizedNodes = nodes.map((node) => ({
@@ -301,6 +347,7 @@ const buildMenuTree = (nodes) => {
 
   const ensureFolder = (code, parentOfFolder = null, sortNo = 999) => {
     if (!code || byCode[code]) return;
+    if (HIDDEN_MENU_MODULES.has(String(code).toUpperCase())) return;
     byCode[code] = {
       text: FOLDER_LABELS[code] || code.replace(/_/g, " "),
       link: "#",
@@ -339,18 +386,13 @@ const buildMenuTree = (nodes) => {
   return roots.map(cleanSubMenu);
 };
 
-/** Temporarily hide from sidebar (route may still exist). */
-const HIDDEN_MENU_MODULES = new Set([
-  "REG_RPT_OMNI_ORDER", // Order Online — hide dulu
-]);
-
 export const buildNavigationFromMenuRows = (menuRows, options = {}) => {
   const { storeOnly = false, excludeStore = false } = options;
 
   let nodes = (menuRows || [])
     .map((row) => normalizeMenuRow(row, { storeOnly }))
     .filter((node) => node.moduleCode && node.link)
-    .filter((node) => !HIDDEN_MENU_MODULES.has(String(node.moduleCode).toUpperCase()))
+    .filter((node) => !isHiddenMenuNode(node))
     .filter((node) => {
       if (storeOnly) return node.moduleCode.startsWith("STORE_");
       if (excludeStore) return !node.moduleCode.startsWith("STORE_");
@@ -367,7 +409,7 @@ export const buildNavigationFromMenuRows = (menuRows, options = {}) => {
     return [];
   }
 
-  const result = buildMenuTree(nodes);
+  const result = pruneHiddenMenuItems(buildMenuTree(nodes));
   if (!result.length) {
     if (storeOnly) return storeNavigationFallback();
     if (excludeStore) return adminNavigationFallback();

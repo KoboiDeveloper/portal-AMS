@@ -17,8 +17,9 @@ const STATUS_TONE = { NEW: "is-new", APPROVED: "is-ok", RETUR: "is-warn" };
  * Confirm Sales popup (legacy Confirm_sales): approve / retur items, then PROSES.
  * `idPrasales` = TR_PRASALES_HEADER.ID_PRASALES_HEADER
  * `returOnly` = akun DIGITAL_SALES_RETUR: hanya retur item, tanpa approve / PROSES.
+ * `viewOnly` = Kelola prasales: lihat detail saja, tanpa aksi konfirmasi.
  */
-const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnly = false }) => {
+const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnly = false, viewOnly = false }) => {
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -54,11 +55,12 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
   useEffect(() => {
     if (isOpen) {
       setDirty(false);
-      setReturMode(Boolean(returOnly));
+      setReturMode(Boolean(returOnly) && !viewOnly);
       setReturNote("");
+      setSelected(new Set());
       load();
     }
-  }, [isOpen, load, returOnly]);
+  }, [isOpen, load, returOnly, viewOnly]);
 
   const isNew = String(cellOf(header, "STATUS_TRANSAKSI")) === "0";
   const totalRow = Number(info.total_row || 0);
@@ -139,12 +141,14 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
     <Modal isOpen={isOpen} toggle={close} size="lg" className="modal-dialog-centered rsd-detail-modal" contentClassName="dgs-modal-content">
       <div className="rsd-detail-hero">
         <div>
-          <h5 className="rsd-detail-title">{returOnly ? "Retur Item" : "Confirm Sales"}</h5>
+          <h5 className="rsd-detail-title">
+            {viewOnly ? "Detail prasales" : returOnly ? "Retur Item" : "Confirm Sales"}
+          </h5>
           <p className="rsd-detail-sub">
             {[cellOf(header, "NO_INVOICE"), cellOf(header, "NAMA_MP"), cellOf(header, "ID_STORE")]
               .filter(Boolean)
               .join(" · ")}
-            {returOnly ? " · hanya retur (tanpa approve / proses)" : ""}
+            {viewOnly ? " · hanya lihat" : returOnly ? " · hanya retur (tanpa approve / proses)" : ""}
           </p>
         </div>
         <button type="button" className="btn btn-icon btn-trigger" onClick={close} aria-label="Tutup">
@@ -169,9 +173,11 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
           <table className={`dgs-table${returOnly ? " dgs-table--retur-item" : ""}`}>
             <thead>
               <tr>
-                <th style={{ width: 34 }}>
-                  {isNew ? <input type="checkbox" checked={allChecked} onChange={toggleAll} /> : null}
-                </th>
+                {!viewOnly ? (
+                  <th style={{ width: 34 }}>
+                    {isNew ? <input type="checkbox" checked={allChecked} onChange={toggleAll} /> : null}
+                  </th>
+                ) : null}
                 <th>PLU</th>
                 <th>Deskripsi</th>
                 <th className="num">Qty</th>
@@ -183,7 +189,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
             <tbody>
               {items.length === 0 && !loading ? (
                 <tr>
-                  <td colSpan={returOnly ? 6 : 7} className="dgs-empty">
+                  <td colSpan={(viewOnly ? 0 : 1) + (returOnly ? 5 : 6)} className="dgs-empty">
                     Tidak ada item.
                   </td>
                 </tr>
@@ -195,11 +201,13 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
                   const returBy = String(cellOf(it, "RETUR_BY") || "").trim();
                   return (
                     <tr key={id}>
-                      <td>
-                        {isNew ? (
-                          <input type="checkbox" checked={selected.has(id)} onChange={() => toggle(id)} />
-                        ) : null}
-                      </td>
+                      {!viewOnly ? (
+                        <td>
+                          {isNew ? (
+                            <input type="checkbox" checked={selected.has(id)} onChange={() => toggle(id)} />
+                          ) : null}
+                        </td>
+                      ) : null}
                       <td>{cellOf(it, "PLU")}</td>
                       <td className={returOnly || returBy || note ? "dgs-item-main" : undefined}>
                         <div className="dgs-item-desc">{cellOf(it, "DESKRIPSI") || "—"}</div>
@@ -227,7 +235,9 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
 
       </ModalBody>
       <div className="dgs-modal-foot">
-        {isNew ? (
+        {viewOnly ? (
+          <span className="dgs-hint">Mode lihat — konfirmasi tidak tersedia di menu ini.</span>
+        ) : isNew ? (
           <>
             {returOnly || returMode ? (
               <div className="dgs-retur-box">
@@ -285,8 +295,9 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
               </>
             )}
           </>
-        ) : null}
-        {!isNew ? <span className="dgs-hint">Transaksi sudah diproses — tidak ada aksi.</span> : null}
+        ) : (
+          <span className="dgs-hint">Transaksi sudah diproses — tidak ada aksi.</span>
+        )}
         <span className="dgs-spacer" />
         <button type="button" className="dgs-btn dgs-btn--ghost" onClick={close}>
           Tutup

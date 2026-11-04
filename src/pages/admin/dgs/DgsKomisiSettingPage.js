@@ -3,15 +3,7 @@ import { Modal, ModalBody } from "reactstrap";
 import { toast } from "react-toastify";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
-import {
-  BlockBetween,
-  BlockDes,
-  BlockHead,
-  BlockHeadContent,
-  BlockTitle,
-  Icon,
-  RSelect,
-} from "../../../components/Component";
+import { Icon, RSelect } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import {
@@ -23,6 +15,8 @@ import {
 } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import { cellOf, errMsg, fmtDec, fmtYmd } from "./dgsUtils";
+import { ScBtn, ScEmptyState, ScError, ScPageHeader } from "./sc";
+import DgsContentShell from "./shell/DgsContentShell";
 import "../regional/reg-mp-ar-list.css";
 import "./dgs.css";
 
@@ -155,17 +149,12 @@ const DgsKomisiSettingPage = () => {
       <Head title="Setting Komisi" />
       <Content>
         <PageSmoothScroll revision={`${loading}-${rows.length}-${safePage}`} className="riv-page-scroll">
-          <div className="reg-ar-wrap">
-            <BlockHead size="sm">
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle page tag="h3">
-                    Setting Komisi
-                  </BlockTitle>
-                  <BlockDes className="text-soft">Persentase komisi marketplace (dipakai rumus AR)</BlockDes>
-                </BlockHeadContent>
-              </BlockBetween>
-            </BlockHead>
+          <DgsContentShell>
+          <div className="reg-ar-wrap dgs-dash sc-scope">
+            <ScPageHeader
+              title="Setting Komisi"
+              description="Persentase komisi marketplace (dipakai rumus AR)"
+            />
 
             <div className="dgs-filters">
               <div className="reg-ar-f-item">
@@ -178,12 +167,11 @@ const DgsKomisiSettingPage = () => {
                   isSearchable
                 />
               </div>
-              <button type="button" className="dgs-btn" disabled={loading} onClick={load}>
+              <ScBtn disabled={loading} onClick={load}>
                 <Icon name="search" /> Search
-              </button>
-              <button
-                type="button"
-                className="dgs-btn dgs-btn--ghost"
+              </ScBtn>
+              <ScBtn
+                variant="ghost"
                 disabled={!mp}
                 title={mp ? "Tambah komisi baru" : "Pilih marketplace dulu"}
                 onClick={() => {
@@ -192,14 +180,32 @@ const DgsKomisiSettingPage = () => {
                 }}
               >
                 <Icon name="plus" /> Add
-              </button>
-              <button type="button" className="dgs-btn dgs-btn--ghost" disabled={!sel.size} onClick={remove}>
+              </ScBtn>
+              <ScBtn variant="soft" disabled={!sel.size} onClick={remove}>
                 <Icon name="trash" /> Delete{sel.size ? ` (${sel.size})` : ""}
-              </button>
+              </ScBtn>
             </div>
 
-            {error ? <div className="reg-ar-error">{error}</div> : null}
+            {error ? <ScError message={error} onRetry={load} /> : null}
 
+            {!loading && shown.length === 0 && !error ? (
+              <ScEmptyState
+                icon="setting"
+                title="Belum ada komisi"
+                hint="Pilih marketplace lalu klik Add untuk menambah persen komisi."
+                action={
+                  <ScBtn
+                    disabled={!mp}
+                    onClick={() => {
+                      setFormErr("");
+                      setForm({ mp, komisi: "" });
+                    }}
+                  >
+                    <Icon name="plus" /> Add komisi
+                  </ScBtn>
+                }
+              />
+            ) : (
             <div className="dgs-table-wrap" style={{ maxHeight: "none" }}>
               <table className="dgs-table">
                 <thead>
@@ -217,7 +223,7 @@ const DgsKomisiSettingPage = () => {
                   {shown.length === 0 ? (
                     <tr>
                       <td className="dgs-empty" colSpan={5}>
-                        {loading ? "Memuat…" : "Tidak ada data."}
+                        Memuat…
                       </td>
                     </tr>
                   ) : (
@@ -250,6 +256,7 @@ const DgsKomisiSettingPage = () => {
                 </tbody>
               </table>
             </div>
+            )}
 
             {rows.length > PAGE_SIZE ? (
               <div className="reg-ar-pager">
@@ -272,6 +279,7 @@ const DgsKomisiSettingPage = () => {
               </div>
             ) : null}
           </div>
+          </DgsContentShell>
         </PageSmoothScroll>
 
         <Modal

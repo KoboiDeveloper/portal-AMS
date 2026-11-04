@@ -11,21 +11,15 @@ import {
 } from "chart.js";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
-import {
-  BlockBetween,
-  BlockDes,
-  BlockHead,
-  BlockHeadContent,
-  BlockTitle,
-  Icon,
-  RSelect,
-} from "../../../components/Component";
+import { Icon, RSelect } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import { getDgsReturDashboard } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import { errMsg, fmtCompact, fmtNum, monthStartYmd, pct, todayYmd } from "./dgsUtils";
+import { ScAttentionBar, ScBtn, ScError, ScPageHeader } from "./sc";
+import DgsContentShell from "./shell/DgsContentShell";
 import "../regional/reg-mp-ar-list.css";
 import "./dgs.css";
 
@@ -81,14 +75,6 @@ const baseOpts = (extra = {}) => ({
   plugins: { legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } } },
   ...extra,
 });
-
-const Kpi = ({ title, value, sub, tone }) => (
-  <div className={`dgs-kpi${tone ? ` is-${tone}` : ""}`}>
-    <div className="t">{title}</div>
-    <div className="v">{value}</div>
-    {sub ? <div className="s">{sub}</div> : null}
-  </div>
-);
 
 const AgeTable = ({ title, rows, cols, onRow }) => (
   <div className="dgs-card">
@@ -240,20 +226,22 @@ const DgsReturDashboardPage = () => {
       <Head title="Dashboard Retur" />
       <Content>
         <PageSmoothScroll revision={`${loading}-${data?.built_at || ""}`} className="riv-page-scroll">
-          <div className="reg-ar-wrap dgs-dash">
-            <BlockHead size="sm">
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle page tag="h3">
-                    Dashboard Retur
-                  </BlockTitle>
-                  <BlockDes className="text-soft">
-                    Monitor qty & nilai retur · menunggu barang · konfirmasi gudang
-                    {data?.built_at ? <span className="dgs-asof"> · data per {data.built_at}</span> : null}
-                  </BlockDes>
-                </BlockHeadContent>
-              </BlockBetween>
-            </BlockHead>
+          <DgsContentShell>
+          <div className="reg-ar-wrap dgs-dash sc-scope">
+            <ScPageHeader
+              title="Kelola pengembalian"
+              description={
+                <>
+                  Monitor qty & nilai retur · menunggu barang · konfirmasi gudang
+                  {data?.built_at ? <span className="dgs-asof"> · data per {data.built_at}</span> : null}
+                </>
+              }
+              actions={
+                <ScBtn variant="soft" className="sc-page-header__refresh" disabled={loading} onClick={() => load(true)}>
+                  <Icon name="reload" /> {loading ? "Memuat…" : "Refresh"}
+                </ScBtn>
+              }
+            />
 
             <div className="dgs-filters">
               <div className="reg-ar-f-item">
@@ -278,42 +266,54 @@ const DgsReturDashboardPage = () => {
                   isSearchable
                 />
               </div>
-              <button type="button" className="reg-ar-btn" disabled={loading} onClick={() => load(true)}>
-                <Icon name="reload" /> {loading ? "Memuat…" : "Refresh"}
-              </button>
+              <ScBtn disabled={loading} onClick={() => load(true)}>
+                <Icon name="reload" /> {loading ? "Memuat…" : "Terapkan"}
+              </ScBtn>
             </div>
 
-            {error ? <div className="reg-ar-error">{error}</div> : null}
+            {error ? <ScError message={error} onRetry={() => load(true)} /> : null}
 
             {data ? (
               <>
-                <div className="dgs-kpis">
-                  <Kpi
-                    title="Qty Retur"
-                    value={fmtNum(kr.retur_qty)}
-                    sub={`${returRate.toFixed(1)}% dari qty sold · ${fmtNum(kr.retur_invoice_count)} invoice`}
-                    tone="bad"
-                  />
-                  <Kpi title="Nilai Retur" value={money(kr.retur_value)} sub={`Sold qty ${fmtNum(kr.sold_qty)}`} />
-                  <Kpi
-                    title="Menunggu Barang"
-                    value={fmtNum(kr.retur_waiting_qty)}
-                    sub="Status 9 — belum dikonfirmasi gudang"
-                    tone="warn"
-                  />
-                  <Kpi
-                    title="Diterima Gudang"
-                    value={fmtNum(kr.retur_received_qty)}
-                    sub="Status 2 — barang kembali sesuai"
-                    tone="ok"
-                  />
-                  <Kpi
-                    title="Tidak Sesuai"
-                    value={fmtNum(kr.retur_mismatch_qty)}
-                    sub="Status 8 — mismatch / tidak layak"
-                    tone="bad"
-                  />
-                </div>
+                <ScAttentionBar
+                  items={[
+                    {
+                      id: "need",
+                      label: "Pesanan perlu direspon",
+                      value: fmtNum(kr.retur_waiting_qty),
+                      sub: Number(kr.retur_waiting_qty) > 0 ? "Menunggu gudang" : null,
+                      tone: Number(kr.retur_waiting_qty) > 0 ? "warn" : "ok",
+                      onClick: () => navigate("/dgs/retur"),
+                    },
+                    {
+                      id: "qty",
+                      label: "Qty retur",
+                      value: fmtNum(kr.retur_qty),
+                      tone: "bad",
+                      onClick: () => navigate("/dgs/retur-list"),
+                    },
+                    {
+                      id: "ok",
+                      label: "Diterima gudang",
+                      value: fmtNum(kr.retur_received_qty),
+                      tone: "ok",
+                      onClick: () => navigate("/dgs/retur-list"),
+                    },
+                    {
+                      id: "bad",
+                      label: "Tidak sesuai",
+                      value: fmtNum(kr.retur_mismatch_qty),
+                      tone: Number(kr.retur_mismatch_qty) > 0 ? "bad" : "ok",
+                      onClick: () => navigate("/dgs/retur-list"),
+                    },
+                    {
+                      id: "val",
+                      label: "Nilai retur",
+                      value: money(kr.retur_value),
+                      sub: `${returRate.toFixed(1)}% dari sold`,
+                    },
+                  ]}
+                />
 
                 <div className="dgs-grid-2">
                   <div className="dgs-card">
@@ -458,6 +458,7 @@ const DgsReturDashboardPage = () => {
               <div className="dgs-hint">Memuat dashboard retur…</div>
             ) : null}
           </div>
+          </DgsContentShell>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

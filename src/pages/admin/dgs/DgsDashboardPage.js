@@ -11,21 +11,23 @@ import {
 } from "chart.js";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
-import {
-  BlockBetween,
-  BlockDes,
-  BlockHead,
-  BlockHeadContent,
-  BlockTitle,
-  Icon,
-  RSelect,
-} from "../../../components/Component";
+import { Icon, RSelect } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker from "../../../components/AppDateRangePicker";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import { getDgsDashboard } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import { errMsg, fmtCompact, fmtNum, monthStartYmd, pct, todayYmd } from "./dgsUtils";
+import {
+  ScAttentionBar,
+  ScBtn,
+  ScCard,
+  ScDashboardSkeleton,
+  ScEmptyState,
+  ScError,
+  ScPageHeader,
+} from "./sc";
+import DgsContentShell from "./shell/DgsContentShell";
 import "../regional/reg-mp-ar-list.css";
 import "./dgs.css";
 
@@ -39,11 +41,19 @@ const MP_FILTER = [
 ];
 
 const selectStyles = {
-  control: (base) => ({ ...base, minHeight: 38, height: 38, fontSize: "0.8125rem", borderColor: "#dbdfea", borderRadius: 0, background: "#eef2f8" }),
-  valueContainer: (base) => ({ ...base, padding: "0 10px", height: 36 }),
+  control: (base) => ({
+    ...base,
+    minHeight: 34,
+    height: 34,
+    fontSize: "0.8125rem",
+    borderColor: "var(--sc-border, #e3e5e7)",
+    borderRadius: 4,
+    background: "#fff",
+  }),
+  valueContainer: (base) => ({ ...base, padding: "0 10px", height: 32 }),
   input: (base) => ({ ...base, margin: 0, padding: 0 }),
-  indicatorsContainer: (base) => ({ ...base, height: 36 }),
-  menu: (base) => ({ ...base, zIndex: 30, fontSize: "0.8125rem", borderRadius: 0 }),
+  indicatorsContainer: (base) => ({ ...base, height: 32 }),
+  menu: (base) => ({ ...base, zIndex: 30, fontSize: "0.8125rem", borderRadius: 6 }),
 };
 
 const AGE_BUCKETS = [
@@ -69,11 +79,11 @@ const bucketize = (rows) =>
   });
 
 const COLORS = {
-  pending: "#f4a417",
-  approved: "#1ca36c",
-  rejected: "#e5484d",
-  gt: "#6576ff",
-  mp: "#9aa7ff",
+  pending: "#e39a20",
+  approved: "#159d79",
+  rejected: "#dc4c57",
+  gt: "#0f2e57",
+  mp: "#3d84c9",
 };
 
 const baseOpts = (extra = {}) => ({
@@ -83,20 +93,8 @@ const baseOpts = (extra = {}) => ({
   ...extra,
 });
 
-const Kpi = ({ title, value, sub, tone }) => (
-  <div className={`dgs-kpi${tone ? ` is-${tone}` : ""}`}>
-    <div className="t">{title}</div>
-    <div className="v">{value}</div>
-    {sub ? <div className="s">{sub}</div> : null}
-  </div>
-);
-
 const AgeTable = ({ title, rows, cols, onRow }) => (
-  <div className="dgs-card">
-    <h6>
-      {title}
-      <small>{rows?.length || 0} teratas</small>
-    </h6>
+  <ScCard title={title} hint={`${rows?.length || 0} teratas`}>
     <div className="dgs-table-wrap">
       <table className="dgs-table">
         <thead>
@@ -137,7 +135,7 @@ const AgeTable = ({ title, rows, cols, onRow }) => (
         </tbody>
       </table>
     </div>
-  </div>
+  </ScCard>
 );
 
 const DgsDashboardPage = () => {
@@ -243,7 +241,7 @@ const DgsDashboardPage = () => {
   );
   const feeChart = {
     labels: feeRows.map((x) => x.l),
-    datasets: [{ label: "Nominal", data: feeRows.map((x) => x.v), backgroundColor: "#6576ff" }],
+    datasets: [{ label: "Nominal", data: feeRows.map((x) => x.v), backgroundColor: "#0f2e57" }],
   };
 
   const money = (v) => `Rp ${fmtCompact(v)}`;
@@ -253,25 +251,72 @@ const DgsDashboardPage = () => {
 
   const goPrasales = (r) => navigate(`/dgs/prasales?kw=${encodeURIComponent(r.invoice || "")}`);
 
+  const attentionItems = useMemo(
+    () => [
+      {
+        id: "pending",
+        label: "Pesanan perlu confirm",
+        value: fmtNum(kp.pending),
+        sub: Number(kp.pending) > 0 ? `Mendesak: ${fmtNum(kp.pending)}` : null,
+        tone: Number(kp.pending) > 0 ? "warn" : "ok",
+        onClick: () => navigate("/dgs/prasales?status=0"),
+      },
+      {
+        id: "ar-unpaid",
+        label: "AR belum cair",
+        value: fmtNum(ka.unpaid),
+        tone: Number(ka.unpaid) > 0 ? "warn" : "ok",
+        onClick: () => navigate("/dgs/ar-list"),
+      },
+      {
+        id: "retur-wait",
+        label: "Pengembalian tertunda",
+        value: fmtNum(kr.retur_waiting_qty),
+        tone: Number(kr.retur_waiting_qty) > 0 ? "warn" : "ok",
+        onClick: () => navigate("/dgs/retur-list"),
+      },
+      {
+        id: "rejected",
+        label: "Prasales ditolak",
+        value: fmtNum(kp.rejected),
+        tone: Number(kp.rejected) > 0 ? "bad" : "ok",
+        onClick: () => navigate("/dgs/prasales?status=2"),
+      },
+      {
+        id: "mismatch",
+        label: "Selisih POS vs MP",
+        value: fmtNum(mismatchTotal),
+        tone: mismatchTotal ? "bad" : "ok",
+        onClick: () => navigate("/dgs/retur-dashboard"),
+      },
+    ],
+    [navigate, kp.pending, kp.rejected, ka.unpaid, kr.retur_waiting_qty, mismatchTotal]
+  );
+
   return (
     <AccessGuard moduleCode="DGS_DASH">
       <Head title="Ringkasan Marketplace" />
       <Content>
         <PageSmoothScroll revision={`${loading}-${data?.built_at || ""}`} className="riv-page-scroll">
-          <div className="reg-ar-wrap dgs-dash">
-            <BlockHead size="sm">
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle page tag="h3">
-                    Ringkasan Marketplace
-                  </BlockTitle>
-                  <BlockDes className="text-soft">
-                    Prasales · AR · Retur marketplace
-                    {data?.built_at ? <span className="dgs-asof"> · data per {data.built_at} (cache 60 dtk)</span> : null}
-                  </BlockDes>
-                </BlockHeadContent>
-              </BlockBetween>
-            </BlockHead>
+          <DgsContentShell>
+          <div className="reg-ar-wrap dgs-dash sc-scope">
+            <div className="sc-welcome">
+              <div>
+                <h2 className="sc-welcome__title">Digital Sales</h2>
+                <p className="sc-welcome__sub">
+                  Ringkasan prasales, AR, dan retur marketplace
+                  {data?.built_at ? ` · data per ${data.built_at}` : ""}
+                </p>
+              </div>
+              <ScBtn variant="soft" className="sc-welcome__btn" disabled={loading} onClick={() => load(true)}>
+                <Icon name="reload" /> {loading ? "Memuat…" : "Refresh"}
+              </ScBtn>
+            </div>
+
+            <ScPageHeader
+              title="Beranda"
+              description="Performa & yang perlu ditindaklanjuti"
+            />
 
             <div className="dgs-filters">
               <div className="reg-ar-f-item">
@@ -296,53 +341,51 @@ const DgsDashboardPage = () => {
                   isSearchable
                 />
               </div>
-              <button type="button" className="reg-ar-btn" disabled={loading} onClick={() => load(true)}>
-                <Icon name="reload" /> {loading ? "Memuat…" : "Refresh"}
-              </button>
+              <ScBtn disabled={loading} onClick={() => load(true)}>
+                <Icon name="reload" /> {loading ? "Memuat…" : "Terapkan"}
+              </ScBtn>
             </div>
 
-            {error ? <div className="reg-ar-error">{error}</div> : null}
+            {error ? <ScError message={error} onRetry={() => load(true)} /> : null}
 
             {data ? (
               <>
-                <div className="dgs-kpis">
-                  <Kpi title="Prasales" value={fmtNum(kp.total)} sub={`${money(kp.value)} · MP ${money(kp.value_mp)}`} tone="info" />
-                  <Kpi title="Pending Confirm" value={fmtNum(kp.pending)} sub={money(kp.pending_value)} tone="warn" />
-                  <Kpi title="Approved" value={fmtNum(kp.approved)} sub={`${approvalRate.toFixed(1)}% dari total`} tone="ok" />
-                  <Kpi title="Rejected" value={fmtNum(kp.rejected)} sub={money(kp.rejected_value)} tone="bad" />
-                  <Kpi title="AR Dalam Perjalanan" value={fmtNum(ka.in_transit)} sub={money(ka.in_transit_value)} tone="info" />
-                  <Kpi title="AR Belum Cair" value={fmtNum(ka.unpaid)} sub={money(ka.unpaid_value)} tone="warn" />
-                  <Kpi title="AR Sudah Cair" value={fmtNum(ka.paid)} sub={money(ka.paid_value)} tone="ok" />
-                  <Kpi title="Total AR" value={money(ka.total_ar)} sub={`${fmtNum(ka.ar_total)} AR`} />
-                  <Kpi
-                    title="Retur"
-                    value={fmtNum(kr.retur_qty)}
-                    sub={`${returRate.toFixed(1)}% qty · ${money(kr.retur_value)}`}
-                    tone="bad"
+                <section className="sc-section">
+                  <div className="sc-section__head">
+                    <h2 className="sc-section__title">Perlu ditindaklanjuti</h2>
+                  </div>
+                  <ScAttentionBar items={attentionItems} />
+                </section>
+
+                <section className="sc-panel sc-panel--metrics">
+                  <div className="sc-section__head sc-panel__head">
+                    <h2 className="sc-section__title">Tinjau performa toko Anda</h2>
+                    <span className="sc-section__meta">
+                      Approved {approvalRate.toFixed(1)}% · Retur {returRate.toFixed(1)}% qty · Total AR {money(ka.total_ar)}
+                    </span>
+                  </div>
+                  <ScAttentionBar
+                    className="sc-attn--inpanel"
+                    items={[
+                      { id: "ps", label: "Prasales", value: fmtNum(kp.total), onClick: () => navigate("/dgs/prasales") },
+                      { id: "ap", label: "Approved", value: fmtNum(kp.approved), tone: "ok", onClick: () => navigate("/dgs/prasales?status=1") },
+                      { id: "ar", label: "AR transit", value: fmtNum(ka.in_transit), onClick: () => navigate("/dgs/ar-list") },
+                      { id: "paid", label: "AR sudah cair", value: fmtNum(ka.paid), tone: "ok", onClick: () => navigate("/dgs/ar-list") },
+                      { id: "rt", label: "Qty retur", value: fmtNum(kr.retur_qty), tone: "bad", onClick: () => navigate("/dgs/retur-list") },
+                    ]}
                   />
-                  <Kpi
-                    title="Retur Menunggu Barang"
-                    value={fmtNum(kr.retur_waiting_qty)}
-                    sub={`Diterima ${fmtNum(kr.retur_received_qty)} · Tdk sesuai ${fmtNum(kr.retur_mismatch_qty)}`}
-                    tone="warn"
-                  />
-                  <Kpi title="Selisih Total POS vs MP" value={fmtNum(mismatchTotal)} sub="invoice dgn selisih > Rp 1" tone={mismatchTotal ? "bad" : "ok"} />
-                </div>
+                </section>
 
                 <div className="dgs-grid-2">
-                  <div className="dgs-card">
-                    <h6>Tren Harian Prasales</h6>
+                  <ScCard title="Tren Harian Prasales">
                     <div className="dgs-chart">
                       <Bar
                         data={dailyChart}
                         options={baseOpts({ scales: { x: { stacked: true, ticks: { maxTicksLimit: 16 } }, y: { stacked: true, beginAtZero: true } } })}
                       />
                     </div>
-                  </div>
-                  <div className="dgs-card">
-                    <h6>
-                      Nilai per Marketplace <small>POS vs MP</small>
-                    </h6>
+                  </ScCard>
+                  <ScCard title="Nilai per Marketplace" hint="POS vs MP">
                     <div className="dgs-chart">
                       <Bar
                         data={mpChart}
@@ -355,14 +398,11 @@ const DgsDashboardPage = () => {
                         })}
                       />
                     </div>
-                  </div>
+                  </ScCard>
                 </div>
 
                 <div className="dgs-grid-2">
-                  <div className="dgs-card">
-                    <h6>
-                      Aging Pending Confirm <small>sejak tanggal transaksi</small>
-                    </h6>
+                  <ScCard title="Aging Pending Confirm" hint="sejak tanggal transaksi">
                     <div className="dgs-age-bar">
                       {ageP.map((b) => (
                         <div key={b.label} className={`dgs-age-cell${b.late && b.c ? " is-late" : ""}`}>
@@ -372,7 +412,7 @@ const DgsDashboardPage = () => {
                         </div>
                       ))}
                     </div>
-                    <h6 className="mt-3">
+                    <h6 className="sc-card__title mt-3">
                       Aging AR Belum Cair <small>sejak tgl sampai</small>
                     </h6>
                     <div className="dgs-age-bar">
@@ -384,11 +424,8 @@ const DgsDashboardPage = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
-                  <div className="dgs-card">
-                    <h6>
-                      Biaya & Potongan AR <small>total periode</small>
-                    </h6>
+                  </ScCard>
+                  <ScCard title="Biaya & Potongan AR" hint="total periode">
                     <div className="dgs-chart">
                       <Bar
                         data={feeChart}
@@ -402,25 +439,19 @@ const DgsDashboardPage = () => {
                         })}
                       />
                     </div>
-                  </div>
+                  </ScCard>
                 </div>
 
                 <div className="dgs-grid-2">
-                  <div className="dgs-card">
-                    <h6>
-                      Prasales per Store <small>20 teratas</small>
-                    </h6>
+                  <ScCard title="Prasales per Store" hint="20 teratas">
                     <div className="dgs-chart dgs-chart--tall">
                       <Bar
                         data={storeChart}
                         options={baseOpts({ indexAxis: "y", scales: { x: { stacked: true }, y: { stacked: true } } })}
                       />
                     </div>
-                  </div>
-                  <div className="dgs-card">
-                    <h6>
-                      Per Marketplace <small>status & selisih</small>
-                    </h6>
+                  </ScCard>
+                  <ScCard title="Per Marketplace" hint="status & selisih">
                     <div className="dgs-table-wrap">
                       <table className="dgs-table">
                         <thead>
@@ -451,7 +482,7 @@ const DgsDashboardPage = () => {
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  </ScCard>
                 </div>
 
                 <div className="dgs-grid-2">
@@ -506,9 +537,21 @@ const DgsDashboardPage = () => {
                 </div>
               </>
             ) : loading ? (
-              <div className="dgs-hint">Memuat dashboard…</div>
-            ) : null}
+              <ScDashboardSkeleton />
+            ) : error ? null : (
+              <ScEmptyState
+                icon="growth"
+                title="Belum ada data ringkasan"
+                hint="Atur periode transaksi dan marketplace, lalu klik Terapkan."
+                action={
+                  <ScBtn onClick={() => load(false)}>
+                    Muat dashboard
+                  </ScBtn>
+                }
+              />
+            )}
           </div>
+          </DgsContentShell>
         </PageSmoothScroll>
       </Content>
     </AccessGuard>

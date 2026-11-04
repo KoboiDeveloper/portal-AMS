@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Modal, ModalBody } from "reactstrap";
 import { toast } from "react-toastify";
 import { Icon } from "../../../components/Component";
+import AppDatePicker from "../../../components/AppDatePicker";
+import { parseAppDate, formatAppDateYmd } from "../../../components/AppDateRangePicker";
 import { postDgsArRealisasiSave } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import { errMsg, todayYmd } from "./dgsUtils";
@@ -67,7 +69,16 @@ const DgsRealisasiModal = ({ isOpen, invoice, marketplace, onClose, onSaved }) =
         {error ? <div className="reg-ar-err">{error}</div> : null}
         <div className="dgs-field">
           <label>Tanggal Pelunasan</label>
-          <input type="date" className="form-control" value={tgl} onChange={(e) => setTgl(e.target.value)} />
+          <div className="form-control-wrap">
+            <AppDatePicker
+              selected={parseAppDate(tgl)}
+              onChange={(d) => setTgl(formatAppDateYmd(d) || "")}
+              dateFormat="dd/MM/yyyy"
+              className="form-control form-control-sm date-picker"
+              placeholderText="dd/mm/yyyy"
+              portalId="dgs-realisasi-datepicker-portal"
+            />
+          </div>
         </div>
       </ModalBody>
       <div className="dgs-modal-foot">

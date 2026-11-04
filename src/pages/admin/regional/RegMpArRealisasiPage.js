@@ -20,6 +20,9 @@ import { extractRows, isSuccess } from "../../../lib/response";
 import { saveXlsxFile } from "../../../lib/exportStyledXlsx";
 import { RivStickyThead } from "./RivStickyThead";
 import DgsRealisasiModal from "../dgs/DgsRealisasiModal";
+import { ScNotice, ScPageHeader } from "../dgs/sc";
+import DgsContentShell from "../dgs/shell/DgsContentShell";
+import "../dgs/dgs.css";
 import "./reg-mp-ar-list.css";
 
 const MP_OPTS = [
@@ -224,18 +227,16 @@ const RegMpArRealisasiPage = ({ dgs = false }) => {
       <Head title="AR Realisasi" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
-          <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
-            <BlockHead size="sm">
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle page tag="h3">
-                    AR Realisasi
-                  </BlockTitle>
-                  <BlockDes className="text-soft">
-                    {dgs ? "Pelunasan AR marketplace · klik baris 'Belum' untuk simpan realisasi" : "View-only · pelunasan AR marketplace"}
-                  </BlockDes>
-                </BlockHeadContent>
-                <BlockHeadContent>
+          {(() => {
+            const Shell = dgs ? DgsContentShell : React.Fragment;
+            return (
+          <Shell>
+          <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}${dgs ? " dgs-dash sc-scope" : ""}`}>
+            {dgs ? (
+              <ScPageHeader
+                title="AR Realisasi"
+                description="Pelunasan AR marketplace · klik baris 'Belum' untuk simpan realisasi"
+                actions={
                   <button
                     type="button"
                     className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
@@ -246,11 +247,39 @@ const RegMpArRealisasiPage = ({ dgs = false }) => {
                   >
                     <Icon name={wide ? "minimize" : "maximize"} />
                   </button>
-                </BlockHeadContent>
-              </BlockBetween>
-            </BlockHead>
+                }
+              />
+            ) : (
+              <BlockHead size="sm">
+                <BlockBetween>
+                  <BlockHeadContent>
+                    <BlockTitle page tag="h3">
+                      AR Realisasi
+                    </BlockTitle>
+                    <BlockDes className="text-soft">View-only · pelunasan AR marketplace</BlockDes>
+                  </BlockHeadContent>
+                  <BlockHeadContent>
+                    <button
+                      type="button"
+                      className={`reg-ar-wide-btn${wide ? " is-on" : ""}`}
+                      title={wide ? "Lebar normal" : "Lebar penuh"}
+                      aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                      aria-pressed={wide}
+                      onClick={() => setWide((w) => !w)}
+                    >
+                      <Icon name={wide ? "minimize" : "maximize"} />
+                    </button>
+                  </BlockHeadContent>
+                </BlockBetween>
+              </BlockHead>
+            )}
 
             <Block>
+              {dgs ? (
+                <ScNotice tone="info">
+                  Status Belum: klik baris untuk membuka form realisasi. Status Sudah bersifat baca saja.
+                </ScNotice>
+              ) : null}
               <div className="reg-ar-toolbar">
                 <div className={`reg-ar-toolbar-grid reg-ar-toolbar-grid--rz ${isSudah ? "reg-ar-toolbar-grid--rz-sudah" : ""}`}>
                   <div className="reg-ar-f-item">
@@ -447,6 +476,9 @@ const RegMpArRealisasiPage = ({ dgs = false }) => {
               ) : null}
             </Block>
           </div>
+          </Shell>
+            );
+          })()}
         </PageSmoothScroll>
         {dgs ? (
           <DgsRealisasiModal
