@@ -193,7 +193,10 @@ const deltaTone = (v) => {
 };
 
 const RegMpReturPage = ({ dgs = false }) => {
-  const accessModules = dgs ? ["DGS_RETUR", "DGS_RETUR_GUDANG"] : ["REG_MP_RETUR"];
+  const accessModules = useMemo(
+    () => (dgs ? ["DGS_RETUR", "DGS_RETUR_GUDANG"] : ["REG_MP_RETUR"]),
+    [dgs]
+  );
   const pageTitle = dgs ? "Gudang Retur" : "MP Retur";
   const [searchParams] = useSearchParams();
   const [confirmRow, setConfirmRow] = useState(null);

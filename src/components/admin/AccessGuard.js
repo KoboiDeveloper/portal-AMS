@@ -51,7 +51,10 @@ const initialAccessState = (codes, permission) => {
   return { loading: true, allowed: false };
 };
 
-/** `moduleCode` atau `moduleCodes` (OR — cukup salah satu VIEW). */
+/**
+ * `moduleCode` atau `moduleCodes` (OR — cukup salah satu VIEW).
+ * Satu modul yang 403/deny tidak boleh menggagalkan modul lain (Promise.allSettled).
+ */
 const AccessGuard = ({ moduleCode, moduleCodes, permission = "VIEW", children }) => {
   const codes = useMemo(() => normalizeCodes(moduleCode, moduleCodes), [moduleCode, moduleCodes]);
   const codesKey = codes.join("|");
@@ -76,9 +79,13 @@ const AccessGuard = ({ moduleCode, moduleCodes, permission = "VIEW", children })
         return;
       }
 
+      const unsettled = codes
+        .map((code, i) => ({ code, i, known: cached[i] }))
+        .filter((x) => x.known === null);
+
       try {
-        const results = await Promise.all(
-          codes.map((code) =>
+        const settled = await Promise.allSettled(
+          unsettled.map(({ code }) =>
             accessService.check({
               nik: getAuthNik(),
               module_code: code,
@@ -86,10 +93,19 @@ const AccessGuard = ({ moduleCode, moduleCodes, permission = "VIEW", children })
             })
           )
         );
-        let allowed = false;
-        results.forEach((res, i) => {
-          const ok = resolveAllowed(res);
-          writeCache(codes[i], permission, ok);
+
+        let allowed = cached.some((v) => v === true);
+        settled.forEach((result, idx) => {
+          const code = unsettled[idx].code;
+          let ok = false;
+          if (result.status === "fulfilled") {
+            ok = resolveAllowed(result.value);
+          } else {
+            /* HTTP 403 / network: treat as deny for this module only */
+            const body = result.reason?.response?.data || result.reason?.data;
+            ok = body ? resolveAllowed(body) : false;
+          }
+          writeCache(code, permission, ok);
           if (ok) allowed = true;
         });
         if (mounted) setState({ loading: false, allowed });
