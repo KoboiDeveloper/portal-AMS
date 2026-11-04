@@ -260,6 +260,14 @@ const monthStartYmd = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-01`;
 };
 
+const addDaysYmd = (ymd, days) => {
+  const d = new Date(`${String(ymd).slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return ymd;
+  d.setDate(d.getDate() + Number(days || 0));
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
 const cell = (r, key, alts = []) => {
   const keys = [key, ...alts];
   for (const k of keys) {
@@ -269,6 +277,22 @@ const cell = (r, key, alts = []) => {
     if (hit != null && r[hit] != null && r[hit] !== "") return r[hit];
   }
   return "";
+};
+
+/** Match pencarian cepat ke kolom invoice / order id. */
+const rowMatchesQuick = (row, q) => {
+  const needle = String(q || "").trim().toLowerCase();
+  if (!needle) return true;
+  const keys = [
+    "NO_INVOICE",
+    "INVOICE",
+    "NO_ORDER",
+    "ORDER_ID",
+    "NO_RESI",
+    "ID_TR_SALES_HEADER",
+    "TR_ID",
+  ];
+  return keys.some((k) => String(cell(row, k) || "").toLowerCase().includes(needle));
 };
 
 const toSortable = (value) => {
@@ -375,6 +399,8 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
   const [marketplace, setMarketplace] = useState("ALL");
   const [status, setStatus] = useState("ALL");
   const [invoice, setInvoice] = useState("");
+  /** Filter lokal di atas list yang sudah ter-load (bukan param API). */
+  const [listQuery, setListQuery] = useState("");
   const [hideRetur, setHideRetur] = useState(!dgsReturOnly);
   const [returView, setReturView] = useState(dgsReturOnly ? "cards" : "table"); // table | cards
   const [reportStore, setReportStore] = useState("ALL");
@@ -423,6 +449,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
     setTotalsRow(null);
     setLoaded(false);
     setError("");
+    setListQuery("");
     setSortConfig({ key: "", direction: "asc" });
     setPage(1);
   };
@@ -480,93 +507,132 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
     clearResult();
   };
 
-  const loadData = useCallback(async () => {
-    if (!fromDate || !toDate) {
-      setError("Pilih periode dulu.");
-      return;
-    }
-    if (isStoreMode && !storeId) {
-      setError("Pilih store dulu.");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const base = {
-        from_date: fromDate,
-        to_date: toDate,
-        marketplace: isTikTokChannel ? "TIKTOK" : marketplace?.trim() || "ALL",
-      };
-      let res;
-      if (isStoreMode) {
-        res = await getRegMpArListByStore({
-          ...base,
-          id_store: storeId,
-          status: status || "ALL",
-          invoice: String(invoice || "").trim() || "-",
-        });
-      } else if (mode === "total") {
-        res = await getRegMpArListTotal(base);
-      } else if (mode === "detail") {
-        res = await getRegMpArListDetailRealisasi({
-          ...base,
-          id_store: reportStore || "ALL",
-          tipe: tipe || "tgl_sampai",
-          invoice: String(invoice || "").trim(),
-        });
-      } else if (mode === "plu") {
-        res = await getRegMpArListPluSummary({
-          ...base,
-          id_store: reportStore || "ALL",
-          tipe: tipe || "tgl_sampai",
-        });
-      } else {
-        res = await getRegMpArListTransaksiDetail({
-          ...base,
-          id_store: reportStore || "ALL",
-        });
+  /**
+   * opts.invoiceOverride — pakai invoice ini (pencarian cepat).
+   * opts.ignoreInvoice — Terapkan Filter: jangan kirim invoice ke API.
+   * opts.relaxFilters — pencarian cepat sebelum list: abaikan status/MP/periode ketat.
+   */
+  const loadData = useCallback(
+    async (opts = {}) => {
+      const relax = Boolean(opts.relaxFilters);
+      const from = relax ? addDaysYmd(todayYmd(), -730) : fromDate;
+      const to = relax ? todayYmd() : toDate;
+      if (!from || !to) {
+        setError("Pilih periode dulu.");
+        return;
       }
-      if (!isSuccess(res)) {
-        setError(res?.responseMessage || "Gagal memuat data");
+      if (isStoreMode && !storeId) {
+        setError("Pilih store dulu.");
+        return;
+      }
+
+      let invParam = "-";
+      if (opts.invoiceOverride !== undefined) {
+        invParam = String(opts.invoiceOverride || "").trim() || "-";
+      } else if (!opts.ignoreInvoice) {
+        invParam = String(invoice || "").trim() || "-";
+      }
+
+      setLoading(true);
+      setError("");
+      setListQuery("");
+      try {
+        const base = {
+          from_date: from,
+          to_date: to,
+          marketplace: relax
+            ? "ALL"
+            : isTikTokChannel
+              ? "TIKTOK"
+              : marketplace?.trim() || "ALL",
+        };
+        let res;
+        if (isStoreMode) {
+          res = await getRegMpArListByStore({
+            ...base,
+            id_store: storeId,
+            status: relax ? "ALL" : status || "ALL",
+            invoice: invParam,
+          });
+        } else if (mode === "total") {
+          res = await getRegMpArListTotal(base);
+        } else if (mode === "detail") {
+          res = await getRegMpArListDetailRealisasi({
+            ...base,
+            id_store: reportStore || "ALL",
+            tipe: tipe || "tgl_sampai",
+            invoice: invParam === "-" ? "" : invParam,
+          });
+        } else if (mode === "plu") {
+          res = await getRegMpArListPluSummary({
+            ...base,
+            id_store: reportStore || "ALL",
+            tipe: tipe || "tgl_sampai",
+          });
+        } else {
+          res = await getRegMpArListTransaksiDetail({
+            ...base,
+            id_store: reportStore || "ALL",
+          });
+        }
+        if (!isSuccess(res)) {
+          setError(res?.responseMessage || "Gagal memuat data");
+          setRows([]);
+          setTotalsRow(null);
+          setLoaded(true);
+          return;
+        }
+        let list = extractRows(res);
+        let totals = null;
+        if (!isStoreMode) {
+          const summary = list.find((r) => isSummaryRow(r));
+          if (summary) totals = summary;
+          list = list.filter((r) => !isSummaryRow(r));
+        }
+        setTotalsRow(totals);
+        setRows(list);
+        setLoaded(true);
+        setSortConfig({ key: "", direction: "asc" });
+        setPage(1);
+      } catch (e) {
+        setError(e?.message || "Gagal memuat data");
         setRows([]);
         setTotalsRow(null);
         setLoaded(true);
-        return;
+        setPage(1);
+      } finally {
+        setLoading(false);
       }
-      let list = extractRows(res);
-      let totals = null;
-      if (!isStoreMode) {
-        const summary = list.find((r) => isSummaryRow(r));
-        if (summary) totals = summary;
-        list = list.filter((r) => !isSummaryRow(r));
-      }
-      setTotalsRow(totals);
-      setRows(list);
-      setLoaded(true);
-      setSortConfig({ key: "", direction: "asc" });
+    },
+    [
+      fromDate,
+      toDate,
+      isStoreMode,
+      storeId,
+      marketplace,
+      isTikTokChannel,
+      status,
+      invoice,
+      mode,
+      reportStore,
+      tipe,
+    ]
+  );
+
+  const onQuickSearch = useCallback(() => {
+    const q = String(invoice || "").trim();
+    if (loaded && rows.length > 0) {
+      setListQuery(q);
       setPage(1);
-    } catch (e) {
-      setError(e?.message || "Gagal memuat data");
-      setRows([]);
-      setTotalsRow(null);
-      setLoaded(true);
-      setPage(1);
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [
-    fromDate,
-    toDate,
-    isStoreMode,
-    storeId,
-    marketplace,
-    isTikTokChannel,
-    status,
-    invoice,
-    mode,
-    reportStore,
-    tipe,
-  ]);
+    if (!q) {
+      setError("Isi No. Invoice / Order ID untuk pencarian cepat.");
+      return;
+    }
+    /* Belum ada list → cari ke API, abaikan filter status/MP/periode ketat */
+    loadData({ invoiceOverride: q, relaxFilters: true });
+  }, [invoice, loaded, rows.length, loadData]);
 
   const columns = useMemo(() => {
     if (isStoreMode) {
@@ -629,8 +695,10 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
   };
 
   const sortedRows = useMemo(() => {
-    const base =
-      isStoreMode && hideRetur ? rows.filter((r) => !isReturRow(r)) : rows;
+    let base = isStoreMode && hideRetur ? rows.filter((r) => !isReturRow(r)) : rows;
+    if (listQuery.trim()) {
+      base = base.filter((r) => rowMatchesQuick(r, listQuery));
+    }
     if (!sortConfig.key) return base;
     if (sortConfig.key === "__rowtotal" && mode === "total") {
       const numKeys = columns.filter((c) => c.num).map((c) => c.key);
@@ -647,7 +715,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
       compareCell(cell(a, sortConfig.key), cell(b, sortConfig.key), sortConfig.direction)
     );
     return next;
-  }, [rows, sortConfig, mode, columns, isStoreMode, hideRetur]);
+  }, [rows, sortConfig, mode, columns, isStoreMode, hideRetur, listQuery]);
 
   const displayRows = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -1106,7 +1174,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                     className="reg-ar-btn reg-ar-btn--ghost reg-ar-btn--icon"
                     title="Refresh"
                     disabled={loading || !canSearch}
-                    onClick={loadData}
+                    onClick={() => loadData({ ignoreInvoice: true })}
                   >
                     <Icon name="reload" />
                   </button>
@@ -1123,7 +1191,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                     type="button"
                     className="reg-ar-btn"
                     disabled={loading || !canSearch}
-                    onClick={loadData}
+                    onClick={() => loadData({ ignoreInvoice: true })}
                   >
                     <Icon name="filter" />
                     {loading ? "Memuat…" : "Terapkan Filter"}
@@ -1133,7 +1201,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
             </div>
 
             {dgsFull && isStoreMode && AR_UPLOAD_STORES.includes(storeId) ? (
-              <DgsArUploadPanel store={storeId} onDone={loadData} />
+              <DgsArUploadPanel store={storeId} onDone={() => loadData({ ignoreInvoice: true })} />
             ) : null}
 
             {error ? <div className="reg-ar-err">{error}</div> : null}
@@ -1144,18 +1212,33 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                 <input
                   className="reg-ar-quick-input"
                   value={invoice}
-                  onChange={(e) => setInvoice(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") loadData();
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setInvoice(v);
+                    if (loaded && rows.length > 0) {
+                      setListQuery(String(v || "").trim());
+                      setPage(1);
+                    }
                   }}
-                  placeholder="Pencarian cepat No. Invoice / Order ID"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") onQuickSearch();
+                  }}
+                  placeholder={
+                    loaded && rows.length > 0
+                      ? "Filter di list: No. Invoice / Order ID"
+                      : "Pencarian cepat No. Invoice / Order ID (Enter)"
+                  }
                 />
                 {String(invoice || "").trim() ? (
                   <button
                     type="button"
                     className="reg-ar-quick-clear"
                     aria-label="Clear search"
-                    onClick={() => setInvoice("")}
+                    onClick={() => {
+                      setInvoice("");
+                      setListQuery("");
+                      setPage(1);
+                    }}
                   >
                     ×
                   </button>
@@ -1402,7 +1485,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                 isOpen={Boolean(confirmId)}
                 idPrasales={confirmId}
                 onClose={() => setConfirmId("")}
-                onChanged={loadData}
+                onChanged={() => loadData({ ignoreInvoice: true })}
                 returOnly={dgsReturOnly}
               />
               {dgsFull ? (
@@ -1410,7 +1493,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                   isOpen={Boolean(arEditId)}
                   trId={arEditId}
                   onClose={() => setArEditId("")}
-                  onSaved={loadData}
+                  onSaved={() => loadData({ ignoreInvoice: true })}
                 />
               ) : null}
             </>

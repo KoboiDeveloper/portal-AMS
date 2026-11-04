@@ -123,8 +123,8 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
         return;
       }
       toast.success("Transaksi berhasil diproses");
-      setDirty(true);
-      await load();
+      onChanged?.();
+      onClose?.();
     } catch (e) {
       toast.error(errMsg(e));
     } finally {
