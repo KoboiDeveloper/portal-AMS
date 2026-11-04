@@ -423,6 +423,13 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
   const [page, setPage] = useState(1);
   const wrapRef = useRef(null);
   const tableRef = useRef(null);
+  const loadedRef = useRef(false);
+  const rowsLenRef = useRef(0);
+  const lastQuickFetchRef = useRef("");
+  const quickTimerRef = useRef(null);
+
+  loadedRef.current = loaded;
+  rowsLenRef.current = rows.length;
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -450,6 +457,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
     setLoaded(false);
     setError("");
     setListQuery("");
+    lastQuickFetchRef.current = "";
     setSortConfig({ key: "", direction: "asc" });
     setPage(1);
   };
@@ -594,6 +602,11 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
         setLoaded(true);
         setSortConfig({ key: "", direction: "asc" });
         setPage(1);
+        if (relax && invParam && invParam !== "-") {
+          lastQuickFetchRef.current = invParam;
+        } else if (opts.ignoreInvoice) {
+          lastQuickFetchRef.current = "";
+        }
       } catch (e) {
         setError(e?.message || "Gagal memuat data");
         setRows([]);
@@ -619,20 +632,49 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
     ]
   );
 
-  const onQuickSearch = useCallback(() => {
-    const q = String(invoice || "").trim();
-    if (loaded && rows.length > 0) {
-      setListQuery(q);
-      setPage(1);
-      return;
-    }
-    if (!q) {
-      setError("Isi No. Invoice / Order ID untuk pencarian cepat.");
-      return;
-    }
-    /* Belum ada list → cari ke API, abaikan filter status/MP/periode ketat */
-    loadData({ invoiceOverride: q, relaxFilters: true });
-  }, [invoice, loaded, rows.length, loadData]);
+  /**
+   * Pencarian cepat:
+   * - list dari Terapkan Filter (>1 baris) → filter lokal
+   * - belum load / cuma 0–1 baris → fetch API (biar ganti invoice xxx→zzz tetap jalan)
+   */
+  const runQuickSearch = useCallback(
+    (raw, { immediate = false } = {}) => {
+      const q = String(raw || "").trim();
+      if (quickTimerRef.current) {
+        window.clearTimeout(quickTimerRef.current);
+        quickTimerRef.current = null;
+      }
+      const exec = () => {
+        if (!q) {
+          setListQuery("");
+          lastQuickFetchRef.current = "";
+          setPage(1);
+          return;
+        }
+        const canFilterLocal = loadedRef.current && rowsLenRef.current > 1;
+        if (canFilterLocal) {
+          setListQuery(q);
+          setPage(1);
+          return;
+        }
+        if (lastQuickFetchRef.current === q && loadedRef.current) return;
+        loadData({ invoiceOverride: q, relaxFilters: true });
+      };
+      if (immediate) {
+        exec();
+        return;
+      }
+      quickTimerRef.current = window.setTimeout(exec, 450);
+    },
+    [loadData]
+  );
+
+  useEffect(() => {
+    runQuickSearch(invoice);
+    return () => {
+      if (quickTimerRef.current) window.clearTimeout(quickTimerRef.current);
+    };
+  }, [invoice, runQuickSearch]);
 
   const columns = useMemo(() => {
     if (isStoreMode) {
@@ -1212,22 +1254,11 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                 <input
                   className="reg-ar-quick-input"
                   value={invoice}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setInvoice(v);
-                    if (loaded && rows.length > 0) {
-                      setListQuery(String(v || "").trim());
-                      setPage(1);
-                    }
-                  }}
+                  onChange={(e) => setInvoice(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") onQuickSearch();
+                    if (e.key === "Enter") runQuickSearch(invoice, { immediate: true });
                   }}
-                  placeholder={
-                    loaded && rows.length > 0
-                      ? "Filter di list: No. Invoice / Order ID"
-                      : "Pencarian cepat No. Invoice / Order ID (Enter)"
-                  }
+                  placeholder="Pencarian cepat No. Invoice / Order ID (otomatis)"
                 />
                 {String(invoice || "").trim() ? (
                   <button
@@ -1237,6 +1268,7 @@ const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
                     onClick={() => {
                       setInvoice("");
                       setListQuery("");
+                      lastQuickFetchRef.current = "";
                       setPage(1);
                     }}
                   >
