@@ -35,12 +35,11 @@
 .reg-mp-retur-table .col-date { width: 86px; white-space: nowrap; }
 .reg-mp-retur-table .col-mp { width: 78px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .reg-mp-retur-table .col-inv { width: 124px; white-space: normal; word-break: break-all; }
-.reg-mp-retur-table .col-plu-desc { width: 20%; }
-.reg-mp-retur-table .col-price { width: 80px; white-space: nowrap; }
-.reg-mp-retur-table .col-dt { width: 82px; white-space: normal; line-height: 1.25; }
-.reg-mp-retur-table .col-note { width: 19%; }
-.reg-mp-retur-table .col-by { width: 70px; white-space: normal; word-break: break-word; }
-.reg-mp-retur-table .col-gudang { width: 12%; }
+.reg-mp-retur-table .col-plu-desc { width: 22%; }
+.reg-mp-retur-table .col-price { width: 82px; white-space: nowrap; }
+.reg-mp-retur-table .col-dt { width: 84px; white-space: normal; line-height: 1.25; }
+.reg-mp-retur-table .col-note { width: 24%; }
+.reg-mp-retur-table .col-gudang { width: 14%; }
 .reg-mp-retur-table .col-sisa { width: 46px; text-align: center; white-space: nowrap; }
 
 .reg-mp-retur-plu {

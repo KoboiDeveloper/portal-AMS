@@ -77,8 +77,7 @@ const COLS = [
   { key: "PLU", subKey: "DESKRIPSI", label: "PLU / Deskripsi", cls: "col-plu-desc", wrap: true },
   { key: "PRICE_POS", label: "Price POS", num: true, cls: "col-price" },
   { key: "TANGGAL_RETUR", label: "Tgl Retur", date: true, cls: "col-dt" },
-  { key: "KETERANGAN_ADMIN", label: "Ket. Admin", cls: "col-note", wrap: true },
-  { key: "RETUR_BY", label: "Retur Oleh", cls: "col-by" },
+  { key: "KETERANGAN_ADMIN", byKey: "RETUR_BY", label: "Ket. Admin", cls: "col-note", wrap: true },
   { key: "TANGGAL_KEMBALI", label: "Tgl Kembali", date: true, cls: "col-dt" },
   { key: "KETERANGAN_GUDANG", label: "Ket. Gudang", cls: "col-gudang", wrap: true },
   { key: "SISA_HARI_RETUR", label: "Sisa", sortNum: true, cls: "col-sisa" },
@@ -98,6 +97,17 @@ const EXPORT_COLS = [
   { key: "KETERANGAN_GUDANG", label: "Ket. Gudang" },
   { key: "SISA_HARI_RETUR", label: "Sisa" },
 ];
+
+const fmtKetAdmin = (r) => {
+  const ket = String(cell(r, "KETERANGAN_ADMIN") ?? "").trim();
+  const by = String(cell(r, "RETUR_BY") ?? "").trim();
+  const hasKet = ket && ket !== "-" && ket !== "—";
+  const hasBy = by && by !== "-" && by !== "—";
+  if (hasKet && hasBy) return `${ket} - ${by}`;
+  if (hasKet) return ket;
+  if (hasBy) return by;
+  return "—";
+};
 
 const fmtCell = (c, v) => {
   if (c.num) return fmtNum(v);
@@ -241,10 +251,7 @@ const RegMpReturPage = ({ dgs = false }) => {
   const tableRef = useRef(null);
   const wrapRef = useRef(null);
   const autoLoaded = useRef(false);
-  const tableCols = useMemo(
-    () => (dgs ? COLS : COLS.filter((c) => c.key !== "RETUR_BY")),
-    [dgs]
-  );
+  const tableCols = COLS;
   const searchCols = useMemo(
     () => (dgs ? EXPORT_COLS : EXPORT_COLS.filter((c) => c.key !== "RETUR_BY")),
     [dgs]
@@ -684,6 +691,8 @@ const RegMpReturPage = ({ dgs = false }) => {
                                   <div className="reg-mp-retur-plu">{fmtCell(c, cell(r, c.key))}</div>
                                   <div className="reg-mp-retur-desc">{fmtCell(c, cell(r, c.subKey))}</div>
                                 </>
+                              ) : c.byKey ? (
+                                fmtKetAdmin(r)
                               ) : (
                                 fmtCell(c, cell(r, c.key))
                               )}
