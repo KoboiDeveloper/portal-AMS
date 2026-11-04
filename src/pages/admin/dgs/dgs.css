@@ -60,6 +60,12 @@
 .dgs-retur-box { display: flex; flex: 1 1 auto; gap: 8px; align-items: center; }
 .dgs-retur-box input { flex: 1 1 auto; }
 .dgs-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-bottom: 14px; }
+.dgs-form-grid.dgs-retur-confirm-grid { grid-template-columns: minmax(0, 1.8fr) minmax(180px, 1fr); }
+.dgs-form-grid.dgs-retur-confirm-grid.is-single { grid-template-columns: 1fr; }
+.dgs-ctl-38 { height: 38px; min-height: 38px; font-size: 0.8125rem; border-radius: 0; }
+@media (max-width: 600px) {
+  .dgs-form-grid.dgs-retur-confirm-grid { grid-template-columns: 1fr; }
+}
 .dgs-field label { display: block; font-size: 0.6875rem; font-weight: 700; color: #8094ae; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
 .dgs-field.dgs-check { display: flex; align-items: flex-end; gap: 16px; padding-bottom: 6px; }
 .dgs-field.dgs-check label { text-transform: none; font-size: 0.8125rem; color: #364a63; margin: 0; }

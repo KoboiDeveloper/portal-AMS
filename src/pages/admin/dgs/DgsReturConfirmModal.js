@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, ModalBody } from "reactstrap";
 import { toast } from "react-toastify";
-import { Icon } from "../../../components/Component";
+import { Icon, RSelect } from "../../../components/Component";
 import { getDgsReturImageLink, getDgsReturItem, postDgsReturConfirm } from "../../../services/dgs/dgs.service";
 import { isSuccess } from "../../../lib/response";
 import { cellOf, errMsg, fmtYmd, todayYmd } from "./dgsUtils";
@@ -14,6 +14,25 @@ const KATEGORI = [
   { value: "Barang Tidak Kembali", label: "Barang Tidak Kembali" },
   { value: "Batal Retur", label: "Batal Retur" },
 ];
+
+const selectStyles = {
+  control: (base) => ({
+    ...base,
+    minHeight: 38,
+    height: 38,
+    fontSize: "0.8125rem",
+    borderColor: "#dbdfea",
+    borderRadius: 0,
+    background: "#eef2f8",
+  }),
+  valueContainer: (base) => ({ ...base, padding: "0 10px", height: 36 }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  indicatorsContainer: (base) => ({ ...base, height: 36 }),
+  dropdownIndicator: (base) => ({ ...base, padding: "0 8px" }),
+  menuPortal: (base) => ({ ...base, zIndex: 2050 }),
+  menu: (base) => ({ ...base, zIndex: 2050, fontSize: "0.8125rem", borderRadius: 0 }),
+  option: (base) => ({ ...base, fontSize: "0.8125rem", padding: "8px 12px" }),
+};
 
 const IDX = [1, 2, 3, 4, 5];
 
@@ -140,21 +159,22 @@ const DgsReturConfirmModal = ({ isOpen, invoice, plu, deskripsi, onClose, onSave
           <div className="dgs-hint">Memuat…</div>
         ) : (
           <>
-            <div className="dgs-form-grid">
+            <div className={`dgs-form-grid dgs-retur-confirm-grid${isBatal ? " is-single" : ""}`}>
               <div className="dgs-field">
                 <label>Kategori Barang</label>
-                <select className="form-control" value={kategori} onChange={(e) => setKategori(e.target.value)}>
-                  {KATEGORI.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
+                <RSelect
+                  styles={selectStyles}
+                  options={KATEGORI}
+                  value={KATEGORI.find((o) => o.value === kategori) || KATEGORI[0]}
+                  onChange={(o) => setKategori(o?.value || "Barang Layak Jual")}
+                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                  menuPosition="fixed"
+                />
               </div>
               {!isBatal ? (
                 <div className="dgs-field">
                   <label>Tanggal Diterima</label>
-                  <input type="date" className="form-control" value={tgl} readOnly title="Mengikuti tanggal sistem (MP_confirm_retur)" />
+                  <input type="date" className="form-control dgs-ctl-38" value={tgl} readOnly title="Mengikuti tanggal sistem (MP_confirm_retur)" />
                 </div>
               ) : null}
             </div>
