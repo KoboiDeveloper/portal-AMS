@@ -183,6 +183,8 @@ const pickBadge = (badge, keys) => {
 };
 
 const RegMpReturPage = ({ dgs = false }) => {
+  const accessModules = dgs ? ["DGS_RETUR", "DGS_RETUR_GUDANG"] : ["REG_MP_RETUR"];
+  const pageTitle = dgs ? "Gudang Retur" : "MP Retur";
   const [confirmRow, setConfirmRow] = useState(null);
   const [marketplace, setMarketplace] = useState("0");
   const [brand, setBrand] = useState("ALL");
@@ -356,19 +358,19 @@ const RegMpReturPage = ({ dgs = false }) => {
         : "";
 
   return (
-    <AccessGuard moduleCode={dgs ? "DGS_RETUR" : "REG_MP_RETUR"}>
-      <Head title="MP Retur" />
+    <AccessGuard moduleCodes={accessModules}>
+      <Head title={pageTitle} />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
-          <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
-            <BlockHead size="sm">
-              <BlockBetween>
-                <BlockHeadContent>
-                  <BlockTitle page tag="h3">
-                    MP Retur
-                  </BlockTitle>
-                  <BlockDes className="text-soft">
-                    {dgs ? "Retur gudang marketplace · klik baris untuk konfirmasi retur" : "View-only · retur gudang marketplace"}
+        <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
+          <BlockHead size="sm">
+            <BlockBetween>
+              <BlockHeadContent>
+                <BlockTitle page tag="h3">
+                  {pageTitle}
+                </BlockTitle>
+                <BlockDes className="text-soft">
+                    {dgs ? "Konfirmasi barang retur di gudang · klik baris untuk aksi" : "View-only · retur gudang marketplace"}
                   </BlockDes>
                 </BlockHeadContent>
                 <BlockHeadContent>

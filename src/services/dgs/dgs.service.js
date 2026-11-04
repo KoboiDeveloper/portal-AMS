@@ -4,6 +4,7 @@ import api from "../../lib/api";
 const base = "/dgs/mp";
 
 export const getDgsDashboard = (params = {}) => api.get(`${base}/dashboard`, { params });
+export const getDgsReturDashboard = (params = {}) => api.get(`${base}/retur-dashboard`, { params });
 export const getDgsMarketplaces = () => api.get(`${base}/marketplaces`);
 export const getDgsProductAnalysis = (params = {}) =>
   api.get(`${base}/analisa-barang`, { params, timeout: 120000 });

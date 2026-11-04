@@ -40,6 +40,9 @@ export const getDefaultHomePath = (user, navigation) => {
   if (roles.includes("DIGITAL_SALES")) {
     return "/dgs/dashboard";
   }
+  if (roles.includes("DIGITAL_SALES_RETUR")) {
+    return "/dgs/retur-dashboard";
+  }
   if (roles.includes("REGIONAL")) {
     return "/admin/regional/dashboard";
   }

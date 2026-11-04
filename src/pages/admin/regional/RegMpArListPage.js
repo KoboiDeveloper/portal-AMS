@@ -310,7 +310,17 @@ const isNumericLike = (v) => {
 };
 
 const isSummaryRow = (row) => {
-  const keys = ["BRAND", "STORE", "MARKETPLACE", "INVOICE", "PLU", "NAMA_MP"];
+  const keys = [
+    "BRAND",
+    "STORE",
+    "MARKETPLACE",
+    "INVOICE",
+    "PLU",
+    "NAMA_MP",
+    "TANGGAL_REALISASI",
+    "TGL_REALISASI",
+    "NO_INVOICE",
+  ];
   for (const key of keys) {
     const val = String(cell(row, key) || "")
       .trim()
@@ -328,8 +338,23 @@ const isSummaryRow = (row) => {
   return false;
 };
 
-/** `dgs` = akun DigitalSales (/dgs/ar-list): Confirm Sales, edit AR, template & upload 07E aktif. */
-const RegMpArListPage = ({ dgs = false }) => {
+/** Parse "65.28%" / "65,28" → number for margin display/footer. */
+const parseMarginPct = (v) => {
+  if (v == null || v === "") return null;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  const m = String(v).replace(/%/g, "").replace(/\s/g, "").replace(",", ".").match(/-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : null;
+};
+
+const isMarginKey = (k) => String(k || "").toUpperCase() === "MARGIN";
+
+/**
+ * `dgs` = DigitalSales penuh (/dgs/ar-list): Confirm Sales, edit AR, upload.
+ * `dgsReturOnly` = DigitalSalesRetur (/dgs/retur-list): per-store + retur item saja.
+ */
+const RegMpArListPage = ({ dgs = false, dgsReturOnly = false }) => {
+  const dgsFull = Boolean(dgs) && !dgsReturOnly;
+  const dgsAny = dgsFull || dgsReturOnly;
   const [confirmId, setConfirmId] = useState("");
   const [arEditId, setArEditId] = useState("");
   const [mode, setMode] = useState("store"); // store | total | detail | plu | transaksi
@@ -339,10 +364,12 @@ const RegMpArListPage = ({ dgs = false }) => {
   const [marketplace, setMarketplace] = useState("ALL");
   const [status, setStatus] = useState("ALL");
   const [invoice, setInvoice] = useState("");
-  const [hideRetur, setHideRetur] = useState(true);
+  const [hideRetur, setHideRetur] = useState(!dgsReturOnly);
   const [reportStore, setReportStore] = useState("ALL");
   const [tipe, setTipe] = useState("tgl_sampai");
   const [rows, setRows] = useState([]);
+  /** TOTAL row dari API detail realisasi (MARGIN %, HPP, dll) — dipakai footer. */
+  const [totalsRow, setTotalsRow] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
@@ -381,6 +408,7 @@ const RegMpArListPage = ({ dgs = false }) => {
 
   const clearResult = () => {
     setRows([]);
+    setTotalsRow(null);
     setLoaded(false);
     setError("");
     setSortConfig({ key: "", direction: "asc" });
@@ -489,13 +517,18 @@ const RegMpArListPage = ({ dgs = false }) => {
       if (!isSuccess(res)) {
         setError(res?.responseMessage || "Gagal memuat data");
         setRows([]);
+        setTotalsRow(null);
         setLoaded(true);
         return;
       }
       let list = extractRows(res);
+      let totals = null;
       if (!isStoreMode) {
+        const summary = list.find((r) => isSummaryRow(r));
+        if (summary) totals = summary;
         list = list.filter((r) => !isSummaryRow(r));
       }
+      setTotalsRow(totals);
       setRows(list);
       setLoaded(true);
       setSortConfig({ key: "", direction: "asc" });
@@ -503,6 +536,7 @@ const RegMpArListPage = ({ dgs = false }) => {
     } catch (e) {
       setError(e?.message || "Gagal memuat data");
       setRows([]);
+      setTotalsRow(null);
       setLoaded(true);
       setPage(1);
     } finally {
@@ -523,7 +557,10 @@ const RegMpArListPage = ({ dgs = false }) => {
   ]);
 
   const columns = useMemo(() => {
-    if (isStoreMode) return STORE_COLS;
+    if (isStoreMode) {
+      if (dgsReturOnly) return STORE_COLS.filter((c) => !c.realisasi);
+      return STORE_COLS;
+    }
     if (!rows.length) return [];
     const keys = Object.keys(rows[0] || {});
     if (mode === "plu") {
@@ -559,6 +596,9 @@ const RegMpArListPage = ({ dgs = false }) => {
       }));
     }
     return keys.map((k) => {
+      if (isMarginKey(k)) {
+        return { key: k, label: "Margin", percent: true };
+      }
       const sample = rows.find((r) => cell(r, k) !== "");
       const num =
         sample &&
@@ -568,7 +608,7 @@ const RegMpArListPage = ({ dgs = false }) => {
         );
       return { key: k, label: String(k).replace(/_/g, " "), num: Boolean(num) };
     });
-  }, [isStoreMode, rows, mode]);
+  }, [isStoreMode, rows, mode, dgsReturOnly]);
 
   const isReturRow = (row) => {
     const st = String(cell(row, "RETUR", ["status", "STATUS"]) || "").trim();
@@ -621,11 +661,39 @@ const RegMpArListPage = ({ dgs = false }) => {
   }, []);
 
   const footerSums = useMemo(() => {
-    if (!columns.length || !sortedRows.length) return null;
+    if (!columns.length || (!sortedRows.length && !totalsRow)) return null;
     const sums = {};
     let any = false;
     columns.forEach((col) => {
+      if (col.percent) {
+        // Prefer TOTAL row dari API (margin % keseluruhan), fallback weighted (net-hpp)/net
+        const fromApi = parseMarginPct(cell(totalsRow, col.key, col.alts || []));
+        if (fromApi != null) {
+          sums[col.key] = fromApi;
+          any = true;
+          return;
+        }
+        let net = 0;
+        let hpp = 0;
+        sortedRows.forEach((r) => {
+          net += Number(cell(r, "total_net", ["TOTAL_NET", "NET"])) || 0;
+          hpp += Number(cell(r, "HPP", ["hpp"])) || 0;
+        });
+        if (net > 0) {
+          sums[col.key] = Math.round(((net - hpp) / net) * 10000) / 100;
+          any = true;
+        }
+        return;
+      }
       if (!col.num) return;
+      if (totalsRow && cell(totalsRow, col.key, col.alts || []) !== "") {
+        const tv = Number(cell(totalsRow, col.key, col.alts || []));
+        if (Number.isFinite(tv)) {
+          sums[col.key] = tv;
+          any = true;
+          return;
+        }
+      }
       let sum = 0;
       sortedRows.forEach((r) => {
         const v = Number(cell(r, col.key, col.alts || []));
@@ -635,7 +703,7 @@ const RegMpArListPage = ({ dgs = false }) => {
       any = true;
     });
     return any ? sums : null;
-  }, [columns, sortedRows]);
+  }, [columns, sortedRows, totalsRow]);
 
   const titleMeta = useMemo(() => {
     if (!loaded) return "Pilih store / report, filter periode, lalu cari";
@@ -685,6 +753,10 @@ const RegMpArListPage = ({ dgs = false }) => {
       return <span className={`reg-ar-real ${info.tone}`}>{info.text}</span>;
     }
     const v = cell(row, col.key, col.alts || []);
+    if (col.percent) {
+      const p = parseMarginPct(v);
+      return p == null ? "—" : `${p.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+    }
     if (col.num) return fmtNum(v);
     if (String(col.key).toUpperCase().includes("TGL") || String(col.key).toUpperCase().includes("DATE")) {
       return fmtDate(v);
@@ -759,7 +831,7 @@ const RegMpArListPage = ({ dgs = false }) => {
     setArEditId(id);
   };
 
-  /** Action strip: view-only for REG, full Confirm Sales / AR edit for DigitalSales. */
+  /** Action strip: REG view-only; DGS full; DGS retur = retur item only. */
   const renderActionInfo = (row) => {
     const salesStatus = String(cell(row, "PRA_SALES_STATUS", ["pra_sales_status"]) || "Confirm Sales");
     const arStatus = String(cell(row, "AR_STATUS", ["ar_status"]) || "");
@@ -774,21 +846,29 @@ const RegMpArListPage = ({ dgs = false }) => {
         <button
           type="button"
           className={`reg-ar-act-btn ${salesTone}`}
-          title={dgs ? `${salesStatus} — buka Confirm Sales` : `${salesStatus} — lihat info`}
-          onClick={() => (dgs ? openDgsConfirm(row) : openSalesInfo(row))}
+          title={
+            dgsReturOnly
+              ? `${salesStatus} — retur item`
+              : dgsFull
+                ? `${salesStatus} — buka Confirm Sales`
+                : `${salesStatus} — lihat info`
+          }
+          onClick={() => (dgsAny ? openDgsConfirm(row) : openSalesInfo(row))}
         >
           <Icon name="setting" />
-          <span>{salesStatus}</span>
+          <span>{dgsReturOnly ? "Retur" : salesStatus}</span>
         </button>
-        <button
-          type="button"
-          className="reg-ar-act-btn is-info"
-          title={arStatus || (dgs ? "Input / Edit AR" : "AR Detail")}
-          onClick={() => (dgs ? openDgsAr(row) : openArDetail(row))}
-        >
-          <Icon name="check-round-cut" />
-          <span>{dgs ? "AR" : "AR Detail"}</span>
-        </button>
+        {!dgsReturOnly ? (
+          <button
+            type="button"
+            className="reg-ar-act-btn is-info"
+            title={arStatus || (dgsFull ? "Input / Edit AR" : "AR Detail")}
+            onClick={() => (dgsFull ? openDgsAr(row) : openArDetail(row))}
+          >
+            <Icon name="check-round-cut" />
+            <span>{dgsFull ? "AR" : "AR Detail"}</span>
+          </button>
+        ) : null}
       </div>
     );
   };
@@ -796,8 +876,8 @@ const RegMpArListPage = ({ dgs = false }) => {
   const scrollRevision = `${loading ? "loading" : "ready"}-${sortedRows.length}-${mode}-${wide ? "w" : "n"}-${error || "ok"}`;
 
   return (
-    <AccessGuard moduleCode={dgs ? "DGS_AR_LIST" : "REG_MP_AR_LIST"}>
-      <Head title="AR List" />
+    <AccessGuard moduleCode={dgsReturOnly ? "DGS_RETUR_LIST" : dgsFull ? "DGS_AR_LIST" : "REG_MP_AR_LIST"}>
+      <Head title={dgsReturOnly ? "Retur" : "AR List"} />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
         <div ref={wrapRef} className={`reg-ar-wrap${wide ? " is-wide" : ""}`}>
@@ -805,9 +885,11 @@ const RegMpArListPage = ({ dgs = false }) => {
             <BlockBetween>
               <BlockHeadContent>
                 <BlockTitle page tag="h3">
-                  AR List
+                  {dgsReturOnly ? "Retur" : "AR List"}
                 </BlockTitle>
-                <BlockDes className="text-soft">{titleMeta}</BlockDes>
+                <BlockDes className="text-soft">
+                  {dgsReturOnly ? "Per store · retur item saja (tanpa AR / approve / upload)" : titleMeta}
+                </BlockDes>
               </BlockHeadContent>
               <BlockHeadContent>
                 <button
@@ -825,7 +907,8 @@ const RegMpArListPage = ({ dgs = false }) => {
           </BlockHead>
 
           <Block>
-            {dgs ? <DgsKomisiStrip /> : null}
+            {dgsFull ? <DgsKomisiStrip /> : null}
+            {!dgsReturOnly ? (
             <div className="reg-ar-report">
               <span className="reg-ar-nav-label">Report</span>
               <div className="reg-ar-chips">
@@ -852,6 +935,7 @@ const RegMpArListPage = ({ dgs = false }) => {
                 ))}
               </div>
             </div>
+            ) : null}
 
             <div className="reg-ar-toolbar">
               <div className="reg-ar-toolbar-grid">
@@ -987,7 +1071,7 @@ const RegMpArListPage = ({ dgs = false }) => {
               </div>
             </div>
 
-            {dgs && isStoreMode && AR_UPLOAD_STORES.includes(storeId) ? (
+            {dgsFull && isStoreMode && AR_UPLOAD_STORES.includes(storeId) ? (
               <DgsArUploadPanel store={storeId} onDone={loadData} />
             ) : null}
 
@@ -1142,8 +1226,17 @@ const RegMpArListPage = ({ dgs = false }) => {
                         <tr>
                           <td className="num reg-ar-no" />
                           {columns.map((col, i) => (
-                            <td key={col.key} className={col.num ? "num" : ""}>
-                              {i === 0 ? "GRAND TOTAL" : col.num ? fmtNum(footerSums[col.key]) : ""}
+                            <td key={col.key} className={col.num || col.percent ? "num" : ""}>
+                              {i === 0
+                                ? "GRAND TOTAL"
+                                : col.percent && footerSums[col.key] != null
+                                  ? `${Number(footerSums[col.key]).toLocaleString("id-ID", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}%`
+                                  : col.num
+                                    ? fmtNum(footerSums[col.key])
+                                    : ""}
                             </td>
                           ))}
                           {mode === "total" ? (
@@ -1177,20 +1270,23 @@ const RegMpArListPage = ({ dgs = false }) => {
         </div>
         </PageSmoothScroll>
 
-          {dgs ? (
+          {dgsAny ? (
             <>
               <DgsConfirmSalesModal
                 isOpen={Boolean(confirmId)}
                 idPrasales={confirmId}
                 onClose={() => setConfirmId("")}
                 onChanged={loadData}
+                returOnly={dgsReturOnly}
               />
-              <DgsArEditModal
-                isOpen={Boolean(arEditId)}
-                trId={arEditId}
-                onClose={() => setArEditId("")}
-                onSaved={loadData}
-              />
+              {dgsFull ? (
+                <DgsArEditModal
+                  isOpen={Boolean(arEditId)}
+                  trId={arEditId}
+                  onClose={() => setArEditId("")}
+                  onSaved={loadData}
+                />
+              ) : null}
             </>
           ) : null}
 

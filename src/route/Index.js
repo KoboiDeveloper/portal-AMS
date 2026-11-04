@@ -286,6 +286,7 @@ import {
   RegPassSoPage,
 } from "../pages/admin/regional/pages";
 import DgsDashboardPage from "../pages/admin/dgs/DgsDashboardPage";
+import DgsReturDashboardPage from "../pages/admin/dgs/DgsReturDashboardPage";
 import DgsPrasalesPage from "../pages/admin/dgs/DgsPrasalesPage";
 import DgsProductAnalysisPage from "../pages/admin/dgs/DgsProductAnalysisPage";
 import DgsKomisiSettingPage from "../pages/admin/dgs/DgsKomisiSettingPage";
@@ -639,9 +640,11 @@ const Router = () => {
           <Route path="dgs">
             <Route index element={<Navigate to={appPath("/dgs/dashboard")} replace />} />
             <Route path="dashboard" element={<DgsDashboardPage />} />
+            <Route path="retur-dashboard" element={<DgsReturDashboardPage />} />
             <Route path="analisa-barang" element={<DgsProductAnalysisPage />} />
             <Route path="prasales" element={<DgsPrasalesPage />} />
             <Route path="ar-list" element={<RegMpArListPage dgs />} />
+            <Route path="retur-list" element={<RegMpArListPage dgsReturOnly />} />
             <Route path="ar-realisasi" element={<RegMpArRealisasiPage dgs />} />
             <Route path="retur" element={<RegMpReturPage dgs />} />
             <Route path="komisi-setting" element={<DgsKomisiSettingPage />} />

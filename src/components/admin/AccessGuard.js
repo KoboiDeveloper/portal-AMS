@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { accessService } from "../../services/access.service";
 import { getAuthNik, isSuperAdmin } from "../../lib/auth";
@@ -30,44 +30,68 @@ const resolveAllowed = (res) =>
     res.data?.allowed === true ||
     res.data?.is_allowed === true);
 
-const initialAccessState = (moduleCode, permission) => {
-  if (!moduleCode || isSuperAdmin()) {
+const normalizeCodes = (moduleCode, moduleCodes) => {
+  const list = [];
+  if (Array.isArray(moduleCodes)) {
+    moduleCodes.forEach((c) => {
+      if (c && !list.includes(c)) list.push(c);
+    });
+  }
+  if (moduleCode && !list.includes(moduleCode)) list.push(moduleCode);
+  return list;
+};
+
+const initialAccessState = (codes, permission) => {
+  if (!codes.length || isSuperAdmin()) {
     return { loading: false, allowed: true };
   }
-  const cached = readCache(moduleCode, permission);
-  if (cached !== null) {
-    return { loading: false, allowed: cached };
-  }
+  const cached = codes.map((c) => readCache(c, permission));
+  if (cached.some((v) => v === true)) return { loading: false, allowed: true };
+  if (cached.every((v) => v === false)) return { loading: false, allowed: false };
   return { loading: true, allowed: false };
 };
 
-const AccessGuard = ({ moduleCode, permission = "VIEW", children }) => {
-  const [state, setState] = useState(() => initialAccessState(moduleCode, permission));
+/** `moduleCode` atau `moduleCodes` (OR — cukup salah satu VIEW). */
+const AccessGuard = ({ moduleCode, moduleCodes, permission = "VIEW", children }) => {
+  const codes = useMemo(() => normalizeCodes(moduleCode, moduleCodes), [moduleCode, moduleCodes]);
+  const codesKey = codes.join("|");
+  const [state, setState] = useState(() => initialAccessState(codes, permission));
 
   useEffect(() => {
     let mounted = true;
 
     const check = async () => {
-      if (!moduleCode || isSuperAdmin()) {
+      if (!codes.length || isSuperAdmin()) {
         if (mounted) setState({ loading: false, allowed: true });
         return;
       }
 
-      const cached = readCache(moduleCode, permission);
-      if (cached !== null) {
-        if (mounted) setState({ loading: false, allowed: cached });
+      const cached = codes.map((c) => readCache(c, permission));
+      if (cached.some((v) => v === true)) {
+        if (mounted) setState({ loading: false, allowed: true });
+        return;
+      }
+      if (cached.every((v) => v === false)) {
+        if (mounted) setState({ loading: false, allowed: false });
         return;
       }
 
       try {
-        const res = await accessService.check({
-          nik: getAuthNik(),
-          module_code: moduleCode,
-          permission_code: permission,
+        const results = await Promise.all(
+          codes.map((code) =>
+            accessService.check({
+              nik: getAuthNik(),
+              module_code: code,
+              permission_code: permission,
+            })
+          )
+        );
+        let allowed = false;
+        results.forEach((res, i) => {
+          const ok = resolveAllowed(res);
+          writeCache(codes[i], permission, ok);
+          if (ok) allowed = true;
         });
-        const allowed = resolveAllowed(res);
-        /* Only cache definitive answers — never poison cache on transient/network errors */
-        writeCache(moduleCode, permission, allowed);
         if (mounted) setState({ loading: false, allowed });
       } catch {
         if (mounted) setState({ loading: false, allowed: false });
@@ -78,7 +102,7 @@ const AccessGuard = ({ moduleCode, permission = "VIEW", children }) => {
     return () => {
       mounted = false;
     };
-  }, [moduleCode, permission]);
+  }, [codesKey, permission, codes]);
 
   /* No LoadingState spinner — avoid top-of-page glitch on every menu open */
   if (state.loading) return null;

@@ -16,8 +16,9 @@ const STATUS_TONE = { NEW: "is-new", APPROVED: "is-ok", RETUR: "is-warn" };
 /**
  * Confirm Sales popup (legacy Confirm_sales): approve / retur items, then PROSES.
  * `idPrasales` = TR_PRASALES_HEADER.ID_PRASALES_HEADER
+ * `returOnly` = akun DIGITAL_SALES_RETUR: hanya retur item, tanpa approve / PROSES.
  */
-const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
+const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnly = false }) => {
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -53,11 +54,11 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
   useEffect(() => {
     if (isOpen) {
       setDirty(false);
-      setReturMode(false);
+      setReturMode(Boolean(returOnly));
       setReturNote("");
       load();
     }
-  }, [isOpen, load]);
+  }, [isOpen, load, returOnly]);
 
   const isNew = String(cellOf(header, "STATUS_TRANSAKSI")) === "0";
   const totalRow = Number(info.total_row || 0);
@@ -138,11 +139,12 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
     <Modal isOpen={isOpen} toggle={close} size="lg" className="modal-dialog-centered rsd-detail-modal" contentClassName="dgs-modal-content">
       <div className="rsd-detail-hero">
         <div>
-          <h5 className="rsd-detail-title">Confirm Sales</h5>
+          <h5 className="rsd-detail-title">{returOnly ? "Retur Item" : "Confirm Sales"}</h5>
           <p className="rsd-detail-sub">
             {[cellOf(header, "NO_INVOICE"), cellOf(header, "NAMA_MP"), cellOf(header, "ID_STORE")]
               .filter(Boolean)
               .join(" · ")}
+            {returOnly ? " · hanya retur (tanpa approve / proses)" : ""}
           </p>
         </div>
         <button type="button" className="btn btn-icon btn-trigger" onClick={close} aria-label="Tutup">
@@ -216,7 +218,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
       <div className="dgs-modal-foot">
         {isNew ? (
           <>
-            {returMode ? (
+            {returOnly || returMode ? (
               <div className="dgs-retur-box">
                 <input
                   className="form-control form-control-sm"
@@ -226,19 +228,21 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged }) => {
                   onChange={(e) => setReturNote(e.target.value)}
                   autoFocus
                 />
-                <button type="button" className="dgs-btn" disabled={busy} onClick={() => runAction("retur")}>
+                <button type="button" className="dgs-btn" disabled={busy || !selected.size} onClick={() => runAction("retur")}>
                   Simpan Retur ({selected.size})
                 </button>
-                <button
-                  type="button"
-                  className="dgs-btn dgs-btn--ghost"
-                  onClick={() => {
-                    setReturMode(false);
-                    setReturNote("");
-                  }}
-                >
-                  Batal
-                </button>
+                {!returOnly ? (
+                  <button
+                    type="button"
+                    className="dgs-btn dgs-btn--ghost"
+                    onClick={() => {
+                      setReturMode(false);
+                      setReturNote("");
+                    }}
+                  >
+                    Batal
+                  </button>
+                ) : null}
               </div>
             ) : (
               <>
