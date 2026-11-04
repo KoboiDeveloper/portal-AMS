@@ -58,6 +58,13 @@ const resolveUserBadge = (user) => {
       avatar: "DS",
     };
   }
+  if (username.toLowerCase() === "digitalsalesretur1") {
+    return {
+      status: "Digital Sales Retur",
+      name: "Yeni",
+      avatar: "YE",
+    };
+  }
   return {
     status: user?.isSuperAdmin ? "Super Admin" : "User",
     name: user?.employeeName || user?.username || "",

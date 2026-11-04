@@ -166,7 +166,7 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
         </div>
 
         <div className="dgs-table-wrap">
-          <table className="dgs-table">
+          <table className={`dgs-table${returOnly ? " dgs-table--retur-item" : ""}`}>
             <thead>
               <tr>
                 <th style={{ width: 34 }}>
@@ -177,13 +177,13 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
                 <th className="num">Qty</th>
                 <th className="num">Net</th>
                 <th>Status</th>
-                <th>Catatan</th>
+                {!returOnly ? <th>Catatan</th> : null}
               </tr>
             </thead>
             <tbody>
               {items.length === 0 && !loading ? (
                 <tr>
-                  <td colSpan={7} className="dgs-empty">
+                  <td colSpan={returOnly ? 6 : 7} className="dgs-empty">
                     Tidak ada item.
                   </td>
                 </tr>
@@ -191,6 +191,8 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
                 items.map((it) => {
                   const id = Number(cellOf(it, "NO_URUT"));
                   const st = String(cellOf(it, "STATUS") || "NEW");
+                  const note = String(cellOf(it, "KETERANGAN_ADMIN") || "").trim();
+                  const returBy = String(cellOf(it, "RETUR_BY") || "").trim();
                   return (
                     <tr key={id}>
                       <td>
@@ -199,13 +201,22 @@ const DgsConfirmSalesModal = ({ isOpen, idPrasales, onClose, onChanged, returOnl
                         ) : null}
                       </td>
                       <td>{cellOf(it, "PLU")}</td>
-                      <td>{cellOf(it, "DESKRIPSI") || "—"}</td>
+                      <td className={returOnly || returBy || note ? "dgs-item-main" : undefined}>
+                        <div className="dgs-item-desc">{cellOf(it, "DESKRIPSI") || "—"}</div>
+                        {returOnly && note ? <div className="dgs-item-note">{note}</div> : null}
+                        {returBy ? <div className="dgs-item-by">Retur oleh {returBy}</div> : null}
+                      </td>
                       <td className="num">{fmtNum(cellOf(it, "QTY"))}</td>
                       <td className="num">{fmtNum(cellOf(it, "NET"))}</td>
                       <td>
                         <span className={`dgs-pill ${STATUS_TONE[st] || ""}`}>{st}</span>
                       </td>
-                      <td className="dgs-note">{cellOf(it, "KETERANGAN_ADMIN") || "—"}</td>
+                      {!returOnly ? (
+                        <td className="dgs-note">
+                          {note || "—"}
+                          {returBy ? <div className="dgs-item-by">Retur oleh {returBy}</div> : null}
+                        </td>
+                      ) : null}
                     </tr>
                   );
                 })

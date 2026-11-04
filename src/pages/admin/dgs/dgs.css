@@ -24,6 +24,27 @@
 .dgs-table tfoot td { position: sticky; bottom: 0; background: #f5f6fa; font-weight: 700; }
 .dgs-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .dgs-table td.dgs-note { white-space: normal; max-width: 260px; color: #8094ae; }
+.dgs-table--retur-item td { white-space: nowrap; vertical-align: top; }
+.dgs-table--retur-item td.dgs-item-main { white-space: normal; min-width: 220px; max-width: 420px; }
+.dgs-item-desc { font-weight: 600; color: #364a63; line-height: 1.35; }
+.dgs-item-note {
+  margin-top: 4px;
+  padding: 5px 8px;
+  border-left: 3px solid #f4a417;
+  background: #fff8eb;
+  color: #6b5a2e;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+.dgs-item-by {
+  margin-top: 4px;
+  color: #526484;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
 .dgs-empty { text-align: center; color: #8094ae; padding: 22px !important; }
 
 .dgs-cell-input { width: 108px; text-align: right; padding: 2px 6px; height: 28px; }
