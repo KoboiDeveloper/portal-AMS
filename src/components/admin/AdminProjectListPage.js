@@ -697,8 +697,10 @@ const AdminProjectListPage = ({ config }) => {
 
             <ConfirmDialog
               isOpen={confirm.open}
-              title={`Delete ${config.title}`}
+              variant={config.modalVariant || "default"}
+              title={config.modalVariant === "sc" ? `Hapus ${config.title}` : `Delete ${config.title}`}
               message={deleteMessage}
+              confirmLabel={config.modalVariant === "sc" ? "Hapus" : "Delete"}
               onConfirm={handleDelete}
               onCancel={() => setConfirm({ open: false, row: null })}
               loading={saving}

@@ -506,8 +506,10 @@ const HrdPersonelKontrakPage = () => {
 
             <ConfirmDialog
               isOpen={confirm.open}
+              variant="sc"
               title="Hapus kontrak"
               message={`Hapus kontrak ${confirm.row?.no_kontrak || confirm.row?.id || ""}?`}
+              confirmLabel="Hapus"
               onConfirm={handleDelete}
               onCancel={() => setConfirm({ open: false, row: null })}
               loading={saving}
@@ -517,26 +519,26 @@ const HrdPersonelKontrakPage = () => {
               isOpen={expiryPopup.open}
               toggle={() => setExpiryPopup({ open: false, dept: "" })}
               size="lg"
-              className="modal-dialog-centered rsd-detail-modal"
+              className="modal-dialog-centered admin-form-modal hrd-form-modal hrd-form-modal--sc"
               contentClassName="dgs-modal-content"
             >
-              <div className="rsd-detail-hero">
+              <div className="hrd-modal-head">
                 <div>
-                  <h5 className="rsd-detail-title">Kontrak hampir habis</h5>
-                  <p className="rsd-detail-sub">
+                  <h5 className="hrd-modal-head__title">Kontrak hampir habis</h5>
+                  <p className="hrd-modal-head__sub">
                     {expiryPopup.dept || "Semua departemen"} · {popupRows.length} pegawai
                   </p>
                 </div>
                 <button
                   type="button"
-                  className="btn btn-icon btn-trigger"
+                  className="hrd-modal-head__close"
                   onClick={() => setExpiryPopup({ open: false, dept: "" })}
                   aria-label="Tutup"
                 >
                   <Icon name="cross" />
                 </button>
               </div>
-              <ModalBody className="rsd-detail-body dgs-modal-body">
+              <ModalBody className="dgs-modal-body hrd-modal-body">
                 {popupRows.length === 0 ? (
                   <p className="text-soft mb-0">Tidak ada data.</p>
                 ) : (

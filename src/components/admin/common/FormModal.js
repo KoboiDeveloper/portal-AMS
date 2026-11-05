@@ -306,22 +306,22 @@ const FormModal = ({
       isOpen={isOpen}
       toggle={onClose}
       className={`modal-dialog-centered admin-form-modal hrd-form-modal${
-        isSc ? " hrd-form-modal--sc rsd-detail-modal" : ""
+        isSc ? " hrd-form-modal--sc" : ""
       }`}
       contentClassName={isSc ? "dgs-modal-content" : undefined}
       size={size}
     >
-      <ModalBody className={`p-0${isSc ? " dgs-modal-body rsd-detail-body" : ""}`}>
-        <div className={isSc ? "rsd-detail-hero" : "hrd-modal-header"}>
+      <ModalBody className={`p-0${isSc ? " dgs-modal-body" : ""}`}>
+        <div className={isSc ? "hrd-modal-head" : "hrd-modal-header"}>
           <div>
-            <h5 className={isSc ? "rsd-detail-title" : "hrd-modal-title"}>{title}</h5>
+            <h5 className={isSc ? "hrd-modal-head__title" : "hrd-modal-title"}>{title}</h5>
             {subtitle ? (
-              <p className={isSc ? "rsd-detail-sub" : "hrd-modal-subtitle"}>{subtitle}</p>
+              <p className={isSc ? "hrd-modal-head__sub" : "hrd-modal-subtitle"}>{subtitle}</p>
             ) : null}
           </div>
           <button
             type="button"
-            className={isSc ? "btn btn-icon btn-trigger" : "hrd-modal-close"}
+            className={isSc ? "hrd-modal-head__close" : "hrd-modal-close"}
             aria-label="Close"
             onClick={onClose}
           >

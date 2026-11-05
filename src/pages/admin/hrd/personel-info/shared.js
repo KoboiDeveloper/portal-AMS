@@ -545,8 +545,10 @@ export const PersonelSubTable = ({
 
       <ConfirmDialog
         isOpen={confirm.open}
+        variant="sc"
         title={`Hapus ${title}`}
         message="Data yang dihapus tidak dapat dikembalikan. Lanjutkan?"
+        confirmLabel="Hapus"
         onConfirm={handleDelete}
         onCancel={() => setConfirm({ open: false, row: null })}
         loading={saving}

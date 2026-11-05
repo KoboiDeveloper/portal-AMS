@@ -62,6 +62,10 @@ export const hrdProcessService = {
 export const getHrdDashboardSummary = (params = {}) =>
   api.get("/hrd/dashboard/summary", { params });
 
+/** Absen nasional popup detail — legacy lookup_absen_detail.aspx */
+export const getHrdAbsenNasionalDetail = (params = {}) =>
+  api.get("/hrd/rpt/absen-nasional/detail", { params });
+
 /** Shared HRD dropdown lookups — GET /hrd/lookups/{type}?parent_id= */
 export const hrdLookup = (type, params = {}) =>
   api.get(`/hrd/lookups/${encodeURIComponent(type)}`, { params });

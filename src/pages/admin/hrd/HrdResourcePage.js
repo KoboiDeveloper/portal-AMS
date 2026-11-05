@@ -11,6 +11,8 @@ import {
   hrdParEomProcess,
   hrdCabMonthlyProcess,
 } from "./hrdConfigs";
+import "../dgs/dgs.css";
+import "./hrd-personel.css";
 
 const PROCESS_BY_KEY = {
   "abs-generate-store": hrdAbsGenerateStoreProcess,

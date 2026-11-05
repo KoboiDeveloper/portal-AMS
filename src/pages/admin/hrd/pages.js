@@ -52,9 +52,9 @@ export const HrdParSmDeptPage = wrap(C.hrdParSmDept);
 export const HrdParEomPage = process(C.hrdParEomProcess);
 
 export const HrdRptAbsenTotalPage = wrap(C.hrdRptAbsenTotal);
-export const HrdRptAbsenNasionalPage = wrap(C.hrdRptAbsenNasional);
+export { default as HrdRptAbsenNasionalPage } from "./HrdRptAbsenNasionalPage";
 export const HrdRptAbsenWfhPage = wrap(C.hrdRptAbsenWfh);
-export const HrdRptDetailHadirPage = wrap(C.hrdRptDetailHadir);
+export { default as HrdRptDetailHadirPage } from "./HrdRptDetailKehadiranPage";
 export const HrdRptExportEmpPage = wrap(C.hrdRptExportEmp);
 export const HrdRptCutiPage = wrap(C.hrdRptCuti);
 export const HrdRptLemburPage = wrap(C.hrdRptLembur);
