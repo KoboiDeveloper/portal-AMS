@@ -263,13 +263,16 @@ const HrdRptDetailKehadiranPage = () => {
         to_date: to,
       });
       if (!isSuccess(res)) {
-        setModalError(res?.responseMessage || "Gagal memuat info absensi");
+        setModalError(res?.responseMessage || res?.message || "Gagal memuat info absensi");
         setModalRows([]);
       } else {
         setModalRows(extractRows(res));
       }
     } catch (err) {
-      setModalError(err?.responseMessage || err?.message || "Gagal memuat info absensi");
+      const msg = err?.responseMessage || err?.message || "";
+      setModalError(msg.includes("404") || msg.includes("Not Found")
+        ? "API absensi-info belum aktif — restart AMS API lalu refresh."
+        : msg || "Gagal memuat info absensi");
       setModalRows([]);
     } finally {
       setModalLoading(false);
