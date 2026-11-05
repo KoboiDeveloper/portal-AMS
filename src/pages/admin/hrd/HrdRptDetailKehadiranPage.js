@@ -98,7 +98,7 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
   return (
     <>
       <tr className="hrd-dk-row hrd-dk-row--history">
-        <td className="hrd-rpt-sticky-name" rowSpan={3}>
+        <td className="hrd-rpt-sticky-name hrd-dk-emp-sticky" rowSpan={3}>
           <div className="sc-td-meta">{nik}</div>
           <button type="button" className="hrd-dk-name-link" onClick={() => onNameClick(row)}>
             {name}
@@ -130,7 +130,7 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
           </td>
         ))}
       </tr>
-      <tr className="hrd-dk-row hrd-dk-row--akhir">
+      <tr className="hrd-dk-row hrd-dk-row--akhir hrd-dk-row--emp-end">
         <td className="hrd-dk-kind">Data akhir</td>
         <td className="text-soft">klik sel → HADIR / TIDAK</td>
         <td className="num">{row.total_akhir ?? row.TOTAL ?? 0}</td>

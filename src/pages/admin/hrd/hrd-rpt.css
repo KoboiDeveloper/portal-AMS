@@ -672,6 +672,21 @@
   color: #0f62fe;
 }
 
+/* Separator between each employee (3-row block) */
+.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--emp-end > td {
+  border-bottom: 2px solid #64748b !important;
+  padding-bottom: 10px !important;
+}
+
+.hrd-rpt .hrd-dk-table tbody td.hrd-dk-emp-sticky {
+  border-bottom: 2px solid #64748b !important;
+  vertical-align: top;
+}
+
+.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--history > td:not(.hrd-dk-emp-sticky) {
+  padding-top: 10px !important;
+}
+
 .modal-dialog.hrd-dk-info-modal {
   max-width: 480px;
 }
