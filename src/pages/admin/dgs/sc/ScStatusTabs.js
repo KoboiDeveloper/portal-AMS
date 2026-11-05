@@ -14,8 +14,9 @@ const ScStatusTabs = ({ items = [], value, onChange, className = "" }) => (
           type="button"
           role="tab"
           aria-selected={active}
+          disabled={it.disabled}
           className={`sc-tab${active ? " is-active" : ""}`}
-          onClick={() => onChange?.(it.id)}
+          onClick={() => !it.disabled && onChange?.(it.id)}
         >
           <span>{it.label}</span>
           {it.count != null && it.count !== "" ? <em className="sc-tab__count">{it.count}</em> : null}

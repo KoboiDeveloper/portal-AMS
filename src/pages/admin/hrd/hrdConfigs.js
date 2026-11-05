@@ -95,6 +95,7 @@ const cfg = ({
   addButtonLabel,
   modalSize = "lg",
   modalSubtitle,
+  modalVariant,
 }) => {
   const initialForm = emptyForm(fields);
   return {
@@ -114,6 +115,7 @@ const cfg = ({
     addButtonLabel,
     modalSize,
     modalSubtitle,
+    modalVariant,
   };
 };
 
@@ -247,6 +249,7 @@ export const hrdAbsStatus = cfg({
   moduleCode: "HRD_ABS_STATUS",
   path: "abs/personel-status",
   crud: true,
+  modalVariant: "sc",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("nomor", "Nomor"),
@@ -277,6 +280,7 @@ export const hrdAbsPromosi = cfg({
   moduleCode: "HRD_ABS_PROMOSI",
   path: "abs/personel-promosi",
   crud: true,
+  modalVariant: "sc",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("nomor", "Nomor"),
@@ -313,6 +317,7 @@ export const hrdAbsMutasi = cfg({
   moduleCode: "HRD_ABS_MUTASI",
   path: "abs/personel-mutasi",
   crud: true,
+  modalVariant: "sc",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("nomor", "Nomor"),
@@ -346,6 +351,7 @@ export const hrdAbsResign = cfg({
   moduleCode: "HRD_ABS_RESIGN",
   path: "abs/personel-resign",
   crud: true,
+  modalVariant: "sc",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("department", "Departemen"),

@@ -674,6 +674,7 @@ const AdminProjectListPage = ({ config }) => {
           <>
             <FormModal
               isOpen={modal.open}
+              variant={config.modalVariant || "default"}
               size={config.modalSize || "lg"}
               title={
                 modal.mode === "add"
