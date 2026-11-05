@@ -553,6 +553,11 @@
   background: transparent;
 }
 
+.hrd-rpt .hrd-dk-wrap {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 .hrd-rpt .hrd-rpt-triple {
   display: inline-block;
   font-variant-numeric: tabular-nums;
@@ -568,28 +573,71 @@
 }
 
 .hrd-rpt .hrd-dk-table {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.hrd-rpt .hrd-dk-table .hrd-rpt-sticky-name,
+.hrd-rpt .hrd-dk-table td.hrd-dk-emp-sticky {
+  width: 118px;
+  min-width: 118px;
+  max-width: 118px;
+}
+
+.hrd-rpt .hrd-dk-table .hrd-dk-kind-col,
+.hrd-rpt .hrd-dk-table td.hrd-dk-kind {
+  width: 58px;
+  min-width: 58px;
+  max-width: 58px;
+}
+
+.hrd-rpt .hrd-dk-table .hrd-dk-job-col,
+.hrd-rpt .hrd-dk-table td.hrd-dk-job-col,
+.hrd-rpt .hrd-dk-table tbody tr > td:nth-child(3),
+.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--history > td:nth-child(3),
+.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--manual > td:nth-child(2),
+.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--akhir > td:nth-child(2) {
+  width: 88px;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hrd-rpt .hrd-dk-table .hrd-dk-total-col,
+.hrd-rpt .hrd-dk-table td.num {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
 }
 
 .hrd-rpt .hrd-dk-table th.hrd-dk-day,
 .hrd-rpt .hrd-dk-table td.hrd-dk-day {
-  width: 28px;
-  min-width: 28px;
-  max-width: 28px;
-  padding: 4px 0 !important;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 2px 0 !important;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  font-size: 0.5625rem;
 }
 
 .hrd-rpt .hrd-dk-cell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  min-height: 22px;
-  border-radius: 4px;
+  min-width: 16px;
+  min-height: 16px;
+  width: 100%;
+  max-width: 22px;
+  border-radius: 3px;
   font-weight: 600;
   line-height: 1;
+  font-size: 0.625rem;
 }
 
 .hrd-rpt .hrd-dk-cell.is-hadir,
@@ -633,12 +681,18 @@
   margin: 2px 0 4px;
   color: #0f62fe;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   text-align: left;
   cursor: pointer;
-  max-width: 140px;
+  max-width: 110px;
   white-space: normal;
   line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.hrd-rpt .hrd-dk-hint {
+  font-size: 0.5625rem;
+  white-space: nowrap;
 }
 
 .hrd-rpt .hrd-dk-name-link:hover {

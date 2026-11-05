@@ -132,7 +132,7 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
       </tr>
       <tr className="hrd-dk-row hrd-dk-row--akhir hrd-dk-row--emp-end">
         <td className="hrd-dk-kind">Data akhir</td>
-        <td className="text-soft">klik sel → HADIR / TIDAK</td>
+        <td className="text-soft hrd-dk-hint">edit</td>
         <td className="num">{row.total_akhir ?? row.TOTAL ?? 0}</td>
         {days.map((d) => {
           const key = `${row.nik}-${d}`;
@@ -466,14 +466,14 @@ const HrdRptDetailKehadiranPage = () => {
                               Tidak ada data pegawai di cabang ini.
                             </p>
                           ) : (
-                            <div className="dgs-table-wrap" style={{ overflowX: "auto" }}>
+                            <div className="dgs-table-wrap hrd-dk-wrap">
                               <table className="dgs-table hrd-dk-table">
                                 <thead>
                                   <tr>
                                     <th className="hrd-rpt-sticky-name">Pegawai</th>
-                                    <th>Baris</th>
-                                    <th>Jabatan / AC</th>
-                                    <th className="num">Total</th>
+                                    <th className="hrd-dk-kind-col">Baris</th>
+                                    <th className="hrd-dk-job-col">Jabatan</th>
+                                    <th className="num hrd-dk-total-col">Tot</th>
                                     {DAYS.filter((d) => d <= dayCount).map((d) => (
                                       <th key={d} className="hrd-dk-day">
                                         {String(d).padStart(2, "0")}
