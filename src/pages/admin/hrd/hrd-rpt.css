@@ -593,19 +593,6 @@
   max-width: 58px;
 }
 
-.hrd-rpt .hrd-dk-table .hrd-dk-job-col,
-.hrd-rpt .hrd-dk-table td.hrd-dk-job-col,
-.hrd-rpt .hrd-dk-table tbody tr > td:nth-child(3),
-.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--history > td:nth-child(3),
-.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--manual > td:nth-child(2),
-.hrd-rpt .hrd-dk-table tbody tr.hrd-dk-row--akhir > td:nth-child(2) {
-  width: 88px;
-  max-width: 88px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .hrd-rpt .hrd-dk-table .hrd-dk-total-col,
 .hrd-rpt .hrd-dk-table td.num {
   width: 36px;
@@ -613,6 +600,14 @@
   max-width: 36px;
   padding-left: 2px !important;
   padding-right: 2px !important;
+}
+
+.hrd-rpt .hrd-dk-job {
+  font-size: 0.625rem;
+  color: #64748b;
+  line-height: 1.25;
+  max-width: 110px;
+  overflow-wrap: anywhere;
 }
 
 .hrd-rpt .hrd-dk-table th.hrd-dk-day,
@@ -688,11 +683,6 @@
   white-space: normal;
   line-height: 1.25;
   overflow-wrap: anywhere;
-}
-
-.hrd-rpt .hrd-dk-hint {
-  font-size: 0.5625rem;
-  white-space: nowrap;
 }
 
 .hrd-rpt .hrd-dk-name-link:hover {

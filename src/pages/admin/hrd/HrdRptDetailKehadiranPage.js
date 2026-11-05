@@ -103,10 +103,9 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
           <button type="button" className="hrd-dk-name-link" onClick={() => onNameClick(row)}>
             {name}
           </button>
-          <div className="hrd-dk-row-label">POS / History</div>
+          <div className="hrd-dk-job">{row.jabatan || "—"}</div>
         </td>
         <td className="hrd-dk-kind">History</td>
-        <td>{row.jabatan || "—"}</td>
         <td className="num">{row.total_history ?? row.HISTORY_TOTAL ?? row.total ?? 0}</td>
         {days.map((d) => (
           <td key={`h-${d}`} className="hrd-dk-day">
@@ -119,7 +118,6 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
       </tr>
       <tr className="hrd-dk-row hrd-dk-row--manual">
         <td className="hrd-dk-kind">Manual</td>
-        <td>{row.ac_name || row.AC_NAME || "—"}</td>
         <td className="num">{row.m_total ?? row.M_TOTAL ?? 0}</td>
         {days.map((d) => (
           <td key={`m-${d}`} className="hrd-dk-day">
@@ -132,7 +130,6 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
       </tr>
       <tr className="hrd-dk-row hrd-dk-row--akhir hrd-dk-row--emp-end">
         <td className="hrd-dk-kind">Data akhir</td>
-        <td className="text-soft hrd-dk-hint">edit</td>
         <td className="num">{row.total_akhir ?? row.TOTAL ?? 0}</td>
         {days.map((d) => {
           const key = `${row.nik}-${d}`;
@@ -472,7 +469,6 @@ const HrdRptDetailKehadiranPage = () => {
                                   <tr>
                                     <th className="hrd-rpt-sticky-name">Pegawai</th>
                                     <th className="hrd-dk-kind-col">Baris</th>
-                                    <th className="hrd-dk-job-col">Jabatan</th>
                                     <th className="num hrd-dk-total-col">Tot</th>
                                     {DAYS.filter((d) => d <= dayCount).map((d) => (
                                       <th key={d} className="hrd-dk-day">
