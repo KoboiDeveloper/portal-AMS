@@ -657,6 +657,12 @@
   color: #b42318;
 }
 
+/* Numeric 0 (tidak hadir / kosong absen) — tetap tampil seperti legacy, bukan titik */
+.hrd-rpt .hrd-dk-cell.is-zero {
+  background: #eef2f6;
+  color: #64748b;
+}
+
 .hrd-rpt .hrd-dk-cell.is-empty {
   color: #c5cbd3;
   font-weight: 500;

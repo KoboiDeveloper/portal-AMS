@@ -54,10 +54,15 @@ const monthEnd = () => {
   return formatAppDateYmd(new Date(d.getFullYear(), d.getMonth() + 1, 0));
 };
 
-const dayTone = (color) => {
+const dayTone = (color, value) => {
   const c = String(color || "").toLowerCase();
   if (c.includes("red")) return "is-absen redFont";
   if (c.includes("black")) return "is-hadir blackFont";
+  const v = String(value ?? "").trim().toUpperCase();
+  // Legacy: O / off day → green badge; numeric 0 → muted zero (bukan titik kosong)
+  if (v === "O") return "is-hadir blackFont";
+  if (v === "0") return "is-zero";
+  if (Number(v) > 0) return "is-hadir";
   return "";
 };
 
@@ -69,24 +74,26 @@ const dayVal = (row, ...keys) => {
 };
 
 const DayCell = ({ value, color, editable, onPick }) => {
-  const v = value == null || value === "" ? "" : String(value);
-  const empty = !v || v === "0";
-  const tone = dayTone(color) || (!empty && Number(v) > 0 ? "is-hadir" : "");
+  // Hanya null/blank yang kosong; "0" dan "O" harus tampil (sama legacy AbsenDk).
+  const missing = value == null || value === "";
+  const v = missing ? "" : String(value);
+  const isOff = v === "0";
+  const tone = dayTone(color, v);
   if (!editable) {
-    if (empty) return <span className="hrd-dk-cell is-empty">·</span>;
+    if (missing) return <span className="hrd-dk-cell is-empty">·</span>;
     return <span className={`hrd-dk-cell ${tone}`}>{v}</span>;
   }
   return (
     <button
       type="button"
-      className={`hrd-dk-cell hrd-dk-cell--btn ${empty ? "is-empty" : tone}`}
-      title={empty || v === "0" ? "Set HADIR" : "Set TIDAK MASUK"}
+      className={`hrd-dk-cell hrd-dk-cell--btn ${missing ? "is-empty" : tone}`}
+      title={missing || isOff ? "Set HADIR" : "Set TIDAK MASUK"}
       onClick={(e) => {
         e.stopPropagation();
-        onPick?.(empty || v === "0" ? 1 : 0);
+        onPick?.(missing || isOff ? 1 : 0);
       }}
     >
-      {empty ? "·" : v}
+      {missing ? "·" : v}
     </button>
   );
 };
