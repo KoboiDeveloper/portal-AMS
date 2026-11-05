@@ -61,6 +61,13 @@ const dayTone = (color) => {
   return "";
 };
 
+const dayVal = (row, ...keys) => {
+  for (const k of keys) {
+    if (row[k] != null && row[k] !== "") return row[k];
+  }
+  return "";
+};
+
 const DayCell = ({ value, color, editable, onPick }) => {
   const v = value == null || value === "" ? "" : String(value);
   const empty = !v || v === "0";
@@ -100,27 +107,33 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
         </td>
         <td className="hrd-dk-kind">History</td>
         <td>{row.jabatan || "—"}</td>
-        <td className="num">{row.total_history ?? row.total ?? 0}</td>
+        <td className="num">{row.total_history ?? row.HISTORY_TOTAL ?? row.total ?? 0}</td>
         {days.map((d) => (
           <td key={`h-${d}`} className="hrd-dk-day">
-            <DayCell value={row[`history_${d}`]} color={row[`history_${d}_color`]} />
+            <DayCell
+              value={dayVal(row, `history_${d}`, `HISTORY_${d}`)}
+              color={dayVal(row, `history_${d}_color`, `HISTORY_${d}_color`)}
+            />
           </td>
         ))}
       </tr>
       <tr className="hrd-dk-row hrd-dk-row--manual">
         <td className="hrd-dk-kind">Manual</td>
-        <td>{row.ac_name || "—"}</td>
-        <td className="num">{row.m_total ?? 0}</td>
+        <td>{row.ac_name || row.AC_NAME || "—"}</td>
+        <td className="num">{row.m_total ?? row.M_TOTAL ?? 0}</td>
         {days.map((d) => (
           <td key={`m-${d}`} className="hrd-dk-day">
-            <DayCell value={row[`m_${d}`] ?? row[`M_${d}`]} color={row[`m_${d}_color`] ?? row[`M_${d}_color`]} />
+            <DayCell
+              value={dayVal(row, `m_${d}`, `M_${d}`)}
+              color={dayVal(row, `m_${d}_color`, `M_${d}_color`)}
+            />
           </td>
         ))}
       </tr>
       <tr className="hrd-dk-row hrd-dk-row--akhir">
         <td className="hrd-dk-kind">Data akhir</td>
         <td className="text-soft">klik sel → HADIR / TIDAK</td>
-        <td className="num">{row.total_akhir ?? 0}</td>
+        <td className="num">{row.total_akhir ?? row.TOTAL ?? 0}</td>
         {days.map((d) => {
           const key = `${row.nik}-${d}`;
           const busy = savingKey === key;
@@ -130,8 +143,8 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
                 <span className="hrd-dk-cell is-busy">…</span>
               ) : (
                 <DayCell
-                  value={row[`akhir_${d}`] ?? row[String(d)]}
-                  color={row[`akhir_${d}_color`]}
+                  value={dayVal(row, `akhir_${d}`, String(d))}
+                  color={dayVal(row, `akhir_${d}_color`, `${d}_color`)}
                   editable
                   onPick={(typeAbsensi) => onAkhirToggle(row, d, typeAbsensi)}
                 />
