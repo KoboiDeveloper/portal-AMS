@@ -66,6 +66,13 @@ export const getHrdDashboardSummary = (params = {}) =>
 export const getHrdAbsenNasionalDetail = (params = {}) =>
   api.get("/hrd/rpt/absen-nasional/detail", { params });
 
+/** Detail kehadiran — punch log modal (legacy AbsensiStoreInfo_lookup) */
+export const getHrdDetailKehadiranAbsensiInfo = (params = {}) =>
+  api.get("/hrd/rpt/detail-kehadiran/absensi-info", { params });
+
+/** Detail kehadiran — DATA AKHIR HADIR/TIDAK (legacy xsp_data_akhir_absen_store_update) */
+export const updateHrdDetailKehadiranAkhir = (payload = {}) =>
+  api.post("/hrd/rpt/detail-kehadiran/akhir", withActor(payload, "create"));
 /** Shared HRD dropdown lookups — GET /hrd/lookups/{type}?parent_id= */
 export const hrdLookup = (type, params = {}) =>
   api.get(`/hrd/lookups/${encodeURIComponent(type)}`, { params });

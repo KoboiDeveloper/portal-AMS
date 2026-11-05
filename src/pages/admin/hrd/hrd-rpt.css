@@ -609,6 +609,73 @@
   font-weight: 500;
 }
 
+.hrd-rpt .hrd-dk-cell--btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.hrd-rpt .hrd-dk-cell--btn:hover {
+  outline: 1px solid #94a3b8;
+}
+
+.hrd-rpt .hrd-dk-cell.is-busy {
+  color: #94a3b8;
+}
+
+.hrd-rpt .hrd-dk-name-link {
+  display: block;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 2px 0 4px;
+  color: #0f62fe;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  max-width: 140px;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.hrd-rpt .hrd-dk-name-link:hover {
+  text-decoration: underline;
+}
+
+.hrd-rpt .hrd-dk-row-label {
+  font-size: 0.625rem;
+  color: #8e959e;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hrd-rpt .hrd-dk-kind {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.hrd-rpt .hrd-dk-row--manual td {
+  background: #fafbfc;
+}
+
+.hrd-rpt .hrd-dk-row--akhir td {
+  background: #f8fafc;
+}
+
+.hrd-rpt .hrd-dk-row--akhir .hrd-dk-kind {
+  color: #0f62fe;
+}
+
+.modal-dialog.hrd-dk-info-modal {
+  max-width: 480px;
+}
+
 .hrd-rpt .hrd-rpt-sticky-name {
   position: sticky;
   left: 0;

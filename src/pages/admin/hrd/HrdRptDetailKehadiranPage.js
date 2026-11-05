@@ -1,11 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Modal, ModalBody } from "reactstrap";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import { Icon, RSelect } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDateRangePicker, { formatAppDateYmd } from "../../../components/AppDateRangePicker";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
-import { createHrdService, hrdLookupOptions } from "../../../services/hrd/hrd.service";
+import {
+  createHrdService,
+  getHrdDetailKehadiranAbsensiInfo,
+  hrdLookupOptions,
+  updateHrdDetailKehadiranAkhir,
+} from "../../../services/hrd/hrd.service";
 import { getActorId } from "../../../lib/auth";
 import { extractRows, isSuccess } from "../../../lib/response";
 import { ScBtn, ScEmptyState, ScError, ScKpi, ScKpiStrip, ScPageHeader, ScSkeletonBlock } from "../dgs/sc";
@@ -55,11 +61,87 @@ const dayTone = (color) => {
   return "";
 };
 
-const DayCell = ({ value, color }) => {
+const DayCell = ({ value, color, editable, onPick }) => {
   const v = value == null || value === "" ? "" : String(value);
-  if (!v || v === "0") return <span className="hrd-dk-cell is-empty">·</span>;
-  const tone = dayTone(color) || (Number(v) > 0 ? "is-hadir" : "");
-  return <span className={`hrd-dk-cell ${tone}`}>{v}</span>;
+  const empty = !v || v === "0";
+  const tone = dayTone(color) || (!empty && Number(v) > 0 ? "is-hadir" : "");
+  if (!editable) {
+    if (empty) return <span className="hrd-dk-cell is-empty">·</span>;
+    return <span className={`hrd-dk-cell ${tone}`}>{v}</span>;
+  }
+  return (
+    <button
+      type="button"
+      className={`hrd-dk-cell hrd-dk-cell--btn ${empty ? "is-empty" : tone}`}
+      title={empty || v === "0" ? "Set HADIR" : "Set TIDAK MASUK"}
+      onClick={(e) => {
+        e.stopPropagation();
+        onPick?.(empty || v === "0" ? 1 : 0);
+      }}
+    >
+      {empty ? "·" : v}
+    </button>
+  );
+};
+
+const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
+  const nik = row.nick || row.nik || "—";
+  const name = row.employee_name || "—";
+  const days = DAYS.filter((d) => d <= dayCount);
+  return (
+    <>
+      <tr className="hrd-dk-row hrd-dk-row--history">
+        <td className="hrd-rpt-sticky-name" rowSpan={3}>
+          <div className="sc-td-meta">{nik}</div>
+          <button type="button" className="hrd-dk-name-link" onClick={() => onNameClick(row)}>
+            {name}
+          </button>
+          <div className="hrd-dk-row-label">POS / History</div>
+        </td>
+        <td className="hrd-dk-kind">History</td>
+        <td>{row.jabatan || "—"}</td>
+        <td className="num">{row.total_history ?? row.total ?? 0}</td>
+        {days.map((d) => (
+          <td key={`h-${d}`} className="hrd-dk-day">
+            <DayCell value={row[`history_${d}`]} color={row[`history_${d}_color`]} />
+          </td>
+        ))}
+      </tr>
+      <tr className="hrd-dk-row hrd-dk-row--manual">
+        <td className="hrd-dk-kind">Manual</td>
+        <td>{row.ac_name || "—"}</td>
+        <td className="num">{row.m_total ?? 0}</td>
+        {days.map((d) => (
+          <td key={`m-${d}`} className="hrd-dk-day">
+            <DayCell value={row[`m_${d}`] ?? row[`M_${d}`]} color={row[`m_${d}_color`] ?? row[`M_${d}_color`]} />
+          </td>
+        ))}
+      </tr>
+      <tr className="hrd-dk-row hrd-dk-row--akhir">
+        <td className="hrd-dk-kind">Data akhir</td>
+        <td className="text-soft">klik sel → HADIR / TIDAK</td>
+        <td className="num">{row.total_akhir ?? 0}</td>
+        {days.map((d) => {
+          const key = `${row.nik}-${d}`;
+          const busy = savingKey === key;
+          return (
+            <td key={`a-${d}`} className="hrd-dk-day">
+              {busy ? (
+                <span className="hrd-dk-cell is-busy">…</span>
+              ) : (
+                <DayCell
+                  value={row[`akhir_${d}`] ?? row[String(d)]}
+                  color={row[`akhir_${d}_color`]}
+                  editable
+                  onPick={(typeAbsensi) => onAkhirToggle(row, d, typeAbsensi)}
+                />
+              )}
+            </td>
+          );
+        })}
+      </tr>
+    </>
+  );
 };
 
 const HrdRptDetailKehadiranPage = () => {
@@ -76,6 +158,11 @@ const HrdRptDetailKehadiranPage = () => {
   const [openStore, setOpenStore] = useState("");
   const [empByStore, setEmpByStore] = useState({});
   const [empLoading, setEmpLoading] = useState("");
+  const [savingKey, setSavingKey] = useState("");
+  const [modal, setModal] = useState({ open: false, nik: "", name: "" });
+  const [modalRows, setModalRows] = useState([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -83,7 +170,8 @@ const HrdRptDetailKehadiranPage = () => {
       const b = await hrdLookupOptions("brand");
       if (!alive) return;
       setBrandOpts([{ value: "", label: "Pilih brand" }, ...b]);
-      if (b[0]?.value) setBrand(String(b[0].value));
+      const prefer = b.find((o) => String(o.value).toUpperCase() === "RC") || b[0];
+      if (prefer?.value) setBrand(String(prefer.value));
     })();
     return () => {
       alive = false;
@@ -161,6 +249,73 @@ const HrdRptDetailKehadiranPage = () => {
     if (!empByStore[id]) await loadEmployees(id);
   };
 
+  const openAbsensiInfo = async (row) => {
+    const nik = String(row.nik || row.nick || "");
+    if (!nik) return;
+    setModal({ open: true, nik, name: row.employee_name || nik });
+    setModalRows([]);
+    setModalError("");
+    setModalLoading(true);
+    try {
+      const res = await getHrdDetailKehadiranAbsensiInfo({
+        nik,
+        from_date: from,
+        to_date: to,
+      });
+      if (!isSuccess(res)) {
+        setModalError(res?.responseMessage || "Gagal memuat info absensi");
+        setModalRows([]);
+      } else {
+        setModalRows(extractRows(res));
+      }
+    } catch (err) {
+      setModalError(err?.responseMessage || err?.message || "Gagal memuat info absensi");
+      setModalRows([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const onAkhirToggle = async (row, day, typeAbsensi) => {
+    const nik = String(row.nik || "");
+    const storeId = String(row.store_id || "");
+    if (!nik || !storeId) return;
+    const key = `${nik}-${day}`;
+    setSavingKey(key);
+    try {
+      const res = await updateHrdDetailKehadiranAkhir({
+        nik,
+        store_id: storeId,
+        tgl: String(day),
+        typeAbsensi,
+        date: from,
+        from_date: from,
+      });
+      if (!isSuccess(res)) {
+        setError(res?.responseMessage || "Gagal update data akhir");
+        return;
+      }
+      const idCabang = String(row.id_cabang || openStore);
+      setEmpByStore((prev) => {
+        const list = (prev[idCabang] || []).map((r) => {
+          if (String(r.nik) !== nik) return r;
+          const cur = Number(r.total_akhir ?? 0) || 0;
+          const nextTotal = typeAbsensi === 1 ? cur + 1 : Math.max(0, cur - 1);
+          return {
+            ...r,
+            [`akhir_${day}`]: typeAbsensi,
+            total_akhir: nextTotal,
+          };
+        });
+        return { ...prev, [idCabang]: list };
+      });
+    } catch (err) {
+      setError(err?.responseMessage || err?.message || "Gagal update data akhir");
+    } finally {
+      setSavingKey("");
+    }
+  };
+
   const totalEmp = useMemo(
     () => Object.values(empByStore).reduce((a, list) => a + (list?.length || 0), 0),
     [empByStore]
@@ -169,7 +324,7 @@ const HrdRptDetailKehadiranPage = () => {
   const brandLabel = brandOpts.find((o) => String(o.value) === String(brand))?.label || brand || "—";
   const desc = loaded
     ? `${from} → ${to} · ${brandLabel} · ${group} · ${stores.length.toLocaleString("id-ID")} cabang`
-    : "Kalender kehadiran 1–31 per cabang — cocok untuk rekap bulanan store";
+    : "Kalender kehadiran 1–31 per cabang — History / Manual / Data akhir";
 
   const dayCount = useMemo(() => {
     if (!from) return 31;
@@ -192,11 +347,7 @@ const HrdRptDetailKehadiranPage = () => {
                   <ScBtn variant="soft" disabled={loading} onClick={loadStores}>
                     <Icon name="reload" /> Refresh
                   </ScBtn>
-                  <ScBtn
-                    variant="ghost"
-                    onClick={() => window.print()}
-                    disabled={!stores.length}
-                  >
+                  <ScBtn variant="ghost" onClick={() => window.print()} disabled={!stores.length}>
                     <Icon name="printer" /> Print
                   </ScBtn>
                 </div>
@@ -258,13 +409,15 @@ const HrdRptDetailKehadiranPage = () => {
                 </ScKpiStrip>
 
                 <div className="hrd-rpt__meta">
-                  <span className="hrd-rpt__meta-count">Klik cabang untuk membuka kalender 01–{String(dayCount).padStart(2, "0")}</span>
+                  <span className="hrd-rpt__meta-count">
+                    Klik nama → info absensi · klik Data akhir → HADIR / TIDAK
+                  </span>
                   <div className="hrd-rpt__legend">
                     <span>
                       <i className="hrd-rpt__swatch is-hadir" /> Hadir
                     </span>
                     <span>
-                      <i className="hrd-rpt__swatch is-absen" /> Tidak masuk / highlight
+                      <i className="hrd-rpt__swatch is-absen" /> Tidak masuk
                     </span>
                   </div>
                 </div>
@@ -301,9 +454,9 @@ const HrdRptDetailKehadiranPage = () => {
                               <table className="dgs-table hrd-dk-table">
                                 <thead>
                                   <tr>
-                                    <th className="hrd-rpt-sticky-name">NICK</th>
-                                    <th>Nama</th>
-                                    <th>Jabatan</th>
+                                    <th className="hrd-rpt-sticky-name">Pegawai</th>
+                                    <th>Baris</th>
+                                    <th>Jabatan / AC</th>
                                     <th className="num">Total</th>
                                     {DAYS.filter((d) => d <= dayCount).map((d) => (
                                       <th key={d} className="hrd-dk-day">
@@ -314,21 +467,14 @@ const HrdRptDetailKehadiranPage = () => {
                                 </thead>
                                 <tbody>
                                   {emps.map((r) => (
-                                    <tr key={`${id}-${r.nik}-${r.id}`}>
-                                      <td className="hrd-rpt-sticky-name">
-                                        <div className="sc-td-meta">{r.nick || r.nik || "—"}</div>
-                                      </td>
-                                      <td>
-                                        <div className="sc-td-main">{r.employee_name || "—"}</div>
-                                      </td>
-                                      <td>{r.jabatan || "—"}</td>
-                                      <td className="num">{r.total ?? 0}</td>
-                                      {DAYS.filter((d) => d <= dayCount).map((d) => (
-                                        <td key={d} className="hrd-dk-day">
-                                          <DayCell value={r[`history_${d}`]} color={r[`history_${d}_color`]} />
-                                        </td>
-                                      ))}
-                                    </tr>
+                                    <EmpBlock
+                                      key={`${id}-${r.nik}-${r.id}`}
+                                      row={r}
+                                      dayCount={dayCount}
+                                      onNameClick={openAbsensiInfo}
+                                      onAkhirToggle={onAkhirToggle}
+                                      savingKey={savingKey}
+                                    />
                                   ))}
                                 </tbody>
                               </table>
@@ -346,7 +492,7 @@ const HrdRptDetailKehadiranPage = () => {
               <ScEmptyState
                 icon="map-pin"
                 title="Tidak ada cabang untuk filter ini"
-                hint="Coba ganti brand, group, atau periode."
+                hint="Coba ganti brand, group, atau periode. Brand harus kode (RC, FL, …)."
                 action={
                   <ScBtn variant="soft" onClick={loadStores}>
                     Terapkan ulang
@@ -359,11 +505,64 @@ const HrdRptDetailKehadiranPage = () => {
               <ScEmptyState
                 icon="calendar"
                 title="Siapkan filter laporan"
-                hint="Pilih periode & brand, lalu Terapkan. Buka tiap cabang untuk melihat kalender harian."
+                hint="Pilih periode & brand, lalu Terapkan. Buka tiap cabang untuk melihat History / Manual / Data akhir."
               />
             ) : null}
           </div>
         </PageSmoothScroll>
+
+        <Modal
+          isOpen={modal.open}
+          toggle={() => setModal({ open: false, nik: "", name: "" })}
+          size="md"
+          className="modal-dialog-centered hrd-dk-info-modal"
+          contentClassName="dgs-modal-content"
+        >
+          <div className="hrd-modal-head">
+            <div>
+              <h5 className="hrd-modal-head__title">Info Absensi Store</h5>
+              <p className="hrd-modal-head__sub">
+                {modal.name} · {modal.nik} · {from} → {to}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-sm btn-icon btn-trigger"
+              onClick={() => setModal({ open: false, nik: "", name: "" })}
+            >
+              <Icon name="cross" />
+            </button>
+          </div>
+          <ModalBody className="dgs-modal-body">
+            {modalLoading ? <ScSkeletonBlock style={{ height: 120 }} /> : null}
+            {modalError ? <ScError message={modalError} /> : null}
+            {!modalLoading && !modalError && modalRows.length === 0 ? (
+              <p className="text-soft" style={{ margin: 0 }}>
+                Tidak ada punch absensi di periode ini.
+              </p>
+            ) : null}
+            {!modalLoading && modalRows.length > 0 ? (
+              <div className="dgs-table-wrap">
+                <table className="dgs-table">
+                  <thead>
+                    <tr>
+                      <th>Tanggal / Waktu</th>
+                      <th>Store</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modalRows.map((r, i) => (
+                      <tr key={r.id || i}>
+                        <td>{r.waktu || r.tanggal || "—"}</td>
+                        <td>{r.store_id || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+          </ModalBody>
+        </Modal>
       </Content>
     </AccessGuard>
   );
