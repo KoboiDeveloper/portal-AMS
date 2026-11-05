@@ -23,7 +23,7 @@ export const HrdAbsOnlineAttendancePage = wrap(C.hrdAbsOnlineAttendance);
 export const HrdAbsAllAttendancePage = wrap(C.hrdAbsAllAttendance);
 export { default as HrdAbsPersonelPage } from "./HrdPersonelListPage";
 export { default as HrdPersonelInfoPage } from "./HrdPersonelInfoPage";
-export const HrdAbsKontrakPage = wrap(C.hrdAbsKontrak);
+export { default as HrdAbsKontrakPage } from "./HrdPersonelKontrakPage";
 export const HrdAbsStatusPage = wrap(C.hrdAbsStatus);
 export const HrdAbsPromosiPage = wrap(C.hrdAbsPromosi);
 export const HrdAbsMutasiPage = wrap(C.hrdAbsMutasi);

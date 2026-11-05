@@ -160,7 +160,10 @@ const FormModal = ({
   loading,
   submitLabel,
   size = "lg",
+  /** "sc" = Seller Center shell (personel / kontrak) */
+  variant = "default",
 }) => {
+  const isSc = variant === "sc";
   const [errors, setErrors] = useState({});
   const [lookupMap, setLookupMap] = useState({});
   const [lookupsLoading, setLookupsLoading] = useState(false);
@@ -282,37 +285,43 @@ const FormModal = ({
 
   const sections = useMemo(() => {
     const list = fields || [];
+    const shape = (fs) => (isSc ? fs : collapseDateRanges(fs));
     const hasSection = list.some((f) => f.section);
-    if (!hasSection) return [{ title: null, fields: collapseDateRanges(list) }];
+    if (!hasSection) return [{ title: null, fields: shape(list) }];
     const map = [];
     list.forEach((f) => {
-      const title = f.section || "Umum";
-      let bucket = map.find((s) => s.title === title);
+      const secTitle = f.section || "Umum";
+      let bucket = map.find((s) => s.title === secTitle);
       if (!bucket) {
-        bucket = { title, fields: [] };
+        bucket = { title: secTitle, fields: [] };
         map.push(bucket);
       }
       bucket.fields.push(f);
     });
-    return map.map((s) => ({ ...s, fields: collapseDateRanges(s.fields) }));
-  }, [fields]);
+    return map.map((s) => ({ ...s, fields: shape(s.fields) }));
+  }, [fields, isSc]);
 
   return (
     <Modal
       isOpen={isOpen}
       toggle={onClose}
-      className="modal-dialog-centered admin-form-modal hrd-form-modal"
+      className={`modal-dialog-centered admin-form-modal hrd-form-modal${
+        isSc ? " hrd-form-modal--sc rsd-detail-modal" : ""
+      }`}
+      contentClassName={isSc ? "dgs-modal-content" : undefined}
       size={size}
     >
-      <ModalBody className="p-0">
-        <div className="hrd-modal-header">
+      <ModalBody className={`p-0${isSc ? " dgs-modal-body rsd-detail-body" : ""}`}>
+        <div className={isSc ? "rsd-detail-hero" : "hrd-modal-header"}>
           <div>
-            <h5 className="hrd-modal-title">{title}</h5>
-            {subtitle ? <p className="hrd-modal-subtitle">{subtitle}</p> : null}
+            <h5 className={isSc ? "rsd-detail-title" : "hrd-modal-title"}>{title}</h5>
+            {subtitle ? (
+              <p className={isSc ? "rsd-detail-sub" : "hrd-modal-subtitle"}>{subtitle}</p>
+            ) : null}
           </div>
           <button
             type="button"
-            className="hrd-modal-close"
+            className={isSc ? "btn btn-icon btn-trigger" : "hrd-modal-close"}
             aria-label="Close"
             onClick={onClose}
           >
@@ -320,7 +329,11 @@ const FormModal = ({
           </button>
         </div>
 
-        <Form className="hrd-modal-body form-validate is-alter" onSubmit={handleSubmit} noValidate>
+        <Form
+          className={`hrd-modal-body form-validate is-alter${isSc ? " sc-scope" : ""}`}
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {lookupsLoading && (
             <div className="hrd-modal-loading">
               <Spinner size="sm" /> <span>Memuat pilihan dropdown…</span>
@@ -329,7 +342,9 @@ const FormModal = ({
 
           {sections.map((section) => (
             <div key={section.title || "main"} className="hrd-modal-section">
-              {section.title ? <div className="hrd-modal-section-title">{section.title}</div> : null}
+              {section.title ? (
+                <div className="hrd-modal-section-title">{section.title}</div>
+              ) : null}
               <Row className="g-3">
                 {section.fields.map((field) => {
                   if (field.type === "hidden" || field.hidden) {
@@ -368,7 +383,10 @@ const FormModal = ({
                     <Col md={colSize} key={field.name}>
                       <div className={`form-group${fieldErr ? " error" : ""}`}>
                         {field.type !== "checkbox" && (
-                          <label className="form-label" htmlFor={field.name}>
+                          <label
+                            className={isSc ? "hrd-form-label" : "form-label"}
+                            htmlFor={field.name}
+                          >
                             {field.label}
                             {field.required && <span className="text-danger ms-1">*</span>}
                           </label>
@@ -393,13 +411,30 @@ const FormModal = ({
             </div>
           ))}
 
-          <div className="hrd-modal-footer">
-            <ModalActions
-              submitLabel={submitLabel || "Simpan"}
-              loading={loading}
-              onCancel={onClose}
-            />
-          </div>
+          {isSc ? (
+            <div className="dgs-modal-foot hrd-modal-footer hrd-modal-footer--sc">
+              <button
+                type="button"
+                className="sc-btn sc-btn--soft"
+                disabled={loading}
+                onClick={onClose}
+              >
+                Batal
+              </button>
+              <button type="submit" className="sc-btn" disabled={loading}>
+                {loading ? <Spinner size="sm" /> : <Icon name="save" />}
+                <span>{submitLabel || "Simpan"}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="hrd-modal-footer">
+              <ModalActions
+                submitLabel={submitLabel || "Simpan"}
+                loading={loading}
+                onCancel={onClose}
+              />
+            </div>
+          )}
         </Form>
       </ModalBody>
     </Modal>
