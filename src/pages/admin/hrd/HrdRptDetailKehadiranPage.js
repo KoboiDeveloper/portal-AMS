@@ -527,7 +527,7 @@ const HrdRptDetailKehadiranPage = () => {
           isOpen={modal.open}
           toggle={() => setModal({ open: false, nik: "", name: "" })}
           size="md"
-          className="modal-dialog-centered hrd-dk-info-modal"
+          className="modal-dialog-centered admin-form-modal hrd-form-modal hrd-form-modal--sc hrd-dk-info-modal"
           contentClassName="dgs-modal-content"
         >
           <div className="hrd-modal-head">
@@ -539,13 +539,14 @@ const HrdRptDetailKehadiranPage = () => {
             </div>
             <button
               type="button"
-              className="btn btn-sm btn-icon btn-trigger"
+              className="hrd-modal-head__close"
+              aria-label="Tutup"
               onClick={() => setModal({ open: false, nik: "", name: "" })}
             >
               <Icon name="cross" />
             </button>
           </div>
-          <ModalBody className="dgs-modal-body">
+          <ModalBody className="dgs-modal-body hrd-modal-body hrd-dk-info-body">
             {modalLoading ? <ScSkeletonBlock style={{ height: 120 }} /> : null}
             {modalError ? <ScError message={modalError} /> : null}
             {!modalLoading && !modalError && modalRows.length === 0 ? (
@@ -554,7 +555,7 @@ const HrdRptDetailKehadiranPage = () => {
               </p>
             ) : null}
             {!modalLoading && modalRows.length > 0 ? (
-              <div className="dgs-table-wrap">
+              <div className="dgs-table-wrap hrd-dk-info-table">
                 <table className="dgs-table">
                   <thead>
                     <tr>
