@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Col, FormGroup, Input, Label, Row, Spinner } from "reactstrap";
-import { Icon } from "../../../../components/Component";
+import { Icon, RSelect } from "../../../../components/Component";
 import FormModal from "../../../../components/admin/common/FormModal";
 import ConfirmDialog from "../../../../components/admin/common/ConfirmDialog";
 import AppDatePicker from "../../../../components/AppDatePicker";
@@ -103,11 +103,13 @@ export const useLookups = (types) => {
   return lookups;
 };
 
-export const Field = ({ label, children, md = 6 }) => (
+export const Field = ({ label, children, md = 6, className = "" }) => (
   <Col
     xs="12"
     md={md}
-    className={md <= 3 ? "hrd-field--sm" : md <= 6 ? "hrd-field--md" : "hrd-field--lg"}
+    className={[md <= 3 ? "hrd-field--sm" : md <= 6 ? "hrd-field--md" : "hrd-field--lg", className]
+      .filter(Boolean)
+      .join(" ")}
   >
     <FormGroup className="mb-3">
       <Label className="hrd-form-label">{label}</Label>
@@ -116,31 +118,33 @@ export const Field = ({ label, children, md = 6 }) => (
   </Col>
 );
 
-export const SelectLookup = ({ value, onChange, options, disabled }) => {
-  if (Array.isArray(options) && options.length === 0) {
-    return (
-      <Input
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        placeholder="Kode / ID"
-      />
-    );
-  }
+export const SelectLookup = ({
+  value,
+  onChange,
+  options,
+  disabled,
+  placeholder = "— Pilih —",
+  isClearable = true,
+}) => {
+  const opts = Array.isArray(options) ? options : [];
+  const selected =
+    opts.find((o) => String(o.value) === String(value ?? "")) ||
+    (value != null && String(value) !== ""
+      ? { value: String(value), label: String(value) }
+      : null);
+
   return (
-    <Input
-      type="select"
-      value={value ?? ""}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-    >
-      <option value="">— Pilih —</option>
-      {(options || []).map((o) => (
-        <option key={String(o.value)} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </Input>
+    <div className="form-control-wrap">
+      <RSelect
+        isClearable={isClearable}
+        isSearchable
+        isDisabled={disabled}
+        placeholder={placeholder}
+        options={opts}
+        value={selected}
+        onChange={(opt) => onChange(opt?.value != null ? String(opt.value) : "")}
+      />
+    </div>
   );
 };
 

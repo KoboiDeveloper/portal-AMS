@@ -1180,3 +1180,181 @@
   height: 34px;
   border-radius: 6px;
 }
+
+/* —— Identitas tab —— */
+.hrd-sc .hrd-id {
+  max-width: 960px;
+}
+
+.hrd-sc .hrd-id__mast {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0;
+}
+
+.hrd-sc .hrd-id__mast-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hrd-sc .hrd-id__mast-item {
+  min-width: 0;
+}
+
+.hrd-sc .hrd-id__mast-item--nik {
+  flex: 0 0 auto;
+  max-width: 160px;
+}
+
+.hrd-sc .hrd-id__mast-item--aktif {
+  flex: 0 0 148px;
+}
+
+.hrd-sc .hrd-id__mast-item--lokasi {
+  flex: 0 0 220px;
+  max-width: 220px;
+}
+
+.hrd-sc .hrd-id__mast-kicker {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a9199;
+}
+
+.hrd-sc .hrd-id__nik {
+  margin: 0;
+  font-family: "IBM Plex Mono", "Consolas", "Segoe UI Mono", monospace;
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 38px;
+  color: #171a1c;
+  font-variant-numeric: tabular-nums;
+}
+
+.hrd-sc .hrd-id__nik-input {
+  max-width: 100%;
+  font-family: "IBM Plex Mono", "Consolas", "Segoe UI Mono", monospace;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  height: 38px;
+  border: 0;
+  border-bottom: 2px solid #171a1c;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+}
+
+.hrd-sc .hrd-id__nik-input:focus {
+  box-shadow: none;
+  border-color: var(--sc-accent, #009a94);
+}
+
+.hrd-sc .hrd-id__status-box {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding-top: 4px;
+  min-width: 108px;
+}
+
+.hrd-sc .hrd-id__status-switch {
+  margin: 0;
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.hrd-sc .hrd-id__status-switch .custom-control-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6c727a;
+  line-height: 1.5rem;
+  padding-top: 0;
+}
+
+.hrd-sc .hrd-id__status-switch.is-on .custom-control-label {
+  color: #146c38;
+}
+
+.hrd-sc .hrd-id__status-switch.is-off .custom-control-label {
+  color: #8e2a22;
+}
+
+.hrd-sc .hrd-id__status-switch.is-on .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: #1a8f4a;
+  border-color: #1a8f4a;
+}
+
+.hrd-sc .hrd-id__status-switch.is-off .custom-control-input ~ .custom-control-label::before {
+  background-color: #c0392b;
+  border-color: #c0392b;
+}
+
+.hrd-sc .hrd-id__status-switch .custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: 0 0 0 0.15rem rgba(26, 143, 74, 0.2);
+}
+
+.hrd-sc .hrd-id__resign-info {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #8e2a22;
+  text-align: right;
+  line-height: 1.35;
+}
+
+.hrd-sc .hrd-id__resign-info strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hrd-sc .hrd-id__rule {
+  margin: 35px 0;
+  border: 0;
+  border-top: 1px solid #d8dce0;
+  opacity: 1;
+}
+
+.hrd-sc .hrd-id__body .hrd-form-label {
+  color: #5c636b;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.hrd-sc .hrd-id__name.form-control {
+  font-weight: 600;
+}
+
+.hrd-sc .hrd-id__notes-wrap {
+  margin-top: 36px !important;
+  padding-top: 8px;
+}
+
+.hrd-sc.dgs-dash textarea.hrd-id__notes.form-control,
+.hrd-sc textarea.hrd-id__notes {
+  min-height: 208px !important;
+  height: 208px !important;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.hrd-sc .hrd-id__actions {
+  margin-top: 20px;
+  padding-top: 16px;
+}
