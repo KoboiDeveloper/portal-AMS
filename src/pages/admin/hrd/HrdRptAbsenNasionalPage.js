@@ -87,6 +87,50 @@ const WdWkHd = ({ wd, wk, hd }) => (
 );
 
 const DATE_LINE_RE = /^(\d{1,2})\.\s+(\d{4}-\d{2}-\d{2})(.*)$/;
+const RED_MARK = "\u2063R\u2063"; /* invisible separator keeping legacy <font color=red> */
+
+const unwrapMarked = (s) => {
+  const raw = String(s || "");
+  const red = raw.includes(RED_MARK);
+  return { value: raw.split(RED_MARK).join("").trim(), red };
+};
+
+const timeToSec = (t) => {
+  const m = String(t || "").match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!m) return null;
+  return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3] || 0);
+};
+
+/** HRD analyse flags — mirror legacy red font rules for kehadiran. */
+const flagKehadiranTimes = (timeIn, timeOut, legacyInRed, legacyOutRed) => {
+  const inSec = timeToSec(timeIn);
+  const outSec = timeToSec(timeOut);
+  const reasons = [];
+  let inRed = !!legacyInRed;
+  let outRed = !!legacyOutRed;
+
+  const onlyOne =
+    (inSec == null && outSec != null) ||
+    (outSec == null && inSec != null) ||
+    (inSec != null && outSec != null && inSec === outSec);
+  if (onlyOne) {
+    reasons.push("1 absen / in=out");
+    inRed = true;
+    outRed = true;
+  }
+  /* Masuk setelah jam 09:00 */
+  if (inSec != null && inSec > 9 * 3600) {
+    reasons.push("masuk > 09:00");
+    inRed = true;
+  }
+  /* Pulang sebelum jam kerja (17:00) — sama seperti font merah di SP legacy */
+  if (outSec != null && inSec != null && inSec !== outSec && outSec < 17 * 3600) {
+    reasons.push("pulang < 17:00");
+    outRed = true;
+  }
+
+  return { inRed, outRed, alert: inRed || outRed, reasons };
+};
 
 /** Turn legacy popup HTML (br / hr.divider / font) into structured rows. */
 const parseLegacyHtml = (html) => {
@@ -99,6 +143,9 @@ const parseLegacyHtml = (html) => {
     .replace(/<hr[^>]*>/gi, "\n__SEC__\n")
     .replace(/<\/?i[^>]*>/gi, "")
     .replace(/<\/?b>/gi, "")
+    /* Keep red times from legacy SP before stripping tags. */
+    .replace(/<font\s+color\s*=\s*["']?red["']?\s*>/gi, RED_MARK)
+    .replace(/<\/font>/gi, RED_MARK)
     .replace(/<\/?font[^>]*>/gi, "")
     .replace(/<[^>]+>/g, "")
     .replace(/\u00a0/g, " ")
@@ -117,11 +164,18 @@ const parseLegacyHtml = (html) => {
       if (m) {
         const rest = (m[3] || "").replace(/^\s*[|·•]\s*/, "").trim();
         /* Legacy often omits closing ")" before Total jam. */
-        const clockM = rest.match(/\(\s*([\d:]+)\s*-\s*([\d:]+)\s*([A-Za-z]+)?/);
+        const clockM = rest.match(
+          /\(\s*([^\-\n]*?)\s*-\s*([^\n]*?)(?:\s+([A-Za-zÀ-ÿ]+))?(?:\s*[)|·|]|\s+Total|\s*$)/
+        );
         const jamM = rest.match(/Total jam\s+(\d{1,2}:\d{2}:\d{2})/i);
-        const timeIn = clockM ? clockM[1] : "";
-        const timeOut = clockM ? clockM[2] : "";
+        const inPart = unwrapMarked(clockM ? clockM[1] : "");
+        const outPart = unwrapMarked(clockM ? clockM[2] : "");
+        /* out may include leftover date prefix from next-day punch */
+        const outTimeM = outPart.value.match(/(\d{1,2}:\d{2}:\d{2})/);
+        const timeIn = (inPart.value.match(/(\d{1,2}:\d{2}:\d{2})/) || [])[1] || inPart.value;
+        const timeOut = outTimeM ? outTimeM[1] : outPart.value;
         const day = clockM && clockM[3] ? clockM[3] : "";
+        const flags = flagKehadiranTimes(timeIn, timeOut, inPart.red, outPart.red);
         items.push({
           no: m[1].padStart(2, "0"),
           date: m[2],
@@ -129,13 +183,17 @@ const parseLegacyHtml = (html) => {
           timeOut,
           day,
           total: jamM ? jamM[1] : "",
-          note: !clockM && rest ? rest.replace(/\s*\|\s*/g, " · ").trim() : "",
+          inRed: flags.inRed,
+          outRed: flags.outRed,
+          alert: flags.alert,
+          reasons: flags.reasons,
+          note: !clockM && rest ? rest.replace(/\s*\|\s*/g, " · ").replaceAll(RED_MARK, "").trim() : "",
         });
         return;
       }
       if (/^(reguler|in\s*=\s*out)$/i.test(t)) return;
       if (!DATE_LINE_RE.test(t) && t.length < 48 && !/\d{4}-\d{2}-\d{2}/.test(t)) {
-        pendingTitle = t;
+        pendingTitle = t.replaceAll(RED_MARK, "");
       }
     });
     if (items.length) sections.push({ title: title || null, items });
@@ -190,15 +248,19 @@ const ContentBlock = ({ html }) => {
           {sec.title ? <div className="hrd-nas-sec__title">{sec.title}</div> : null}
           <ul className="hrd-nas-list">
             {sec.items.map((it) => (
-              <li key={`${it.no}-${it.date}-${it.timeIn}`} className="hrd-nas-item">
+              <li
+                key={`${it.no}-${it.date}-${it.timeIn}`}
+                className={`hrd-nas-item${it.alert ? " is-alert" : ""}`}
+                title={it.reasons?.length ? it.reasons.join(" · ") : undefined}
+              >
                 <span className="hrd-nas-item__line">
                   <span className="hrd-nas-item__no">{it.no}.</span>{" "}
                   <span className="hrd-nas-item__date">{it.date}</span>
                   {it.timeIn || it.timeOut ? (
                     <span className="hrd-nas-item__time">
-                      {it.timeIn || "—"}
+                      <span className={it.inRed ? "is-red" : undefined}>{it.timeIn || "—"}</span>
                       <i> - </i>
-                      {it.timeOut || "—"}
+                      <span className={it.outRed ? "is-red" : undefined}>{it.timeOut || "—"}</span>
                       {it.day ? <span className="hrd-nas-item__day"> {it.day}</span> : null}
                       {it.total ? <strong>{it.total}</strong> : null}
                     </span>
@@ -434,6 +496,15 @@ const HrdRptAbsenNasionalPage = () => {
     return Array.from(map.values());
   }, [rows]);
 
+  /* Sidebar modal: karyawan dari hasil Terapkan, dikelompok per dept. */
+  const detailEmpGroups = useMemo(() => {
+    if (!detailRow) return groups;
+    const focus = String(detailRow.dept_id || "");
+    if (!focus) return groups;
+    const same = groups.filter((g) => String(g.key) === focus);
+    return same.length ? same : groups;
+  }, [groups, detailRow]);
+
   const cabangLabel = CABANG_OPTS.find((o) => String(o.value) === String(cabang))?.label || cabang || "—";
   const groupLabel = GROUP_OPTS.find((o) => o.value === group)?.label || group;
   const deptLabel = deptOpts.find((o) => String(o.value) === String(dept))?.label || dept || "—";
@@ -444,6 +515,7 @@ const HrdRptAbsenNasionalPage = () => {
 
   const t = detailRow || {};
   const nama = detailData?.employee_name || t.employee_name || t.nama || "—";
+  const activeNik = String(t.nik || "");
 
   return (
     <AccessGuard moduleCode={MODULE} permission="VIEW">
@@ -661,92 +733,126 @@ const HrdRptAbsenNasionalPage = () => {
             </button>
           </div>
           <ModalBody className="rsd-detail-body dgs-modal-body hrd-nas-detail-body">
-            {detailError ? <div className="reg-ar-err">{detailError}</div> : null}
-            {detailLoading ? <DetailSkeleton row={t} /> : null}
-            {!detailLoading && !detailError && detailData ? (
-              <div className="hrd-nas-grid">
-                <section className="hrd-nas-col">
-                  <h6>Kehadiran</h6>
-                  <div className="hrd-nas-block">
-                    <FieldHead label="Reguler" value={t.kehadiran_reguler} />
-                    <ContentBlock html={detailData.content_kehadiran_reguler} />
+            <div className="hrd-nas-detail-layout">
+              <aside className="hrd-nas-emp-rail" aria-label="Daftar karyawan">
+                {detailEmpGroups.map((g) => (
+                  <div key={g.key} className="hrd-nas-emp-rail__group">
+                    <div className="hrd-nas-emp-rail__dept">{g.label}</div>
+                    <ul className="hrd-nas-emp-rail__list">
+                      {g.rows.map((r) => {
+                        const nik = String(r.nik || "");
+                        const active = nik === activeNik;
+                        return (
+                          <li key={`${g.key}-${nik}`}>
+                            <button
+                              type="button"
+                              className={`hrd-nas-emp-rail__item${active ? " is-active" : ""}`}
+                              disabled={detailLoading && active}
+                              onClick={() => {
+                                if (!active) openDetail(r);
+                              }}
+                              title={nik}
+                            >
+                              <span className="hrd-nas-emp-rail__name">{r.employee_name || "—"}</span>
+                              <span className="hrd-nas-emp-rail__meta">{nik}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
-                  <div className="hrd-nas-lembur">
-                    <h6 className="hrd-nas-sub">Lembur</h6>
-                    <div className="hrd-nas-split">
-                      <div>
-                        <FieldHead label="Weekday" value={t.lembur_wd} />
-                        <ContentBlock html={detailData.content_lembur_wd} />
+                ))}
+              </aside>
+
+              <div className="hrd-nas-detail-pane">
+                {detailError ? <div className="reg-ar-err">{detailError}</div> : null}
+                {detailLoading ? <DetailSkeleton row={t} /> : null}
+                {!detailLoading && !detailError && detailData ? (
+                  <div className="hrd-nas-grid">
+                    <section className="hrd-nas-col">
+                      <h6>Kehadiran</h6>
+                      <div className="hrd-nas-block">
+                        <FieldHead label="Reguler" value={t.kehadiran_reguler} />
+                        <ContentBlock html={detailData.content_kehadiran_reguler} />
                       </div>
-                      <div>
-                        <FieldHead label="Weekend" value={stripSlash(t.lembur_wk)} />
-                        <ContentBlock html={detailData.content_lembur_wk} />
-                        <FieldHead label="Holiday" value={stripSlash(t.lembur_hd)} />
-                        <ContentBlock html={detailData.content_lembur_hd} />
+                      <div className="hrd-nas-lembur">
+                        <h6 className="hrd-nas-sub">Lembur</h6>
+                        <div className="hrd-nas-split">
+                          <div>
+                            <FieldHead label="Weekday" value={t.lembur_wd} />
+                            <ContentBlock html={detailData.content_lembur_wd} />
+                          </div>
+                          <div>
+                            <FieldHead label="Weekend" value={stripSlash(t.lembur_wk)} />
+                            <ContentBlock html={detailData.content_lembur_wk} />
+                            <FieldHead label="Holiday" value={stripSlash(t.lembur_hd)} />
+                            <ContentBlock html={detailData.content_lembur_hd} />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </section>
+                    </section>
 
-                <section className="hrd-nas-col">
-                  <h6>Disiplin</h6>
-                  <div className="hrd-nas-tri">
-                    <div>
-                      <FieldHead label="Weekday" value={t.disiplin_wd} />
-                      <ContentBlock html={detailData.content_disiplin_wd} />
-                    </div>
-                    <div>
-                      <FieldHead label="Weekend" value={stripSlash(t.disiplin_wk)} />
-                      <ContentBlock html={detailData.content_disiplin_wk} />
-                    </div>
-                    <div>
-                      <FieldHead label="Holiday" value={stripSlash(t.disiplin_hd)} />
-                      <ContentBlock html={detailData.content_disiplin_hd} />
-                    </div>
-                  </div>
-                </section>
+                    <section className="hrd-nas-col">
+                      <h6>Disiplin</h6>
+                      <div className="hrd-nas-tri">
+                        <div>
+                          <FieldHead label="Weekday" value={t.disiplin_wd} />
+                          <ContentBlock html={detailData.content_disiplin_wd} />
+                        </div>
+                        <div>
+                          <FieldHead label="Weekend" value={stripSlash(t.disiplin_wk)} />
+                          <ContentBlock html={detailData.content_disiplin_wk} />
+                        </div>
+                        <div>
+                          <FieldHead label="Holiday" value={stripSlash(t.disiplin_hd)} />
+                          <ContentBlock html={detailData.content_disiplin_hd} />
+                        </div>
+                      </div>
+                    </section>
 
-                <section className="hrd-nas-col hrd-nas-col--transport">
-                  <h6>Transport</h6>
-                  <div className="hrd-nas-tri">
-                    <div>
-                      <FieldHead label="Weekday" value={t.transport_wd} />
-                      <ContentBlock html={detailData.content_transport_wd} />
-                    </div>
-                    <div>
-                      <FieldHead label="Weekend" value={stripSlash(t.transport_wk)} />
-                      <ContentBlock html={detailData.content_transport_wk} />
-                    </div>
-                    <div>
-                      <FieldHead label="Holiday" value={stripSlash(t.transport_hd)} />
-                      <ContentBlock html={detailData.content_transport_hd} />
-                    </div>
-                  </div>
-                </section>
+                    <section className="hrd-nas-col hrd-nas-col--transport">
+                      <h6>Transport</h6>
+                      <div className="hrd-nas-tri">
+                        <div>
+                          <FieldHead label="Weekday" value={t.transport_wd} />
+                          <ContentBlock html={detailData.content_transport_wd} />
+                        </div>
+                        <div>
+                          <FieldHead label="Weekend" value={stripSlash(t.transport_wk)} />
+                          <ContentBlock html={detailData.content_transport_wk} />
+                        </div>
+                        <div>
+                          <FieldHead label="Holiday" value={stripSlash(t.transport_hd)} />
+                          <ContentBlock html={detailData.content_transport_hd} />
+                        </div>
+                      </div>
+                    </section>
 
-                <section className="hrd-nas-col">
-                  <div className="hrd-nas-block">
-                    <FieldHead label="Izin" value={t.izin} />
-                    <ContentBlock html={detailData.content_izin} />
+                    <section className="hrd-nas-col">
+                      <div className="hrd-nas-block">
+                        <FieldHead label="Izin" value={t.izin} />
+                        <ContentBlock html={detailData.content_izin} />
+                      </div>
+                      <div className="hrd-nas-block">
+                        <FieldHead label="Sakit" value={t.sakit} />
+                        <ContentBlock html={detailData.content_sakit} />
+                      </div>
+                      <div className="hrd-nas-block">
+                        <FieldHead label="Cuti" value={t.cuti} />
+                        <ContentBlock html={detailData.content_cuti} />
+                      </div>
+                      <div className="hrd-nas-block">
+                        <FieldHead label="Alfa" value={t.alfa} />
+                        <ContentBlock html={detailData.content_alfa} />
+                      </div>
+                    </section>
                   </div>
-                  <div className="hrd-nas-block">
-                    <FieldHead label="Sakit" value={t.sakit} />
-                    <ContentBlock html={detailData.content_sakit} />
-                  </div>
-                  <div className="hrd-nas-block">
-                    <FieldHead label="Cuti" value={t.cuti} />
-                    <ContentBlock html={detailData.content_cuti} />
-                  </div>
-                  <div className="hrd-nas-block">
-                    <FieldHead label="Alfa" value={t.alfa} />
-                    <ContentBlock html={detailData.content_alfa} />
-                  </div>
-                </section>
+                ) : null}
+                {!detailLoading && !detailError && !detailData ? (
+                  <div className="dgs-hint">Tidak ada detail untuk NIK ini.</div>
+                ) : null}
               </div>
-            ) : null}
-            {!detailLoading && !detailError && !detailData ? (
-              <div className="dgs-hint">Tidak ada detail untuk NIK ini.</div>
-            ) : null}
+            </div>
           </ModalBody>
         </Modal>
       </Content>
