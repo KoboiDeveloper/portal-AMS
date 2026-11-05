@@ -357,7 +357,7 @@ const HrdRptDetailKehadiranPage = () => {
     <AccessGuard moduleCode={MODULE} permission="VIEW">
       <Head title="Detail Kehadiran" />
       <Content>
-        <PageSmoothScroll revision={`${loading}-${stores.length}-${openStore}`} className="riv-page-scroll">
+        <PageSmoothScroll revision={`${from}-${to}-${brand}-${group}-${stores.length}`} className="riv-page-scroll">
           <div className="hrd-sc hrd-rpt dgs-dash sc-scope">
             <ScPageHeader
               title="Detail Kehadiran Rangkuman Pegawai"
