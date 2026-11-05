@@ -90,15 +90,23 @@ const AkhirDayCell = ({ value, color, day, open, onOpen, onClose, onPick, busy }
   const tone = dayTone(color, v);
   const btnRef = useRef(null);
   const menuRef = useRef(null);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [anchor, setAnchor] = useState(null);
+
+  const measureAnchor = () => {
+    const el = btnRef.current;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    const menuW = 220;
+    const left = Math.min(Math.max(8, rect.left + rect.width / 2 - menuW / 2), window.innerWidth - menuW - 8);
+    const top = Math.min(rect.bottom + 6, window.innerHeight - 160);
+    return { top, left };
+  };
 
   useEffect(() => {
-    if (!open || !btnRef.current) return undefined;
-    const rect = btnRef.current.getBoundingClientRect();
-    const menuW = 200;
-    const left = Math.min(Math.max(8, rect.left + rect.width / 2 - menuW / 2), window.innerWidth - menuW - 8);
-    const top = rect.bottom + 6;
-    setPos({ top, left });
+    if (!open) {
+      setAnchor(null);
+      return undefined;
+    }
     const onDoc = (e) => {
       if (menuRef.current?.contains(e.target) || btnRef.current?.contains(e.target)) return;
       onClose?.();
@@ -127,18 +135,26 @@ const AkhirDayCell = ({ value, color, day, open, onOpen, onClose, onPick, busy }
         title={`Pilih kehadiran tanggal ${day}`}
         onClick={(e) => {
           e.stopPropagation();
-          if (open) onClose?.();
-          else onOpen?.();
+          if (open) {
+            setAnchor(null);
+            onClose?.();
+            return;
+          }
+          // Ukur posisi dulu supaya portal tidak flash di (0,0)
+          const next = measureAnchor();
+          if (!next) return;
+          setAnchor(next);
+          onOpen?.();
         }}
       >
         {missing ? "·" : v}
       </button>
-      {open
+      {open && anchor
         ? createPortal(
             <div
               ref={menuRef}
               className="hrd-dk-akhir-menu sc-scope"
-              style={{ top: pos.top, left: pos.left }}
+              style={{ top: anchor.top, left: anchor.left }}
               role="menu"
             >
               <div className="hrd-dk-akhir-menu__head">
