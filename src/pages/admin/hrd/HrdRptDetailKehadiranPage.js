@@ -137,38 +137,41 @@ const AkhirDayCell = ({ value, color, day, open, onOpen, onClose, onPick, busy }
         ? createPortal(
             <div
               ref={menuRef}
-              className="hrd-dk-akhir-menu"
+              className="hrd-dk-akhir-menu sc-scope"
               style={{ top: pos.top, left: pos.left }}
               role="menu"
             >
               <div className="hrd-dk-akhir-menu__head">
-                <Icon name="info" />
-                <span>Pilih Kehadiran tanggal {day}</span>
+                <span className="hrd-dk-akhir-menu__eyebrow">Data akhir</span>
+                <strong>Tanggal {String(day).padStart(2, "0")}</strong>
+                <span className="hrd-dk-akhir-menu__hint">Pilih status kehadiran</span>
               </div>
-              <button
-                type="button"
-                className="hrd-dk-akhir-menu__btn is-hadir"
-                role="menuitem"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPick?.(1);
-                  onClose?.();
-                }}
-              >
-                HADIR
-              </button>
-              <button
-                type="button"
-                className="hrd-dk-akhir-menu__btn is-tidak"
-                role="menuitem"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPick?.(0);
-                  onClose?.();
-                }}
-              >
-                TIDAK MASUK
-              </button>
+              <div className="hrd-dk-akhir-menu__actions">
+                <button
+                  type="button"
+                  className="hrd-dk-akhir-menu__btn is-hadir"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPick?.(1);
+                    onClose?.();
+                  }}
+                >
+                  Hadir
+                </button>
+                <button
+                  type="button"
+                  className="hrd-dk-akhir-menu__btn is-tidak"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPick?.(0);
+                    onClose?.();
+                  }}
+                >
+                  Tidak masuk
+                </button>
+              </div>
             </div>,
             document.body
           )

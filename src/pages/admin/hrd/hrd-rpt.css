@@ -681,63 +681,92 @@
   outline: 1px solid #94a3b8;
 }
 
-/* Legacy AbsenDk: Pilih Kehadiran tanggal N → HADIR / TIDAK MASUK */
+/* Data akhir picker — SC/DGS popover (bukan Bootstrap dropdown ASP) */
 .hrd-dk-akhir-menu {
   position: fixed;
   z-index: 1080;
-  width: 200px;
-  background: #fff;
-  border: 1px solid #e3e5e7;
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.16);
-  overflow: hidden;
+  width: 220px;
+  padding: 10px;
+  font-family: var(--sc-font, Inter, "Segoe UI", sans-serif);
+  background: var(--sc-surface, #fff);
+  border: 1px solid var(--sc-border, #e3e5e7);
+  border-radius: var(--sc-radius-md, 8px);
+  box-shadow: 0 4px 16px rgba(16, 24, 40, 0.1);
 }
 
 .hrd-dk-akhir-menu__head {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #526484;
-  background: #fff;
-  border-bottom: 1px solid #eceeef;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px 10px;
+  border-bottom: 1px solid var(--sc-divider, #eceeef);
+  margin-bottom: 10px;
 }
 
-.hrd-dk-akhir-menu__head .icon {
+.hrd-dk-akhir-menu__eyebrow {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-text-muted, #8e959e);
+}
+
+.hrd-dk-akhir-menu__head strong {
   font-size: 0.875rem;
-  color: #8094ae;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--sc-text, #31353b);
+}
+
+.hrd-dk-akhir-menu__hint {
+  font-size: 0.75rem;
+  color: var(--sc-text-secondary, #6c727a);
+}
+
+.hrd-dk-akhir-menu__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .hrd-dk-akhir-menu__btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  border: 0;
-  border-radius: 0;
-  padding: 10px 12px;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--sc-radius-sm, 6px);
+  padding: 8px 12px;
+  font-family: inherit;
   font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 600;
   cursor: pointer;
-  color: #fff;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .hrd-dk-akhir-menu__btn.is-hadir {
-  background: #009a94;
+  background: var(--sc-accent-soft, #e7f7f5);
+  border-color: #b7e8e3;
+  color: var(--sc-accent, #009a94);
 }
 
 .hrd-dk-akhir-menu__btn.is-hadir:hover {
-  background: #00857f;
+  background: var(--sc-accent, #009a94);
+  border-color: var(--sc-accent, #009a94);
+  color: #fff;
 }
 
 .hrd-dk-akhir-menu__btn.is-tidak {
-  background: #e39a20;
+  background: #f8f9fa;
+  border-color: var(--sc-border, #e3e5e7);
+  color: var(--sc-text-secondary, #6c727a);
 }
 
 .hrd-dk-akhir-menu__btn.is-tidak:hover {
-  background: #c98412;
+  background: #fde8ea;
+  border-color: #f5c2c7;
+  color: var(--sc-danger, #e02d3c);
 }
 
 .hrd-rpt .hrd-dk-cell.is-busy {
