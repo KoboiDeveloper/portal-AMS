@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Modal, ModalBody } from "reactstrap";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -73,32 +74,110 @@ const dayVal = (row, ...keys) => {
   return "";
 };
 
-const DayCell = ({ value, color, editable, onPick }) => {
+const DayCell = ({ value, color }) => {
   // Hanya null/blank yang kosong; "0" dan "O" harus tampil (sama legacy AbsenDk).
   const missing = value == null || value === "";
   const v = missing ? "" : String(value);
-  const isOff = v === "0";
   const tone = dayTone(color, v);
-  if (!editable) {
-    if (missing) return <span className="hrd-dk-cell is-empty">·</span>;
-    return <span className={`hrd-dk-cell ${tone}`}>{v}</span>;
-  }
+  if (missing) return <span className="hrd-dk-cell is-empty">·</span>;
+  return <span className={`hrd-dk-cell ${tone}`}>{v}</span>;
+};
+
+/** Legacy AbsenDk dropdown: Pilih Kehadiran → HADIR / TIDAK MASUK */
+const AkhirDayCell = ({ value, color, day, open, onOpen, onClose, onPick, busy }) => {
+  const missing = value == null || value === "";
+  const v = missing ? "" : String(value);
+  const tone = dayTone(color, v);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (!open || !btnRef.current) return undefined;
+    const rect = btnRef.current.getBoundingClientRect();
+    const menuW = 200;
+    const left = Math.min(Math.max(8, rect.left + rect.width / 2 - menuW / 2), window.innerWidth - menuW - 8);
+    const top = rect.bottom + 6;
+    setPos({ top, left });
+    const onDoc = (e) => {
+      if (menuRef.current?.contains(e.target) || btnRef.current?.contains(e.target)) return;
+      onClose?.();
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onClose, true);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onClose, true);
+    };
+  }, [open, onClose]);
+
+  if (busy) return <span className="hrd-dk-cell is-busy">…</span>;
+
   return (
-    <button
-      type="button"
-      className={`hrd-dk-cell hrd-dk-cell--btn ${missing ? "is-empty" : tone}`}
-      title={missing || isOff ? "Set HADIR" : "Set TIDAK MASUK"}
-      onClick={(e) => {
-        e.stopPropagation();
-        onPick?.(missing || isOff ? 1 : 0);
-      }}
-    >
-      {missing ? "·" : v}
-    </button>
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        className={`hrd-dk-cell hrd-dk-cell--btn ${missing ? "is-empty" : tone}${open ? " is-open" : ""}`}
+        title={`Pilih kehadiran tanggal ${day}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (open) onClose?.();
+          else onOpen?.();
+        }}
+      >
+        {missing ? "·" : v}
+      </button>
+      {open
+        ? createPortal(
+            <div
+              ref={menuRef}
+              className="hrd-dk-akhir-menu"
+              style={{ top: pos.top, left: pos.left }}
+              role="menu"
+            >
+              <div className="hrd-dk-akhir-menu__head">
+                <Icon name="info" />
+                <span>Pilih Kehadiran tanggal {day}</span>
+              </div>
+              <button
+                type="button"
+                className="hrd-dk-akhir-menu__btn is-hadir"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPick?.(1);
+                  onClose?.();
+                }}
+              >
+                HADIR
+              </button>
+              <button
+                type="button"
+                className="hrd-dk-akhir-menu__btn is-tidak"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPick?.(0);
+                  onClose?.();
+                }}
+              >
+                TIDAK MASUK
+              </button>
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   );
 };
 
-const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
+const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey, akhirMenuKey, setAkhirMenuKey }) => {
   const nik = row.nick || row.nik || "—";
   const name = row.employee_name || "—";
   const days = DAYS.filter((d) => d <= dayCount);
@@ -140,19 +219,18 @@ const EmpBlock = ({ row, dayCount, onNameClick, onAkhirToggle, savingKey }) => {
         <td className="num">{row.total_akhir ?? row.TOTAL ?? 0}</td>
         {days.map((d) => {
           const key = `${row.nik}-${d}`;
-          const busy = savingKey === key;
           return (
             <td key={`a-${d}`} className="hrd-dk-day">
-              {busy ? (
-                <span className="hrd-dk-cell is-busy">…</span>
-              ) : (
-                <DayCell
-                  value={dayVal(row, `akhir_${d}`, String(d))}
-                  color={dayVal(row, `akhir_${d}_color`, `${d}_color`)}
-                  editable
-                  onPick={(typeAbsensi) => onAkhirToggle(row, d, typeAbsensi)}
-                />
-              )}
+              <AkhirDayCell
+                value={dayVal(row, `akhir_${d}`, String(d))}
+                color={dayVal(row, `akhir_${d}_color`, `${d}_color`)}
+                day={d}
+                busy={savingKey === key}
+                open={akhirMenuKey === key}
+                onOpen={() => setAkhirMenuKey(key)}
+                onClose={() => setAkhirMenuKey("")}
+                onPick={(typeAbsensi) => onAkhirToggle(row, d, typeAbsensi)}
+              />
             </td>
           );
         })}
@@ -176,6 +254,7 @@ const HrdRptDetailKehadiranPage = () => {
   const [empByStore, setEmpByStore] = useState({});
   const [empLoading, setEmpLoading] = useState("");
   const [savingKey, setSavingKey] = useState("");
+  const [akhirMenuKey, setAkhirMenuKey] = useState("");
   const [modal, setModal] = useState({ open: false, nik: "", name: "" });
   const [modalRows, setModalRows] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
@@ -493,6 +572,8 @@ const HrdRptDetailKehadiranPage = () => {
                                       onNameClick={openAbsensiInfo}
                                       onAkhirToggle={onAkhirToggle}
                                       savingKey={savingKey}
+                                      akhirMenuKey={akhirMenuKey}
+                                      setAkhirMenuKey={setAkhirMenuKey}
                                     />
                                   ))}
                                 </tbody>

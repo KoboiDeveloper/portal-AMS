@@ -676,8 +676,68 @@
   font: inherit;
 }
 
-.hrd-rpt .hrd-dk-cell--btn:hover {
+.hrd-rpt .hrd-dk-cell--btn:hover,
+.hrd-rpt .hrd-dk-cell--btn.is-open {
   outline: 1px solid #94a3b8;
+}
+
+/* Legacy AbsenDk: Pilih Kehadiran tanggal N → HADIR / TIDAK MASUK */
+.hrd-dk-akhir-menu {
+  position: fixed;
+  z-index: 1080;
+  width: 200px;
+  background: #fff;
+  border: 1px solid #e3e5e7;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.16);
+  overflow: hidden;
+}
+
+.hrd-dk-akhir-menu__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #526484;
+  background: #fff;
+  border-bottom: 1px solid #eceeef;
+}
+
+.hrd-dk-akhir-menu__head .icon {
+  font-size: 0.875rem;
+  color: #8094ae;
+}
+
+.hrd-dk-akhir-menu__btn {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #fff;
+}
+
+.hrd-dk-akhir-menu__btn.is-hadir {
+  background: #009a94;
+}
+
+.hrd-dk-akhir-menu__btn.is-hadir:hover {
+  background: #00857f;
+}
+
+.hrd-dk-akhir-menu__btn.is-tidak {
+  background: #e39a20;
+}
+
+.hrd-dk-akhir-menu__btn.is-tidak:hover {
+  background: #c98412;
 }
 
 .hrd-rpt .hrd-dk-cell.is-busy {
