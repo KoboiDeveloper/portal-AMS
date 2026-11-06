@@ -4,11 +4,81 @@
   max-width: 1100px;
 }
 
+.tap-selisih-hero {
+  margin-top: 1rem;
+  background: #fff;
+}
+
+.tap-selisih-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #8094ae;
+}
+
+.tap-selisih-value {
+  margin-top: 0.35rem;
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #364a63;
+  line-height: 1.15;
+}
+
+.tap-selisih-value.is-ok {
+  color: #1ee0ac;
+}
+
+.tap-selisih-value.is-bad {
+  color: #e85347;
+}
+
+.tap-selisih-formula {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+}
+
+.tap-selisih-insight {
+  margin-top: 0.55rem;
+  font-size: 0.8125rem;
+  color: #526484;
+  max-width: 52rem;
+}
+
+.tap-selisih-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1.1rem;
+  margin-top: 0.7rem;
+  font-size: 0.75rem;
+  color: #8094ae;
+}
+
+.tap-help {
+  font-size: 0.75rem;
+  margin: -0.25rem 0 0.55rem;
+}
+
+.tap-table .is-bad {
+  color: #e85347;
+  font-weight: 700;
+}
+
+.tap-table .is-warn {
+  color: #c9a00b;
+  font-weight: 700;
+}
+
+.tap-method-table-wrap--tall {
+  max-height: 280px;
+}
+
 .tap-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.65rem;
-  margin: 1rem 0 0.85rem;
+  margin: 0.85rem 0;
 }
 
 .tap-kpi {

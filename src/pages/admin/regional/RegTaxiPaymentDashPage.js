@@ -148,6 +148,8 @@ const RegTaxiPaymentDashPage = () => {
 
   const daily = useMemo(() => parseMaybeJson(analisa?.daily), [analisa]);
   const topStores = useMemo(() => parseMaybeJson(analisa?.top_stores), [analisa]);
+  const selisihByStore = useMemo(() => parseMaybeJson(analisa?.selisih_by_store), [analisa]);
+  const selisihByDay = useMemo(() => parseMaybeJson(analisa?.selisih_by_day), [analisa]);
 
   const dailyChart = useMemo(() => {
     if (!daily.length) return null;
@@ -167,6 +169,28 @@ const RegTaxiPaymentDashPage = () => {
       ],
     };
   }, [daily]);
+
+  const selisihDayChart = useMemo(() => {
+    if (!selisihByDay.length) return null;
+    const sorted = [...selisihByDay].sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+    return {
+      labels: sorted.map((d) => String(d.tanggal || "").slice(5)),
+      datasets: [
+        {
+          label: "Selisih",
+          data: sorted.map((d) => Number(d.selisih || 0)),
+          backgroundColor: sorted.map((d) =>
+            Math.abs(Number(d.selisih || 0)) < 0.5
+              ? "#1ee0ac"
+              : Number(d.selisih || 0) < 0
+                ? "#e85347"
+                : "#f4bd0e"
+          ),
+          borderRadius: 2,
+        },
+      ],
+    };
+  }, [selisihByDay]);
 
   const selisih = Number(analisa?.selisih_payment_summary || 0);
   const selisihOk = Math.abs(selisih) < 0.5;
@@ -227,6 +251,35 @@ const RegTaxiPaymentDashPage = () => {
 
             {analisa ? (
               <>
+                <div className="tap-selisih-hero card card-bordered">
+                  <div className="card-inner">
+                    <div className="tap-selisih-label">SELISIH PAYMENT – SUMMARY</div>
+                    <div className={`tap-selisih-value${selisihOk ? " is-ok" : " is-bad"}`}>
+                      {fmt(selisih)}
+                    </div>
+                    <div className="tap-selisih-formula text-soft">
+                      Payment {fmt(analisa.total_payment)} − Summary {fmt(analisa.total_summary)}
+                    </div>
+                    {analisa.selisih_insight ? (
+                      <div className="tap-selisih-insight">{analisa.selisih_insight}</div>
+                    ) : null}
+                    <div className="tap-selisih-meta">
+                      <span>
+                        Store bermasalah: <strong>{fmt(analisa.selisih_store_count)}</strong>
+                      </span>
+                      <span>
+                        Hari/store gap: <strong>{fmt(analisa.selisih_day_count)}</strong>
+                      </span>
+                      <span>
+                        Payment &gt; Summary: <strong>{fmt(analisa.selisih_payment_lebih_count)}</strong>
+                      </span>
+                      <span>
+                        Summary &gt; Payment: <strong>{fmt(analisa.selisih_summary_lebih_count)}</strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="tap-kpis">
                   <div className="tap-kpi">
                     <div className="tap-kpi-label">Total Payment</div>
@@ -237,21 +290,111 @@ const RegTaxiPaymentDashPage = () => {
                     <div className="tap-kpi-value">{fmt(analisa.total_summary)}</div>
                   </div>
                   <div className="tap-kpi">
-                    <div className="tap-kpi-label">Selisih Payment − Summary</div>
-                    <div className={`tap-kpi-value${selisihOk ? " is-ok" : " is-bad"}`}>
-                      {fmt(selisih)}
-                    </div>
-                  </div>
-                  <div className="tap-kpi">
                     <div className="tap-kpi-label">Transaksi / Store</div>
                     <div className="tap-kpi-value">
                       {fmt(analisa.trx_count)} / {fmt(analisa.store_count)}
                     </div>
                   </div>
                   <div className="tap-kpi">
-                    <div className="tap-kpi-label">Baris PLU / Selisih ≠ 0</div>
+                    <div className="tap-kpi-label">Baris PLU / Rumus ≠ Total</div>
                     <div className="tap-kpi-value">
                       {fmt(analisa.plu_rows)} / {fmt(analisa.plu_selisih_rows)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="tap-grid mt-3">
+                  <div className="card card-bordered tap-card">
+                    <div className="card-inner">
+                      <h6 className="tap-card-title">Analisa selisih per store</h6>
+                      <p className="tap-help text-soft">
+                        Selisih = Payment − Summary. Negatif = payment kurang dari PLU summary.
+                      </p>
+                      {selisihByStore.length ? (
+                        <div className="tap-method-table-wrap tap-method-table-wrap--tall">
+                          <table className="tap-table">
+                            <thead>
+                              <tr>
+                                <th>Store</th>
+                                <th className="num">Payment</th>
+                                <th className="num">Summary</th>
+                                <th className="num">Selisih</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selisihByStore.map((r, i) => {
+                                const g = Number(r.selisih || 0);
+                                return (
+                                  <tr key={`${r.store}-${i}`}>
+                                    <td>{r.store}</td>
+                                    <td className="num">{fmt(r.payment)}</td>
+                                    <td className="num">{fmt(r.summary)}</td>
+                                    <td className={`num${Math.abs(g) < 0.5 ? "" : g < 0 ? " is-bad" : " is-warn"}`}>
+                                      {fmt(g)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-soft small">Tidak ada store dengan selisih</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="card card-bordered tap-card">
+                    <div className="card-inner">
+                      <h6 className="tap-card-title">Selisih per hari</h6>
+                      {selisihDayChart ? (
+                        <div className="tap-chart">
+                          <Bar
+                            data={selisihDayChart}
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              plugins: { legend: { display: false } },
+                              scales: {
+                                y: {
+                                  ticks: { callback: (v) => fmt(v) },
+                                },
+                              },
+                            }}
+                          />
+                        </div>
+                      ) : null}
+                      {selisihByDay.length ? (
+                        <div className="tap-method-table-wrap">
+                          <table className="tap-table">
+                            <thead>
+                              <tr>
+                                <th>Tanggal</th>
+                                <th className="num">Payment</th>
+                                <th className="num">Summary</th>
+                                <th className="num">Selisih</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selisihByDay.map((r, i) => {
+                                const g = Number(r.selisih || 0);
+                                return (
+                                  <tr key={`${r.tanggal}-${i}`}>
+                                    <td>{r.tanggal}</td>
+                                    <td className="num">{fmt(r.payment)}</td>
+                                    <td className="num">{fmt(r.summary)}</td>
+                                    <td className={`num${Math.abs(g) < 0.5 ? "" : g < 0 ? " is-bad" : " is-warn"}`}>
+                                      {fmt(g)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-soft small">Tidak ada data harian</div>
+                      )}
                     </div>
                   </div>
                 </div>
