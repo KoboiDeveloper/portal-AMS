@@ -183,7 +183,7 @@ const RegArDetailPage = () => {
               <div className="rad-actions">
                 <button
                   type="button"
-                  className="btn rad-btn-detail"
+                  className="btn btn-primary rad-btn-detail"
                   disabled={Boolean(exporting) || !fromDate || !toDate}
                   onClick={() => exportExcel("detail")}
                 >
@@ -191,7 +191,7 @@ const RegArDetailPage = () => {
                 </button>
                 <button
                   type="button"
-                  className="btn rad-btn-summary"
+                  className="btn btn-success rad-btn-summary"
                   disabled={Boolean(exporting) || !fromDate || !toDate}
                   onClick={() => exportExcel("summary")}
                 >

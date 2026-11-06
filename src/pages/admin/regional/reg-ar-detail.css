@@ -22,10 +22,20 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  flex: 0 0 auto;
+}
+
+/* Wrapper DatePicker sering melebar & nutupin tombol di kanan */
+.rad-date-field .react-datepicker-wrapper,
+.rad-date-field .react-datepicker__input-container {
+  display: block;
+  width: 148px;
+  max-width: 148px;
 }
 
 .rad-date-input {
-  width: 148px;
+  width: 148px !important;
+  max-width: 148px !important;
   height: 36px;
   border: 1px solid #dbdfea;
   border-radius: 3px;
@@ -59,43 +69,69 @@
 .rad-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
   padding-top: 0;
+  margin-left: 0.25rem;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
-.rad-btn-detail,
-.rad-btn-summary {
-  height: 36px;
-  padding: 0 1rem;
-  border: none;
-  border-radius: 3px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #fff;
+/* Softnio .btn menimpa background custom — naikkan specificity + !important */
+.btn.rad-btn-detail,
+.btn.rad-btn-summary,
+button.rad-btn-detail,
+button.rad-btn-summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 1.1rem !important;
+  border: none !important;
+  border-radius: 3px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
 }
 
-.rad-btn-detail {
-  background: #5b9bd5;
+.btn.rad-btn-detail,
+button.rad-btn-detail {
+  background: #5b9bd5 !important;
+  background-color: #5b9bd5 !important;
 }
 
-.rad-btn-detail:hover:not(:disabled) {
-  background: #4a8ac4;
-  color: #fff;
+.btn.rad-btn-detail:hover:not(:disabled),
+button.rad-btn-detail:hover:not(:disabled) {
+  background: #4a8ac4 !important;
+  background-color: #4a8ac4 !important;
+  color: #fff !important;
 }
 
-.rad-btn-summary {
-  background: #70ad47;
+.btn.rad-btn-summary,
+button.rad-btn-summary {
+  background: #70ad47 !important;
+  background-color: #70ad47 !important;
 }
 
-.rad-btn-summary:hover:not(:disabled) {
-  background: #5f9a3a;
-  color: #fff;
+.btn.rad-btn-summary:hover:not(:disabled),
+button.rad-btn-summary:hover:not(:disabled) {
+  background: #5f9a3a !important;
+  background-color: #5f9a3a !important;
+  color: #fff !important;
 }
 
-.rad-btn-detail:disabled,
-.rad-btn-summary:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
+.btn.rad-btn-detail:disabled,
+.btn.rad-btn-summary:disabled,
+button.rad-btn-detail:disabled,
+button.rad-btn-summary:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+  color: #fff !important;
 }
 
 .rad-msg {
@@ -112,7 +148,10 @@
 }
 
 @media (max-width: 640px) {
+  .rad-date-field .react-datepicker-wrapper,
+  .rad-date-field .react-datepicker__input-container,
   .rad-date-input {
-    width: 132px;
+    width: 132px !important;
+    max-width: 132px !important;
   }
 }

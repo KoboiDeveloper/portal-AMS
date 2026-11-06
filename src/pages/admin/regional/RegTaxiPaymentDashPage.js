@@ -290,7 +290,7 @@ const RegTaxiPaymentDashPage = () => {
               <div className="rad-actions">
                 <button
                   type="button"
-                  className="btn rad-btn-detail"
+                  className="btn btn-primary rad-btn-detail"
                   disabled={loading || !fromDate || !toDate}
                   onClick={runAnalisa}
                 >
