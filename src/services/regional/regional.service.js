@@ -26,6 +26,10 @@ export const createRegionalService = (resourcePath, { crud = true } = {}) => {
 export const getRegionalDashboardSummary = (params = {}) =>
   api.get("/regional/dashboard/summary", { params });
 
+/** Taxi Analisa Payment — GET /regional/taxi/payment-analisa (API → SP, never call SP from FE) */
+export const getTaxiPaymentAnalisa = (params = {}) =>
+  api.get("/regional/taxi/payment-analisa", { params });
+
 /** SSE URL for live dashboard (EventSource — pass access_token in query). */
 export const regionalDashboardStreamUrl = (params = {}) => {
   const base = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8000"}/api/v1`;

@@ -1,0 +1,99 @@
+/* Analisa Payment dashboard */
+
+.tap-page {
+  max-width: 1100px;
+}
+
+.tap-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0 0.85rem;
+}
+
+.tap-kpi {
+  border: 1px solid #e5e9f2;
+  background: #f8f9fc;
+  border-radius: 4px;
+  padding: 0.65rem 0.75rem;
+}
+
+.tap-kpi-label {
+  font-size: 0.72rem;
+  color: #8094ae;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tap-kpi-value {
+  margin-top: 0.2rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #364a63;
+  font-variant-numeric: tabular-nums;
+}
+
+.tap-kpi-value.is-ok {
+  color: #1ee0ac;
+}
+
+.tap-kpi-value.is-bad {
+  color: #e85347;
+}
+
+.tap-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 0.75rem;
+}
+
+.tap-card-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #364a63;
+}
+
+.tap-chart {
+  height: 220px;
+}
+
+.tap-method-table-wrap {
+  margin-top: 0.75rem;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.tap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.tap-table th,
+.tap-table td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid #eef1f6;
+  white-space: nowrap;
+}
+
+.tap-table th {
+  color: #8094ae;
+  font-weight: 700;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+.tap-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .tap-grid {
+    grid-template-columns: 1fr;
+  }
+}
