@@ -306,13 +306,21 @@ const RegTaxiPaymentDashPage = () => {
                 <div className="tap-grid tap-grid--selisih mt-3">
                   <div className="card card-bordered tap-card">
                     <div className="card-inner">
-                      <h6 className="tap-card-title">Analisa selisih per store</h6>
-                      <p className="tap-help text-soft">
-                        Selisih = Payment − Summary. Negatif = payment kurang dari PLU summary.
-                      </p>
+                      <div className="tap-card-head">
+                        <h6 className="tap-card-title">Analisa selisih per store</h6>
+                        <p className="tap-help text-soft">
+                          Selisih = Payment − Summary. Negatif = payment kurang dari PLU summary.
+                        </p>
+                      </div>
                       {selisihByStore.length ? (
                         <div className="tap-method-table-wrap">
-                          <table className="tap-table">
+                          <table className="tap-table tap-table--gap">
+                            <colgroup>
+                              <col className="tap-col-key" />
+                              <col className="tap-col-num" />
+                              <col className="tap-col-num" />
+                              <col className="tap-col-num" />
+                            </colgroup>
                             <thead>
                               <tr>
                                 <th>Store</th>
@@ -346,30 +354,21 @@ const RegTaxiPaymentDashPage = () => {
 
                   <div className="card card-bordered tap-card">
                     <div className="card-inner">
-                      <h6 className="tap-card-title">Selisih per hari</h6>
-                      <p className="tap-help text-soft">
-                        Chart + tabel harian. Scroll tabel bila data panjang.
-                      </p>
-                      {selisihDayChart ? (
-                        <div className="tap-chart">
-                          <Bar
-                            data={selisihDayChart}
-                            options={{
-                              responsive: true,
-                              maintainAspectRatio: false,
-                              plugins: { legend: { display: false } },
-                              scales: {
-                                y: {
-                                  ticks: { callback: (v) => fmt(v) },
-                                },
-                              },
-                            }}
-                          />
-                        </div>
-                      ) : null}
+                      <div className="tap-card-head">
+                        <h6 className="tap-card-title">Selisih per hari</h6>
+                        <p className="tap-help text-soft">
+                          Selisih = Payment − Summary per tanggal. Scroll bila data panjang.
+                        </p>
+                      </div>
                       {selisihByDay.length ? (
                         <div className="tap-method-table-wrap">
-                          <table className="tap-table">
+                          <table className="tap-table tap-table--gap">
+                            <colgroup>
+                              <col className="tap-col-key" />
+                              <col className="tap-col-num" />
+                              <col className="tap-col-num" />
+                              <col className="tap-col-num" />
+                            </colgroup>
                             <thead>
                               <tr>
                                 <th>Tanggal</th>
@@ -401,6 +400,29 @@ const RegTaxiPaymentDashPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {selisihDayChart ? (
+                  <div className="card card-bordered tap-card mt-3">
+                    <div className="card-inner">
+                      <h6 className="tap-card-title">Chart selisih per hari</h6>
+                      <div className="tap-chart tap-chart--wide">
+                        <Bar
+                          data={selisihDayChart}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                              y: {
+                                ticks: { callback: (v) => fmt(v) },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="tap-grid">
                   <div className="card card-bordered tap-card">

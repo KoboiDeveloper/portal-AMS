@@ -55,9 +55,16 @@
   color: #8094ae;
 }
 
+.tap-card-head {
+  flex: 0 0 auto;
+  min-height: 3.4rem;
+}
+
 .tap-help {
   font-size: 0.75rem;
   margin: -0.25rem 0 0.55rem;
+  min-height: 2.1em;
+  line-height: 1.35;
 }
 
 .tap-table .is-bad {
@@ -143,34 +150,52 @@
   flex: 0 0 auto;
 }
 
+.tap-chart--wide {
+  height: 200px;
+}
+
 .tap-method-table-wrap {
-  margin-top: 0.75rem;
+  margin-top: 0.35rem;
   flex: 1 1 auto;
-  min-height: 180px;
+  min-height: 0;
   max-height: 260px;
   overflow: auto;
 }
 
-.tap-grid--selisih .tap-method-table-wrap {
-  max-height: none;
-  min-height: 0;
+.tap-grid--selisih {
+  grid-template-columns: 1fr 1fr;
 }
 
 .tap-grid--selisih .tap-card > .card-inner {
-  min-height: 420px;
+  min-height: 360px;
+}
+
+.tap-grid--selisih .tap-method-table-wrap {
+  max-height: none;
 }
 
 .tap-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.75rem;
 }
 
+.tap-table--gap .tap-col-key {
+  width: 22%;
+}
+
+.tap-table--gap .tap-col-num {
+  width: 26%;
+}
+
 .tap-table th,
 .tap-table td {
-  padding: 0.3rem 0.4rem;
+  padding: 0.35rem 0.45rem;
   border-bottom: 1px solid #eef1f6;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tap-table th {
@@ -180,9 +205,11 @@
   position: sticky;
   top: 0;
   background: #fff;
+  z-index: 1;
 }
 
-.tap-table .num {
+.tap-table th.num,
+.tap-table td.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
