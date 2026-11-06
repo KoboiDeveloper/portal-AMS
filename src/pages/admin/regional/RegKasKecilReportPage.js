@@ -3,7 +3,6 @@ import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
 import {
   Block,
-  BlockDes,
   BlockHead,
   BlockHeadContent,
   BlockTitle,
@@ -100,31 +99,26 @@ const RegKasKecilReportPage = () => {
               <BlockTitle page tag="h3">
                 Report Kas Kecil
               </BlockTitle>
-              <BlockDes className="text-soft">Filter tahun — acuan xsp_tax_kas_kecil_report</BlockDes>
             </BlockHeadContent>
           </BlockHead>
 
           <Block>
-            <div className="rad-toolbar">
+            <div className="rad-toolbar rad-toolbar--inline">
               <div className="rad-dates">
-                <div className="rad-date-field">
-                  <label className="rad-date-hint" htmlFor="kas-kecil-year">
-                    Year
-                  </label>
-                  <select
-                    id="kas-kecil-year"
-                    className="form-control rad-date-input"
-                    style={{ width: 120 }}
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                  >
-                    {years.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  id="kas-kecil-year"
+                  className="form-control rad-date-input"
+                  style={{ width: 120 }}
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  aria-label="Year"
+                >
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="rad-actions">
                 <button
