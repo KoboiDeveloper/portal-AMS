@@ -280,38 +280,32 @@ const RegTaxiPaymentDashPage = () => {
                   </div>
                 </div>
 
-                <div className="tap-kpis">
-                  <div className="tap-kpi">
-                    <div className="tap-kpi-label">Total Payment</div>
-                    <div className="tap-kpi-value" title={fmt(analisa.total_payment)}>
-                      {fmt(analisa.total_payment)}
-                    </div>
-                  </div>
-                  <div className="tap-kpi">
-                    <div className="tap-kpi-label">Total Summary</div>
-                    <div className="tap-kpi-value" title={fmt(analisa.total_summary)}>
-                      {fmt(analisa.total_summary)}
-                    </div>
-                  </div>
-                  <div className="tap-kpi">
-                    <div className="tap-kpi-label">Trx / Store</div>
-                    <div
-                      className="tap-kpi-value"
-                      title={`${fmt(analisa.trx_count)} / ${fmt(analisa.store_count)}`}
-                    >
-                      {fmt(analisa.trx_count)} / {fmt(analisa.store_count)}
-                    </div>
-                  </div>
-                  <div className="tap-kpi">
-                    <div className="tap-kpi-label">PLU / ≠ Rumus</div>
-                    <div
-                      className="tap-kpi-value"
-                      title={`${fmt(analisa.plu_rows)} / ${fmt(analisa.plu_selisih_rows)}`}
-                    >
-                      {fmt(analisa.plu_rows)} / {fmt(analisa.plu_selisih_rows)}
-                    </div>
-                  </div>
-                </div>
+                <table className="tap-kpi-strip" aria-label="Ringkasan payment">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div className="tap-kpi-label">Total Payment</div>
+                        <div className="tap-kpi-value">{fmt(analisa.total_payment)}</div>
+                      </td>
+                      <td>
+                        <div className="tap-kpi-label">Total Summary</div>
+                        <div className="tap-kpi-value">{fmt(analisa.total_summary)}</div>
+                      </td>
+                      <td>
+                        <div className="tap-kpi-label">Trx / Store</div>
+                        <div className="tap-kpi-value">
+                          {fmt(analisa.trx_count)} / {fmt(analisa.store_count)}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="tap-kpi-label">PLU / ≠ Rumus</div>
+                        <div className="tap-kpi-value">
+                          {fmt(analisa.plu_rows)} / {fmt(analisa.plu_selisih_rows)}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
 
                 <div className="tap-grid tap-grid--selisih mt-3">
                   <div className="card card-bordered tap-card">

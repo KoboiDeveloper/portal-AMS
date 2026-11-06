@@ -77,65 +77,71 @@
   font-weight: 700;
 }
 
-.tap-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 0.65rem;
+/* One table row = 4 equal cells, same height & value baseline — cannot stagger */
+.tap-kpi-strip {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0.65rem 0;
   margin: 0.85rem 0;
 }
 
-.tap-kpi {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.tap-kpi-strip td {
+  position: relative;
+  width: 25%;
+  height: 78px;
+  vertical-align: top;
   box-sizing: border-box;
-  height: 76px;
   border: 1px solid #e5e9f2;
   background: #f8f9fc;
   border-radius: 4px;
-  padding: 0.55rem 0.7rem;
+  padding: 0.55rem 0.7rem 2.1rem;
 }
 
-.tap-kpi-label {
-  flex: 0 0 auto;
-  height: 2.5em;
+.tap-kpi-strip .tap-kpi-label {
+  display: block;
+  height: 2.4em;
   overflow: hidden;
   font-size: 0.7rem;
-  line-height: 1.25;
+  line-height: 1.2;
   color: #8094ae;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
-.tap-kpi-value {
-  flex: 0 0 auto;
-  height: 1.35em;
-  display: flex;
-  align-items: flex-end;
+.tap-kpi-strip .tap-kpi-value {
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 0.55rem;
+  margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
   color: #364a63;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 @media (max-width: 900px) {
-  .tap-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .tap-kpi-strip,
+  .tap-kpi-strip tbody,
+  .tap-kpi-strip tr,
+  .tap-kpi-strip td {
+    display: block;
+    width: 100%;
   }
-}
 
-.tap-kpi-value.is-ok {
-  color: #1ee0ac;
-}
+  .tap-kpi-strip td {
+    margin-bottom: 0.5rem;
+  }
 
-.tap-kpi-value.is-bad {
-  color: #e85347;
+  .tap-kpi-strip {
+    border-spacing: 0;
+  }
 }
 
 .tap-grid {
