@@ -70,10 +70,6 @@
   font-weight: 700;
 }
 
-.tap-method-table-wrap--tall {
-  max-height: 280px;
-}
-
 .tap-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -114,8 +110,24 @@
 
 .tap-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  align-items: stretch;
+}
+
+.tap-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.tap-card > .card-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 .tap-card-title {
@@ -123,16 +135,29 @@
   font-size: 0.875rem;
   font-weight: 700;
   color: #364a63;
+  flex: 0 0 auto;
 }
 
 .tap-chart {
-  height: 220px;
+  height: 160px;
+  flex: 0 0 auto;
 }
 
 .tap-method-table-wrap {
   margin-top: 0.75rem;
-  max-height: 220px;
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: 260px;
   overflow: auto;
+}
+
+.tap-grid--selisih .tap-method-table-wrap {
+  max-height: none;
+  min-height: 0;
+}
+
+.tap-grid--selisih .tap-card > .card-inner {
+  min-height: 420px;
 }
 
 .tap-table {

@@ -303,7 +303,7 @@ const RegTaxiPaymentDashPage = () => {
                   </div>
                 </div>
 
-                <div className="tap-grid mt-3">
+                <div className="tap-grid tap-grid--selisih mt-3">
                   <div className="card card-bordered tap-card">
                     <div className="card-inner">
                       <h6 className="tap-card-title">Analisa selisih per store</h6>
@@ -311,7 +311,7 @@ const RegTaxiPaymentDashPage = () => {
                         Selisih = Payment − Summary. Negatif = payment kurang dari PLU summary.
                       </p>
                       {selisihByStore.length ? (
-                        <div className="tap-method-table-wrap tap-method-table-wrap--tall">
+                        <div className="tap-method-table-wrap">
                           <table className="tap-table">
                             <thead>
                               <tr>
@@ -347,6 +347,9 @@ const RegTaxiPaymentDashPage = () => {
                   <div className="card card-bordered tap-card">
                     <div className="card-inner">
                       <h6 className="tap-card-title">Selisih per hari</h6>
+                      <p className="tap-help text-soft">
+                        Chart + tabel harian. Scroll tabel bila data panjang.
+                      </p>
                       {selisihDayChart ? (
                         <div className="tap-chart">
                           <Bar
