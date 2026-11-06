@@ -248,6 +248,7 @@ import {
   RegRptSalesDetailPage,
   RegRptPaymentPage,
   RegRptArDetailPage,
+  RegTaxiPaymentDashPage,
   RegRptPromosiPage,
   RegRptAsbcQtyPage,
   RegRptKoleksiPage,
@@ -584,6 +585,7 @@ const Router = () => {
             <Route path="hrd/cab/monthly-process" element={<HrdCabMonthlyPage />} />
             <Route path="hrd/cab/payment-request" element={<HrdCabPaymentPage />} />
             <Route path="regional/dashboard" element={<RegDashboardPage />} />
+            <Route path="regional/taxi/payment-dashboard" element={<RegTaxiPaymentDashPage />} />
             <Route path="regional/rpt/sales/total-sales" element={<RegMobileTotSalesPage />} />
             <Route path="regional/mobile/total-sales" element={<RegMobileTotSalesPage />} />
             <Route path="regional/absen/list" element={<RegAbsenListPage />} />

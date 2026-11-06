@@ -1,0 +1,96 @@
+/* AR Detail — Detail payment + Summary PLU */
+
+.rad-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.rad-tab {
+  border: 1px solid #dbdfea;
+  background: #fff;
+  color: #526484;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rad-tab.is-active {
+  background: #364a63;
+  border-color: #364a63;
+  color: #fff;
+}
+
+.rad-compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.75rem;
+  background: #f5f6fa;
+  border: 1px solid #e5e9f2;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+}
+
+.rad-compare strong {
+  color: #364a63;
+}
+
+.rad-compare .rad-diff-ok {
+  color: #1ee0ac;
+  font-weight: 700;
+}
+
+.rad-compare .rad-diff-bad {
+  color: #e85347;
+  font-weight: 700;
+}
+
+.rad-table-wrap {
+  overflow-x: auto;
+}
+
+.rad-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.rad-table th,
+.rad-table td {
+  padding: 0.35rem 0.45rem;
+  border-bottom: 1px solid #e5e9f2;
+  white-space: nowrap;
+}
+
+.rad-table thead th {
+  background: #f5f6fa;
+  color: #526484;
+  font-weight: 700;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.rad-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rad-table tfoot td {
+  background: #f5f6fa;
+  font-weight: 700;
+}
+
+.rad-table tr.rad-selisih td {
+  background: #fff5f4;
+}
+
+.rad-zero {
+  color: #c0c6d4;
+}
