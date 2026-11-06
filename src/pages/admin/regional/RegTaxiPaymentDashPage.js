@@ -283,21 +283,31 @@ const RegTaxiPaymentDashPage = () => {
                 <div className="tap-kpis">
                   <div className="tap-kpi">
                     <div className="tap-kpi-label">Total Payment</div>
-                    <div className="tap-kpi-value">{fmt(analisa.total_payment)}</div>
+                    <div className="tap-kpi-value" title={fmt(analisa.total_payment)}>
+                      {fmt(analisa.total_payment)}
+                    </div>
                   </div>
                   <div className="tap-kpi">
-                    <div className="tap-kpi-label">Total Summary (PLU)</div>
-                    <div className="tap-kpi-value">{fmt(analisa.total_summary)}</div>
+                    <div className="tap-kpi-label">Total Summary</div>
+                    <div className="tap-kpi-value" title={fmt(analisa.total_summary)}>
+                      {fmt(analisa.total_summary)}
+                    </div>
                   </div>
                   <div className="tap-kpi">
-                    <div className="tap-kpi-label">Transaksi / Store</div>
-                    <div className="tap-kpi-value">
+                    <div className="tap-kpi-label">Trx / Store</div>
+                    <div
+                      className="tap-kpi-value"
+                      title={`${fmt(analisa.trx_count)} / ${fmt(analisa.store_count)}`}
+                    >
                       {fmt(analisa.trx_count)} / {fmt(analisa.store_count)}
                     </div>
                   </div>
                   <div className="tap-kpi">
-                    <div className="tap-kpi-label">Baris PLU / Rumus ≠ Total</div>
-                    <div className="tap-kpi-value">
+                    <div className="tap-kpi-label">PLU / ≠ Rumus</div>
+                    <div
+                      className="tap-kpi-value"
+                      title={`${fmt(analisa.plu_rows)} / ${fmt(analisa.plu_selisih_rows)}`}
+                    >
                       {fmt(analisa.plu_rows)} / {fmt(analisa.plu_selisih_rows)}
                     </div>
                   </div>

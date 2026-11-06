@@ -79,7 +79,8 @@
 
 .tap-kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
   gap: 0.65rem;
   margin: 0.85rem 0;
 }
@@ -87,17 +88,20 @@
 .tap-kpi {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 76px;
   border: 1px solid #e5e9f2;
   background: #f8f9fc;
   border-radius: 4px;
-  padding: 0.65rem 0.75rem;
-  min-height: 4.6rem;
+  padding: 0.55rem 0.7rem;
 }
 
 .tap-kpi-label {
   flex: 0 0 auto;
-  min-height: 2.1em;
-  font-size: 0.72rem;
+  height: 2.5em;
+  overflow: hidden;
+  font-size: 0.7rem;
   line-height: 1.25;
   color: #8094ae;
   font-weight: 600;
@@ -106,13 +110,24 @@
 }
 
 .tap-kpi-value {
-  margin-top: auto;
-  padding-top: 0.35rem;
+  flex: 0 0 auto;
+  height: 1.35em;
+  display: flex;
+  align-items: flex-end;
   font-size: 1.05rem;
   font-weight: 700;
   color: #364a63;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .tap-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .tap-kpi-value.is-ok {
