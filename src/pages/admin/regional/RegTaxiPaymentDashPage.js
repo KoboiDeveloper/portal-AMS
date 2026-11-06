@@ -23,6 +23,7 @@ import {
 import AccessGuard from "../../../components/admin/AccessGuard";
 import AppDatePicker from "../../../components/AppDatePicker";
 import { parseAppDate, formatAppDateYmd } from "../../../components/AppDateRangePicker";
+import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
 import { getTaxiPaymentAnalisa } from "../../../services/regional/regional.service";
 import { extractRow, isSuccess } from "../../../lib/response";
 import "./reg-ar-detail.css";
@@ -84,13 +85,52 @@ const parseMaybeJson = (v) => {
   return [];
 };
 
+/** Keep last successful analisa across route changes (same tab). */
+const TAP_CACHE_KEY = "tap.analisa.v2";
+
+const readTapCache = () => {
+  try {
+    const raw = sessionStorage.getItem(TAP_CACHE_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (!p || typeof p !== "object") return null;
+    return p;
+  } catch {
+    return null;
+  }
+};
+
+const writeTapCache = (payload) => {
+  try {
+    sessionStorage.setItem(TAP_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    /* ignore quota / private mode */
+  }
+};
+
+const clearTapCache = () => {
+  try {
+    sessionStorage.removeItem(TAP_CACHE_KEY);
+  } catch {
+    /* ignore */
+  }
+};
+
 const RegTaxiPaymentDashPage = () => {
-  const [fromDate, setFromDate] = useState(monthStartYmd());
-  const [toDate, setToDate] = useState(todayYmd());
+  const [fromDate, setFromDate] = useState(() => {
+    const c = readTapCache();
+    return c?.fromDate && typeof c.fromDate === "string" ? c.fromDate : monthStartYmd();
+  });
+  const [toDate, setToDate] = useState(() => {
+    const c = readTapCache();
+    return c?.toDate && typeof c.toDate === "string" ? c.toDate : todayYmd();
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [analisa, setAnalisa] = useState(null);
-
+  const [analisa, setAnalisa] = useState(() => {
+    const c = readTapCache();
+    return c?.analisa && typeof c.analisa === "object" ? c.analisa : null;
+  });
   const runAnalisa = useCallback(async () => {
     if (!fromDate || !toDate) {
       setError("Pilih tanggal dulu");
@@ -112,12 +152,17 @@ const RegTaxiPaymentDashPage = () => {
       if (!isSuccess(res)) {
         setError(res?.responseMessage || "Gagal analisa");
         setAnalisa(null);
+        clearTapCache();
         return;
       }
-      setAnalisa(extractRow(res) || null);
+      const row = extractRow(res) || null;
+      setAnalisa(row);
+      if (row) writeTapCache({ fromDate, toDate, analisa: row });
+      else clearTapCache();
     } catch (e) {
       setError(e?.message || e?.responseMessage || "Gagal analisa");
       setAnalisa(null);
+      clearTapCache();
     } finally {
       setLoading(false);
     }
@@ -194,11 +239,18 @@ const RegTaxiPaymentDashPage = () => {
 
   const selisih = Number(analisa?.selisih_payment_summary || 0);
   const selisihOk = Math.abs(selisih) < 0.5;
+  const totalRefund = Number(analisa?.REFUND || 0);
+  const summaryNet =
+    analisa?.total_summary_net != null
+      ? Number(analisa.total_summary_net)
+      : Number(analisa?.total_summary || 0) - totalRefund;
+  const scrollRevision = `${analisa ? "ok" : "empty"}-${fromDate}-${toDate}-${loading ? 1 : 0}`;
 
   return (
     <AccessGuard moduleCode="TAXI_PAYMENT_DASH">
       <Head title="Analisa Payment" />
       <Content>
+        <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll">
         <div className="rad-report tap-page">
           <BlockHead size="sm">
             <BlockHeadContent>
@@ -258,7 +310,8 @@ const RegTaxiPaymentDashPage = () => {
                       {fmt(selisih)}
                     </div>
                     <div className="tap-selisih-formula text-soft">
-                      Payment {fmt(analisa.total_payment)} − Summary {fmt(analisa.total_summary)}
+                      Payment {fmt(analisa.total_payment)} − (Summary {fmt(analisa.total_summary)} −
+                      Refund {fmt(totalRefund)}) = {fmt(summaryNet)} net
                     </div>
                     {analisa.selisih_insight ? (
                       <div className="tap-selisih-insight">{analisa.selisih_insight}</div>
@@ -309,7 +362,7 @@ const RegTaxiPaymentDashPage = () => {
                       <div className="tap-card-head">
                         <h6 className="tap-card-title">Analisa selisih per store</h6>
                         <p className="tap-help text-soft">
-                          Selisih = Payment − Summary. Negatif = payment kurang dari PLU summary.
+                          Selisih = Payment − (Summary − Refund). Negatif = payment kurang dari summary net.
                         </p>
                       </div>
                       {selisihByStore.length ? (
@@ -320,12 +373,14 @@ const RegTaxiPaymentDashPage = () => {
                               <col className="tap-col-num" />
                               <col className="tap-col-num" />
                               <col className="tap-col-num" />
+                              <col className="tap-col-num" />
                             </colgroup>
                             <thead>
                               <tr>
                                 <th>Store</th>
                                 <th className="num">Payment</th>
                                 <th className="num">Summary</th>
+                                <th className="num">Refund</th>
                                 <th className="num">Selisih</th>
                               </tr>
                             </thead>
@@ -337,6 +392,7 @@ const RegTaxiPaymentDashPage = () => {
                                     <td>{r.store}</td>
                                     <td className="num">{fmt(r.payment)}</td>
                                     <td className="num">{fmt(r.summary)}</td>
+                                    <td className="num">{fmt(r.refund)}</td>
                                     <td className={`num${Math.abs(g) < 0.5 ? "" : g < 0 ? " is-bad" : " is-warn"}`}>
                                       {fmt(g)}
                                     </td>
@@ -357,7 +413,7 @@ const RegTaxiPaymentDashPage = () => {
                       <div className="tap-card-head">
                         <h6 className="tap-card-title">Selisih per hari</h6>
                         <p className="tap-help text-soft">
-                          Selisih = Payment − Summary per tanggal. Scroll bila data panjang.
+                          Selisih = Payment − (Summary − Refund) per tanggal.
                         </p>
                       </div>
                       {selisihByDay.length ? (
@@ -368,12 +424,14 @@ const RegTaxiPaymentDashPage = () => {
                               <col className="tap-col-num" />
                               <col className="tap-col-num" />
                               <col className="tap-col-num" />
+                              <col className="tap-col-num" />
                             </colgroup>
                             <thead>
                               <tr>
                                 <th>Tanggal</th>
                                 <th className="num">Payment</th>
                                 <th className="num">Summary</th>
+                                <th className="num">Refund</th>
                                 <th className="num">Selisih</th>
                               </tr>
                             </thead>
@@ -385,6 +443,7 @@ const RegTaxiPaymentDashPage = () => {
                                     <td>{r.tanggal}</td>
                                     <td className="num">{fmt(r.payment)}</td>
                                     <td className="num">{fmt(r.summary)}</td>
+                                    <td className="num">{fmt(r.refund)}</td>
                                     <td className={`num${Math.abs(g) < 0.5 ? "" : g < 0 ? " is-bad" : " is-warn"}`}>
                                       {fmt(g)}
                                     </td>
@@ -547,6 +606,7 @@ const RegTaxiPaymentDashPage = () => {
             ) : null}
           </Block>
         </div>
+        </PageSmoothScroll>
       </Content>
     </AccessGuard>
   );

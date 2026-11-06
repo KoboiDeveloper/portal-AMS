@@ -1,7 +1,14 @@
 /* Analisa Payment dashboard — scoped under .tap-page to beat Softnio/Bootstrap */
 
+/*
+  Samakan lebar konten dengan header (.container-fluid.wide-xl = 1240px).
+  Jangan buka max-width container jadi 100vw — itu melebihi header.
+  Cukup isi penuh container (buang max-width 920/1100 di .rad-report/.tap-page).
+*/
+.rad-report.tap-page,
 .tap-page {
-  max-width: 1100px;
+  max-width: none !important;
+  width: 100% !important;
 }
 
 .tap-selisih-hero {
@@ -195,18 +202,21 @@
 }
 
 .tap-grid--selisih .tap-card {
-  min-height: 380px !important;
-  max-height: 380px !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
 }
 
 .tap-grid--selisih .tap-card > .card-inner {
   min-height: 0 !important;
   max-height: none !important;
+  height: auto !important;
 }
 
+/* Page scrolls — jangan kunci scroll di dalam kartu selisih */
 .tap-grid--selisih .tap-method-table-wrap {
   max-height: none !important;
-  overflow: auto !important;
+  overflow: visible !important;
 }
 
 .tap-table {
@@ -217,11 +227,11 @@
 }
 
 .tap-table--gap .tap-col-key {
-  width: 22%;
+  width: 16%;
 }
 
 .tap-table--gap .tap-col-num {
-  width: 26%;
+  width: 21%;
 }
 
 .tap-table th,
@@ -265,7 +275,7 @@
   }
 
   .tap-grid--selisih .tap-card {
-    min-height: 320px !important;
-    max-height: 420px !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 }
