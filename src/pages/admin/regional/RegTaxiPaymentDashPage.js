@@ -424,7 +424,7 @@ const RegTaxiPaymentDashPage = () => {
                   </div>
                 ) : null}
 
-                <div className="tap-grid">
+                <div className="tap-grid mt-4">
                   <div className="card card-bordered tap-card">
                     <div className="card-inner">
                       <h6 className="tap-card-title">Mix metode bayar</h6>
