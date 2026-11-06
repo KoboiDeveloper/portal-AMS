@@ -85,14 +85,20 @@
 }
 
 .tap-kpi {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #e5e9f2;
   background: #f8f9fc;
   border-radius: 4px;
   padding: 0.65rem 0.75rem;
+  min-height: 4.6rem;
 }
 
 .tap-kpi-label {
+  flex: 0 0 auto;
+  min-height: 2.1em;
   font-size: 0.72rem;
+  line-height: 1.25;
   color: #8094ae;
   font-weight: 600;
   text-transform: uppercase;
@@ -100,11 +106,13 @@
 }
 
 .tap-kpi-value {
-  margin-top: 0.2rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
   font-size: 1.05rem;
   font-weight: 700;
   color: #364a63;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
 .tap-kpi-value.is-ok {
