@@ -280,32 +280,28 @@ const RegTaxiPaymentDashPage = () => {
                   </div>
                 </div>
 
-                <table className="tap-kpi-strip" aria-label="Ringkasan payment">
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div className="tap-kpi-label">Total Payment</div>
-                        <div className="tap-kpi-value">{fmt(analisa.total_payment)}</div>
-                      </td>
-                      <td>
-                        <div className="tap-kpi-label">Total Summary</div>
-                        <div className="tap-kpi-value">{fmt(analisa.total_summary)}</div>
-                      </td>
-                      <td>
-                        <div className="tap-kpi-label">Trx / Store</div>
-                        <div className="tap-kpi-value">
-                          {fmt(analisa.trx_count)} / {fmt(analisa.store_count)}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="tap-kpi-label">PLU / ≠ Rumus</div>
-                        <div className="tap-kpi-value">
-                          {fmt(analisa.plu_rows)} / {fmt(analisa.plu_selisih_rows)}
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="tap-kpi-strip" role="group" aria-label="Ringkasan payment">
+                  <div className="tap-kpi-cell">
+                    <span className="tap-kpi-label">Total Payment</span>
+                    <span className="tap-kpi-value">{fmt(analisa.total_payment)}</span>
+                  </div>
+                  <div className="tap-kpi-cell">
+                    <span className="tap-kpi-label">Total Summary</span>
+                    <span className="tap-kpi-value">{fmt(analisa.total_summary)}</span>
+                  </div>
+                  <div className="tap-kpi-cell">
+                    <span className="tap-kpi-label">Trx / Store</span>
+                    <span className="tap-kpi-value">
+                      {fmt(analisa.trx_count)} / {fmt(analisa.store_count)}
+                    </span>
+                  </div>
+                  <div className="tap-kpi-cell">
+                    <span className="tap-kpi-label">PLU / ≠ Rumus</span>
+                    <span className="tap-kpi-value">
+                      {fmt(analisa.plu_rows)} / {fmt(analisa.plu_selisih_rows)}
+                    </span>
+                  </div>
+                </div>
 
                 <div className="tap-grid tap-grid--selisih mt-3">
                   <div className="card card-bordered tap-card">

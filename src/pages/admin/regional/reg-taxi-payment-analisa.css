@@ -1,4 +1,4 @@
-/* Analisa Payment dashboard */
+/* Analisa Payment dashboard — scoped under .tap-page to beat Softnio/Bootstrap */
 
 .tap-page {
   max-width: 1100px;
@@ -67,83 +67,81 @@
   line-height: 1.35;
 }
 
-.tap-table .is-bad {
-  color: #e85347;
-  font-weight: 700;
+/* ---- KPI strip: flex, fixed height, absolute values ---- */
+.tap-page .tap-kpi-strip {
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 14px 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
 }
 
-.tap-table .is-warn {
-  color: #c9a00b;
-  font-weight: 700;
+.tap-page .tap-kpi-strip > .tap-kpi-cell {
+  position: relative !important;
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  height: 80px !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 1px solid #e5e9f2 !important;
+  border-radius: 4px !important;
+  background: #f8f9fc !important;
+  overflow: hidden !important;
 }
 
-/* One table row = 4 equal cells, same height & value baseline — cannot stagger */
-.tap-kpi-strip {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: separate;
-  border-spacing: 0.65rem 0;
-  margin: 0.85rem 0;
+.tap-page .tap-kpi-strip .tap-kpi-label {
+  display: block !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  font-size: 11px !important;
+  line-height: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  color: #8094ae !important;
 }
 
-.tap-kpi-strip td {
-  position: relative;
-  width: 25%;
-  height: 78px;
-  vertical-align: top;
-  box-sizing: border-box;
-  border: 1px solid #e5e9f2;
-  background: #f8f9fc;
-  border-radius: 4px;
-  padding: 0.55rem 0.7rem 2.1rem;
-}
-
-.tap-kpi-strip .tap-kpi-label {
-  display: block;
-  height: 2.4em;
-  overflow: hidden;
-  font-size: 0.7rem;
-  line-height: 1.2;
-  color: #8094ae;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.tap-kpi-strip .tap-kpi-value {
-  position: absolute;
-  left: 0.7rem;
-  right: 0.7rem;
-  bottom: 0.55rem;
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #364a63;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tap-page .tap-kpi-strip .tap-kpi-value {
+  position: absolute !important;
+  left: 12px !important;
+  right: 12px !important;
+  bottom: 10px !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 22px !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  line-height: 22px !important;
+  color: #364a63 !important;
+  font-variant-numeric: tabular-nums !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 @media (max-width: 900px) {
-  .tap-kpi-strip,
-  .tap-kpi-strip tbody,
-  .tap-kpi-strip tr,
-  .tap-kpi-strip td {
-    display: block;
-    width: 100%;
+  .tap-page .tap-kpi-strip {
+    flex-wrap: wrap !important;
   }
 
-  .tap-kpi-strip td {
-    margin-bottom: 0.5rem;
-  }
-
-  .tap-kpi-strip {
-    border-spacing: 0;
+  .tap-page .tap-kpi-strip > .tap-kpi-cell {
+    flex: 1 1 calc(50% - 5px) !important;
+    width: auto !important;
+    max-width: calc(50% - 5px) !important;
   }
 }
 
+/* ---- Side-by-side cards ---- */
 .tap-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -152,18 +150,19 @@
 }
 
 .tap-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
 }
 
 .tap-card > .card-inner {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
 }
 
 .tap-card-title {
@@ -195,12 +194,19 @@
   grid-template-columns: 1fr 1fr;
 }
 
+.tap-grid--selisih .tap-card {
+  min-height: 380px !important;
+  max-height: 380px !important;
+}
+
 .tap-grid--selisih .tap-card > .card-inner {
-  min-height: 360px;
+  min-height: 0 !important;
+  max-height: none !important;
 }
 
 .tap-grid--selisih .tap-method-table-wrap {
-  max-height: none;
+  max-height: none !important;
+  overflow: auto !important;
 }
 
 .tap-table {
@@ -243,8 +249,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tap-table .is-bad {
+  color: #e85347;
+  font-weight: 700;
+}
+
+.tap-table .is-warn {
+  color: #c9a00b;
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .tap-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tap-grid--selisih .tap-card {
+    min-height: 320px !important;
+    max-height: 420px !important;
   }
 }
