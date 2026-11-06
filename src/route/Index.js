@@ -248,6 +248,7 @@ import {
   RegRptSalesDetailPage,
   RegRptPaymentPage,
   RegRptArDetailPage,
+  RegRptKasKecilReportPage,
   RegTaxiPaymentDashPage,
   RegRptPromosiPage,
   RegRptAsbcQtyPage,
@@ -602,6 +603,7 @@ const Router = () => {
             <Route path="regional/rpt/sales/sales-detail" element={<RegRptSalesDetailPage />} />
             <Route path="regional/rpt/sales/payment-detail" element={<RegRptPaymentPage />} />
             <Route path="regional/rpt/sales/ar-detail" element={<RegRptArDetailPage />} />
+            <Route path="regional/rpt/sales/kas-kecil-report" element={<RegRptKasKecilReportPage />} />
             <Route path="regional/rpt/sales/promosi" element={<RegRptPromosiPage />} />
             <Route path="regional/rpt/sales/asbc-qty" element={<RegRptAsbcQtyPage />} />
             <Route path="regional/rpt/sales/koleksi" element={<RegRptKoleksiPage />} />

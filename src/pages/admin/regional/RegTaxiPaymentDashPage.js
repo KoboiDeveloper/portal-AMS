@@ -86,7 +86,7 @@ const parseMaybeJson = (v) => {
 };
 
 /** Keep last successful analisa across route changes (same tab). */
-const TAP_CACHE_KEY = "tap.analisa.v2";
+const TAP_CACHE_KEY = "tap.analisa.v3";
 
 const readTapCache = () => {
   try {
@@ -193,8 +193,22 @@ const RegTaxiPaymentDashPage = () => {
 
   const daily = useMemo(() => parseMaybeJson(analisa?.daily), [analisa]);
   const topStores = useMemo(() => parseMaybeJson(analisa?.top_stores), [analisa]);
-  const selisihByStore = useMemo(() => parseMaybeJson(analisa?.selisih_by_store), [analisa]);
-  const selisihByDay = useMemo(() => parseMaybeJson(analisa?.selisih_by_day), [analisa]);
+  const selisihByStore = useMemo(
+    () =>
+      parseMaybeJson(analisa?.selisih_by_store).filter((r) => {
+        const store = String(r?.store || "").toUpperCase();
+        if (store.startsWith("DS")) return false;
+        return Math.abs(Number(r?.selisih || 0)) >= 0.5;
+      }),
+    [analisa]
+  );
+  const selisihByDay = useMemo(
+    () =>
+      parseMaybeJson(analisa?.selisih_by_day).filter(
+        (r) => Math.abs(Number(r?.selisih || 0)) >= 0.5
+      ),
+    [analisa]
+  );
 
   const dailyChart = useMemo(() => {
     if (!daily.length) return null;

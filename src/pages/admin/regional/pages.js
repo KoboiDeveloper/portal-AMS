@@ -22,6 +22,7 @@ export { default as RegRptDcrPage } from "./RegDcrPage";
 export { default as RegRptSalesDetailPage } from "./RegSalesDetailPage";
 export { default as RegRptPaymentPage } from "./RegPaymentDetailPage";
 export { default as RegRptArDetailPage } from "./RegArDetailPage";
+export { default as RegRptKasKecilReportPage } from "./RegKasKecilReportPage";
 export { default as RegTaxiPaymentDashPage } from "./RegTaxiPaymentDashPage";
 export { default as RegRptPromosiPage } from "./RegPromosiPage";
 export { default as RegRptAsbcQtyPage } from "./RegAsbcQtyPage";
