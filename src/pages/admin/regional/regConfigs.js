@@ -580,7 +580,7 @@ export const regRptPaymentDetail = cfg({
   ],
 });
 
-/* Legacy Seles_ar_Detail.aspx — date range (brand/store hidden for REG) */
+/* Legacy Seles_ar_Detail.aspx — page = RegArDetailPage (Detail payment + Summary PLU) */
 export const regRptArDetail = cfg({
   title: "Ar Detail",
   moduleCode: "REG_RPT_AR_DETAIL",
@@ -589,16 +589,21 @@ export const regRptArDetail = cfg({
   hideSearch: true,
   refreshIcon: { pack: "premium", name: "pencarian", size: 32 },
   columns: [
-    { key: "ID_Store", label: "STORE", size: "md" },
-    { key: "TANGGAL_TRANSAKSI", label: "TANGGAL", size: "md" },
+    { key: "STORE", label: "STORE", size: "md" },
+    { key: "tanggal_transaksi", label: "TANGGAL", size: "md" },
     { key: "CASH", label: "CASH", size: "sm", align: "right" },
     { key: "CARD", label: "CARD", size: "sm", align: "right" },
     { key: "VOUCHER", label: "VOUCHER", size: "sm", align: "right" },
     { key: "OVO", label: "OVO", size: "sm", align: "right" },
-    { key: "KQRIS", label: "K.QRIS", size: "sm", align: "right" },
-    { key: "KATOME", label: "K.ATOME", size: "sm", align: "right" },
-    { key: "SISA_VOUCHER", label: "SISA VOUCHER", size: "sm", align: "right" },
-    { key: "refund", label: "REFUND", size: "sm", align: "right" },
+    { key: "KQRIS", label: "KQRIS", size: "sm", align: "right" },
+    { key: "D_QRIS_BCA", label: "D_QRIS_BCA", size: "sm", align: "right" },
+    { key: "D_QRIS_BNI", label: "D_QRIS_BNI", size: "sm", align: "right" },
+    { key: "D_QRIS_BRI", label: "D_QRIS_BRI", size: "sm", align: "right" },
+    { key: "D_QRIS_MDR", label: "D_QRIS_MDR", size: "sm", align: "right" },
+    { key: "KATOME", label: "KATOME", size: "sm", align: "right" },
+    { key: "KINDODANA", label: "KINDODANA", size: "sm", align: "right" },
+    { key: "SISA_VOUCHER", label: "SISA_VOUCHER", size: "sm", align: "right" },
+    { key: "REFUND", label: "REFUND", size: "sm", align: "right" },
     { key: "TOTAL", label: "TOTAL", size: "md", align: "right" },
   ],
   filterDefs: [
