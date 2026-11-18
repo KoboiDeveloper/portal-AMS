@@ -18,9 +18,9 @@ export const DataTableTitle = ({ ...props }) => {
   );
 };
 
-export const DataTableBody = ({ compact, className, bodyclass, ...props }) => {
+export const DataTableBody = ({ compact, className, bodyclass, style, ...props }) => {
   return (
-    <div className={`card-inner p-0 ${className ? className : ""}`}>
+    <div className={`card-inner p-0 ${className ? className : ""}`} style={style}>
       <div className={`nk-tb-list nk-tb-ulist ${bodyclass ? bodyclass : ""} ${compact ? "is-compact" : ""}`}>
         {props.children}
       </div>
@@ -28,8 +28,8 @@ export const DataTableBody = ({ compact, className, bodyclass, ...props }) => {
   );
 };
 
-export const DataTableHead = ({ ...props }) => {
-  return <div className="nk-tb-item nk-tb-head">{props.children}</div>;
+export const DataTableHead = ({ className, ...props }) => {
+  return <div className={classNames("nk-tb-item nk-tb-head", className)}>{props.children}</div>;
 };
 
 export const DataTableRow = ({ className, size, ...props }) => {

@@ -604,6 +604,7 @@
     margin-bottom: 0.75rem;
   }
 
+  /* Legacy non-SC: nested card. SC (kontrak) = flat putih — override di bawah. */
   .hrd-modal-section {
     margin-bottom: 1.25rem;
     padding: 1rem;
@@ -619,6 +620,45 @@
     text-transform: uppercase;
     color: #64748b;
     margin-bottom: 0.85rem;
+  }
+
+  &.hrd-form-modal--sc {
+    .modal-content {
+      background: #fff;
+    }
+
+    .hrd-modal-body {
+      background: #fff;
+    }
+
+    .hrd-modal-section {
+      margin-bottom: 1rem;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .hrd-modal-section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0 0 0.75rem;
+      padding: 0 0 0.5rem;
+      border-bottom: 1px solid #eceeef;
+      color: #31353b;
+      font-size: 0.75rem;
+    }
+
+    .hrd-modal-section-title::before {
+      content: "";
+      flex: 0 0 3px;
+      align-self: stretch;
+      margin: 1px 0;
+      border-radius: 2px;
+      background: #009a94;
+    }
   }
 
   .hrd-display-value {

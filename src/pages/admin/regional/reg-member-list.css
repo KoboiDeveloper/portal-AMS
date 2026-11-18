@@ -43,10 +43,38 @@
 }
 
 .rml-badge {
+  position: relative;
+  overflow: hidden;
   background: #fff;
   border: 1px solid #e5e9f2;
   border-radius: 0.5rem;
   padding: 0.85rem 1rem;
+}
+
+.rml-badge-art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 48%;
+  pointer-events: none;
+}
+
+.rml-badge-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right 18%;
+  opacity: 0.92;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 32%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 32%);
+}
+
+.rml-badge-title,
+.rml-badge-value,
+.rml-badge-note {
+  position: relative;
+  z-index: 1;
 }
 
 .rml-badge-title {
@@ -103,6 +131,15 @@
   gap: 0.5rem;
 }
 
+.rml-switch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  max-width: min(420px, 100%);
+  text-align: right;
+}
+
 .rml-switch {
   display: inline-flex;
   align-items: center;
@@ -110,6 +147,10 @@
   font-size: 0.8125rem;
   margin: 0;
   cursor: pointer;
+}
+
+.rml-switch-hint {
+  line-height: 1.35;
 }
 
 .rml-filters {

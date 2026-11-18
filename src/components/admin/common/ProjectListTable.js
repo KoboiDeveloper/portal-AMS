@@ -21,8 +21,19 @@ import { findUpper } from "../../../utils/Utils";
 
 const avatarThemes = ["primary", "pink", "purple", "success", "info", "warning", "danger"];
 
+/** SP columns are often UPPERCASE while configs use lowercase. */
+const rowVal = (row, key) => {
+  if (!row || key == null || key === "") return undefined;
+  if (Object.prototype.hasOwnProperty.call(row, key)) {
+    const v = row[key];
+    if (v !== undefined && v !== null && v !== "") return v;
+  }
+  const found = Object.keys(row).find((k) => k.toLowerCase() === String(key).toLowerCase());
+  return found != null ? row[found] : undefined;
+};
+
 const themeForRow = (row, idField) => {
-  const id = String(row[idField] || "");
+  const id = String(rowVal(row, idField) || "");
   let hash = 0;
   for (let i = 0; i < id.length; i += 1) hash = id.charCodeAt(i) + ((hash << 5) - hash);
   return avatarThemes[Math.abs(hash) % avatarThemes.length];
@@ -51,8 +62,8 @@ const toSortable = (value) => {
 };
 
 const compareRows = (a, b, key, direction) => {
-  const left = toSortable(a?.[key]);
-  const right = toSortable(b?.[key]);
+  const left = toSortable(rowVal(a, key));
+  const right = toSortable(rowVal(b, key));
   let cmp = 0;
   if (left.kind === "empty" && right.kind !== "empty") cmp = 1;
   else if (right.kind === "empty" && left.kind !== "empty") cmp = -1;
@@ -61,12 +72,21 @@ const compareRows = (a, b, key, direction) => {
   return direction === "desc" ? -cmp : cmp;
 };
 
+const parseSumNumber = (value) => {
+  if (value == null || value === "") return 0;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const n = Number(String(value).replace(/,/g, "").replace(/\s/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
+
 const ProjectListTable = ({
   columns,
   rows,
   rowKey,
   idField,
+  getRowClassName,
   onEdit,
+  editLabel = "Edit",
   onDelete,
   canEdit,
   canDelete,
@@ -76,6 +96,12 @@ const ProjectListTable = ({
   onPageChange,
   defaultSort = null,
   loading = false,
+  onRowClick,
+  stickyHeader = false,
+  /** If set with stickyHeader, table body scrolls inside; omit to avoid double page scroll. */
+  stickyMaxHeight = null,
+  /** Column keys to sum across all loaded rows (footer row). */
+  footerSumKeys = [],
 }) => {
   const [sortConfig, setSortConfig] = useState(() =>
     defaultSort && defaultSort.key
@@ -109,10 +135,39 @@ const ProjectListTable = ({
   const indexOfFirst = indexOfLast - itemPerPage;
   const currentItems = sortedRows.slice(indexOfFirst, indexOfLast);
 
+  const sumKeySet = useMemo(
+    () => new Set((footerSumKeys || []).map((k) => String(k).toLowerCase())),
+    [footerSumKeys]
+  );
+
+  const footerSums = useMemo(() => {
+    if (!sumKeySet.size) return null;
+    const totals = {};
+    sumKeySet.forEach((k) => {
+      totals[k] = 0;
+    });
+    (sortedRows || []).forEach((row) => {
+      sumKeySet.forEach((k) => {
+        const found = Object.keys(row || {}).find((x) => String(x).toLowerCase() === k);
+        totals[k] += parseSumNumber(found != null ? row[found] : undefined);
+      });
+    });
+    return totals;
+  }, [sortedRows, sumKeySet]);
+
+  const showActionsCol = canEdit || canDelete || extraActions.length > 0 || onRowClick;
+
   return (
-    <DataTable className="card-stretch">
-      <DataTableBody>
-        <DataTableHead className="nk-tb-item nk-tb-head">
+    <DataTable className={`card-stretch${stickyHeader ? " project-list-sticky" : ""}`}>
+      <DataTableBody
+        className={stickyHeader ? "project-list-sticky__body" : undefined}
+        style={
+          stickyHeader && stickyMaxHeight
+            ? { maxHeight: stickyMaxHeight, overflow: "auto" }
+            : undefined
+        }
+      >
+        <DataTableHead className={stickyHeader ? "project-list-sticky__head" : undefined}>
           {columns.map((col) => (
             <DataTableRow key={col.key} size={col.size || undefined}>
               {col.sortable ? (
@@ -129,16 +184,25 @@ const ProjectListTable = ({
               )}
             </DataTableRow>
           ))}
-          {(canEdit || canDelete || extraActions.length > 0) && (
+          {showActionsCol && (
             <DataTableRow className="nk-tb-col-tools text-end">
-              <span className="sub-text">Actions</span>
+              <span className="sub-text" style={{ whiteSpace: "nowrap" }}>
+                Actions
+              </span>
             </DataTableRow>
           )}
         </DataTableHead>
         {!loading &&
           currentItems.length > 0 &&
           currentItems.map((row, idx) => (
-            <DataTableItem key={rowKey ? rowKey(row, idx) : idx}>
+            <DataTableItem
+              key={rowKey ? rowKey(row, idx) : idx}
+              className={[onRowClick ? "marcomm-row-clickable" : "", typeof getRowClassName === "function" ? getRowClassName(row, idx) : ""]
+                .filter(Boolean)
+                .join(" ") || undefined}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              style={onRowClick ? { cursor: "pointer" } : undefined}
+            >
               {columns.map((col) => {
                 if (col.type === "index") {
                   return (
@@ -149,14 +213,17 @@ const ProjectListTable = ({
                 }
 
                 if (col.type === "title") {
-                  const title = row[col.titleKey || col.key] || "-";
-                  const subtitle = row[col.subtitleKey] || row[idField] || "";
+                  const title = rowVal(row, col.titleKey || col.key) || "-";
+                  const subtitle = rowVal(row, col.subtitleKey) || rowVal(row, idField) || "";
                   return (
                     <DataTableRow key={col.key}>
                       <a
                         href="#store"
                         className="project-title"
-                        onClick={(e) => e.preventDefault()}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (onRowClick) onRowClick(row);
+                        }}
                       >
                         <UserAvatar
                           className="sq"
@@ -173,7 +240,7 @@ const ProjectListTable = ({
                 }
 
                 if (col.type === "badge") {
-                  const active = row[col.key];
+                  const active = rowVal(row, col.key);
                   const isActive =
                     active === true ||
                     active === 1 ||
@@ -191,12 +258,15 @@ const ProjectListTable = ({
 
                 return (
                   <DataTableRow key={col.key} size={col.size}>
-                    <span>{col.render ? col.render(row) : row[col.key] ?? "-"}</span>
+                    <span>{col.render ? col.render(row) : rowVal(row, col.key) ?? "-"}</span>
                   </DataTableRow>
                 );
               })}
-              {(canEdit || canDelete || extraActions.length > 0) && (
-                <DataTableRow className="nk-tb-col-tools text-end">
+              {showActionsCol && (
+                <DataTableRow
+                  className="nk-tb-col-tools text-end"
+                  onClick={onRowClick ? (e) => e.stopPropagation() : undefined}
+                >
                   <ul className="nk-tb-actions gx-1">
                     <li>
                       <UncontrolledDropdown>
@@ -205,6 +275,21 @@ const ProjectListTable = ({
                         </DropdownToggle>
                         <DropdownMenu end>
                           <ul className="link-list-opt no-bdr">
+                            {onRowClick && (
+                              <li>
+                                <DropdownItem
+                                  tag="a"
+                                  href="#detail"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    onRowClick(row);
+                                  }}
+                                >
+                                  <Icon name="eye" />
+                                  <span>Detail</span>
+                                </DropdownItem>
+                              </li>
+                            )}
                             {canEdit && (
                               <li>
                                 <DropdownItem
@@ -216,7 +301,7 @@ const ProjectListTable = ({
                                   }}
                                 >
                                   <Icon name="edit" />
-                                  <span>Edit</span>
+                                  <span>{editLabel}</span>
                                 </DropdownItem>
                               </li>
                             )}
@@ -231,7 +316,7 @@ const ProjectListTable = ({
                                   }}
                                 >
                                   <Icon name={action.icon || "lock-alt"} />
-                                  <span>{action.label}</span>
+                                  <span>{typeof action.label === "function" ? action.label(row) : action.label}</span>
                                 </DropdownItem>
                               </li>
                             ))}
@@ -259,6 +344,27 @@ const ProjectListTable = ({
               )}
             </DataTableItem>
           ))}
+        {!loading && footerSums && sortedRows.length > 0 ? (
+          <DataTableItem className="project-list-footer-row">
+            {columns.map((col, colIdx) => {
+              const keyLower = String(col.key || "").toLowerCase();
+              const isSum = sumKeySet.has(keyLower);
+              let text = "";
+              if (colIdx === 0 && !isSum) text = "TOTAL";
+              else if (isSum) {
+                text = (footerSums[keyLower] || 0).toLocaleString("id-ID", {
+                  maximumFractionDigits: 0,
+                });
+              }
+              return (
+                <DataTableRow key={`ft-${col.key}`} size={col.size}>
+                  <span className="fw-bold">{text || (isSum ? "0" : "")}</span>
+                </DataTableRow>
+              );
+            })}
+            {showActionsCol ? <DataTableRow className="nk-tb-col-tools" /> : null}
+          </DataTableItem>
+        ) : null}
       </DataTableBody>
       <div className="card-inner">
         {loading ? (

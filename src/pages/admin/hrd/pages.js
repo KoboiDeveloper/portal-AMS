@@ -2,11 +2,13 @@ import React from "react";
 import HrdListPage from "./HrdListPage";
 import HrdProcessPage from "./HrdProcessPage";
 import HrdSlipGajiPage from "./HrdSlipGajiPage";
+import HrdMasterListPage from "./HrdMasterListPage";
 import * as C from "./hrdConfigs";
 
 export { default as HrdDashboardPage } from "./HrdDashboardPage";
 
 const wrap = (config) => () => <HrdListPage config={config} />;
+const master = (config) => () => <HrdMasterListPage config={config} />;
 
 const process = (cfg) => () => (
   <HrdProcessPage
@@ -16,18 +18,19 @@ const process = (cfg) => () => (
     description={cfg.description}
     fields={cfg.fields}
     dualActions={!!cfg.dualActions}
+    actionLabel={cfg.actionLabel}
   />
 );
 
 export const HrdAbsOnlineAttendancePage = wrap(C.hrdAbsOnlineAttendance);
-export const HrdAbsAllAttendancePage = wrap(C.hrdAbsAllAttendance);
+export { default as HrdAbsAllAttendancePage } from "./HrdAbsAllAttendancePage";
 export { default as HrdAbsPersonelPage } from "./HrdPersonelListPage";
 export { default as HrdPersonelInfoPage } from "./HrdPersonelInfoPage";
 export { default as HrdAbsKontrakPage } from "./HrdPersonelKontrakPage";
-export const HrdAbsStatusPage = wrap(C.hrdAbsStatus);
-export const HrdAbsPromosiPage = wrap(C.hrdAbsPromosi);
-export const HrdAbsMutasiPage = wrap(C.hrdAbsMutasi);
-export const HrdAbsResignPage = wrap(C.hrdAbsResign);
+export { default as HrdAbsStatusPage } from "./HrdPersonelStatusPage";
+export { default as HrdAbsPromosiPage } from "./HrdPersonelPromosiPage";
+export { default as HrdAbsMutasiPage } from "./HrdPersonelMutasiPage";
+export { default as HrdAbsResignPage } from "./HrdPersonelResignPage";
 export const HrdAbsGenerateStorePage = process(C.hrdAbsGenerateStoreProcess);
 export const HrdAbsGenerateNasionalPage = process(C.hrdAbsGenerateNasionalProcess);
 
@@ -36,19 +39,20 @@ export const HrdParDinasPage = wrap(C.hrdParDinas);
 export const HrdParIzinPage = wrap(C.hrdParIzin);
 export const HrdParCutiPage = wrap(C.hrdParCuti);
 export const HrdParSakitPage = wrap(C.hrdParSakit);
-export const HrdParOvertimePage = wrap(C.hrdParOvertime);
+export const HrdParOvertimePage = master(C.hrdParOvertime);
 export const HrdParAlfaPage = wrap(C.hrdParAlfa);
-export const HrdParHolidayPage = wrap(C.hrdParHoliday);
-export const HrdParOtAmountPage = wrap(C.hrdParOtAmount);
-export const HrdParPolicyPage = wrap(C.hrdParPolicy);
-export const HrdParPerusahaanPage = wrap(C.hrdParPerusahaan);
-export const HrdParCabangPage = wrap(C.hrdParCabang);
-export const HrdParDivisiPage = wrap(C.hrdParDivisi);
-export const HrdParDepartemenPage = wrap(C.hrdParDepartemen);
-export const HrdParGolonganPage = wrap(C.hrdParGolongan);
-export const HrdParPangkatPage = wrap(C.hrdParPangkat);
-export const HrdParJabatanPage = wrap(C.hrdParJabatan);
-export const HrdParSmDeptPage = wrap(C.hrdParSmDept);
+export const HrdParHolidayPage = master(C.hrdParHoliday);
+export const HrdParOtAmountPage = master(C.hrdParOtAmount);
+export const HrdParPolicyPage = master(C.hrdParPolicy);
+export { default as HrdParPerusahaanPage } from "./HrdPerusahaanPage";
+export const HrdParCabangPage = master(C.hrdParCabang);
+export const HrdParDivisiPage = master(C.hrdParDivisi);
+export const HrdParDepartemenPage = master(C.hrdParDepartemen);
+export const HrdParGolonganPage = master(C.hrdParGolongan);
+export const HrdParPangkatPage = master(C.hrdParPangkat);
+export const HrdParJabatanPage = master(C.hrdParJabatan);
+export { default as HrdParSmDeptPage } from "./HrdSmDeptListPage";
+export { default as HrdParSmDeptInfoPage } from "./HrdSmDeptInfoPage";
 export const HrdParEomPage = process(C.hrdParEomProcess);
 
 export const HrdRptAbsenTotalPage = wrap(C.hrdRptAbsenTotal);

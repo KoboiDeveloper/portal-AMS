@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Modal, ModalBody, Form, Col, Row, Spinner } from "reactstrap";
+import { NumericFormat } from "react-number-format";
 import { Icon, RSelect } from "../../Component";
 import ModalActions from "./ModalActions";
 import {
@@ -9,6 +10,140 @@ import {
 import { hrdLookupOptions } from "../../../services/hrd/hrd.service";
 import AppDatePicker from "../../AppDatePicker";
 import AppDateRangePicker, { parseAppDate, formatAppDateYmd } from "../../AppDateRangePicker";
+import { isDropboxStoragePath } from "../../../lib/imageStorage";
+import { isSuccess } from "../../../lib/response";
+import { filesService } from "../../../services/files.service";
+
+const FieldImagePreview = ({ src }) => {
+  const raw = String(src || "").trim();
+  const [display, setDisplay] = useState("");
+  const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!raw) {
+      setDisplay("");
+      setStatus("empty");
+      return undefined;
+    }
+    if (isDropboxStoragePath(raw)) {
+      setStatus("loading");
+      const path = raw.startsWith("/") ? raw : `/${raw}`;
+      filesService
+        .getTemporaryLink(path)
+        .then((res) => {
+          if (cancelled) return;
+          const link = res?.data?.temporaryLink;
+          if (isSuccess(res) && link) {
+            setDisplay(link);
+            setStatus("ready");
+          } else {
+            setDisplay("");
+            setStatus("error");
+          }
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setDisplay("");
+          setStatus("error");
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+    if (/^https?:\/\//i.test(raw)) {
+      setDisplay(encodeURI(raw));
+      setStatus("ready");
+      return undefined;
+    }
+    setDisplay("");
+    setStatus("empty");
+    return undefined;
+  }, [raw]);
+
+  if (status === "empty" || status === "idle") return null;
+  if (status === "loading") {
+    return (
+      <div className="hrd-image-preview hrd-image-preview--empty">
+        <Spinner size="sm" />
+      </div>
+    );
+  }
+  if (status === "error" || !display) {
+    return <div className="hrd-image-preview hrd-image-preview--empty">Gambar tidak ditemukan</div>;
+  }
+  return (
+    <div className="hrd-image-preview">
+      <img src={display} alt="" onError={() => setStatus("error")} />
+    </div>
+  );
+};
+
+const FieldImageUpload = ({ field, disabled, onChange }) => {
+  const inputRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const onPick = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.type && !file.type.startsWith("image/")) {
+      setError("File harus berupa gambar");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const res = await filesService.upload(file, {
+        module: field.upload?.module || "promo",
+      });
+      const path = res?.data?.path || res?.data?.pathLower;
+      if (!isSuccess(res) || !path) {
+        setError(res?.responseMessage || "Upload gagal");
+        return;
+      }
+      onChange(path);
+    } catch (err) {
+      setError(err?.responseMessage || err?.message || "Upload gagal");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="hrd-image-upload">
+      <input
+        ref={inputRef}
+        type="file"
+        accept={field.upload?.accept || "image/*"}
+        hidden
+        onChange={onPick}
+      />
+      <button
+        type="button"
+        className="sc-btn sc-btn--soft"
+        disabled={disabled || busy}
+        onClick={() => inputRef.current?.click()}
+      >
+        {busy ? <Spinner size="sm" /> : <Icon name="upload" />}
+        <span>{busy ? "Mengunggah…" : "Ganti gambar"}</span>
+      </button>
+      {error ? <span className="invalid">{error}</span> : null}
+    </div>
+  );
+};
+
+const isCurrencyField = (field) =>
+  field?.format === "currency" ||
+  field?.mask === "currency" ||
+  field?.type === "currency";
+
+const isPercentField = (field) =>
+  field?.format === "percent" ||
+  field?.mask === "percent" ||
+  field?.type === "percent" ||
+  field?.validate === "percent";
 
 const renderFieldInput = (field, value, disabled, onFieldChange, dynamicOptions, formData) => {
   const commonClass = `form-control${disabled ? " bg-lighter" : ""}`;
@@ -58,14 +193,85 @@ const renderFieldInput = (field, value, disabled, onFieldChange, dynamicOptions,
     return (
       <div className="form-control-wrap">
         <RSelect
+          className="ams-rselect hrd-modal-select"
+          classNamePrefix="hrd-ps"
           inputId={field.name}
           isClearable={!field.required}
           isSearchable
           isDisabled={disabled || field.loading}
-          placeholder={field.placeholder || `— ${field.label} —`}
+          placeholder={field.placeholder || `Pilih ${field.label}`}
           options={options}
           value={selected}
-          onChange={(opt) => onFieldChange(field, opt?.value != null ? String(opt.value) : "")}
+          onChange={(opt) => {
+            onFieldChange(field, opt?.value != null ? String(opt.value) : "");
+            /* optional: map lookup option extras → form fields (e.g. nik → nama/dept) */
+            if (field.lookupFill && opt) {
+              Object.entries(field.lookupFill).forEach(([formKey, optKey]) => {
+                const v = opt[optKey];
+                onFieldChange(
+                  { name: formKey },
+                  v == null || v === "" ? "" : String(v)
+                );
+              });
+            }
+          }}
+          menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+          menuPosition="fixed"
+          styles={{
+            control: (base) => ({
+              ...base,
+              minHeight: 36,
+              height: 36,
+              fontSize: "0.8125rem",
+              borderColor: "var(--sc-border, #e3e5e7)",
+              borderRadius: 6,
+              boxShadow: "none",
+            }),
+            valueContainer: (base) => ({
+              ...base,
+              padding: "0 10px",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "nowrap",
+            }),
+            singleValue: (base) => ({
+              ...base,
+              position: "static",
+              transform: "none",
+              margin: 0,
+              lineHeight: "20px",
+              maxWidth: "100%",
+            }),
+            placeholder: (base) => ({
+              ...base,
+              position: "static",
+              transform: "none",
+              margin: 0,
+              lineHeight: "20px",
+            }),
+            input: (base) => ({ ...base, margin: 0, padding: 0 }),
+            // Softnio .form-control-select::after already draws chevron
+            indicatorsContainer: () => ({ display: "none" }),
+            menuPortal: (base) => ({ ...base, zIndex: 10050 }),
+            menu: (base) => ({
+              ...base,
+              zIndex: 10050,
+              fontSize: "0.8125rem",
+              width: "max-content",
+              minWidth: "100%",
+              maxWidth: "min(92vw, 520px)",
+            }),
+            menuList: (base) => ({
+              ...base,
+              overflowX: "hidden",
+            }),
+            option: (base) => ({
+              ...base,
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+            }),
+          }}
         />
       </div>
     );
@@ -117,9 +323,39 @@ const renderFieldInput = (field, value, disabled, onFieldChange, dynamicOptions,
     return <div className="hrd-display-value">{value || "—"}</div>;
   }
 
+  if (field.type === "html_preview") {
+    const raw = String(formData?.[field.source || field.name] || "");
+    const decoded = (() => {
+      if (!raw) return "";
+      if (typeof document === "undefined") return raw;
+      const ta = document.createElement("textarea");
+      ta.innerHTML = raw;
+      return ta.value;
+    })();
+    return (
+      <div className="hrd-html-preview">
+        {decoded ? (
+          <div
+            className="hrd-html-preview__frame"
+            dangerouslySetInnerHTML={{ __html: decoded }}
+          />
+        ) : (
+          <div className="hrd-html-preview__empty">Preview map akan muncul di sini</div>
+        )}
+      </div>
+    );
+  }
+
   if (field.type === "textarea") {
     return (
       <div className="form-control-wrap">
+        {field.helpLink?.href ? (
+          <div className="hrd-field-helplink">
+            <a href={field.helpLink.href} target="_blank" rel="noreferrer">
+              {field.helpLink.label || field.helpLink.href}
+            </a>
+          </div>
+        ) : null}
         <textarea
           id={field.name}
           className={`${commonClass} no-resize`}
@@ -133,16 +369,114 @@ const renderFieldInput = (field, value, disabled, onFieldChange, dynamicOptions,
     );
   }
 
+  if (isCurrencyField(field)) {
+    const showRp =
+      field.showPrefix !== false &&
+      field.hideCurrencyPrefix !== true &&
+      field.prefix !== "";
+    return (
+      <div
+        className={`form-control-wrap hrd-currency-wrap${
+          showRp ? "" : " hrd-currency-wrap--no-prefix"
+        }`}
+      >
+        {showRp ? (
+          <span className="hrd-currency-prefix" aria-hidden>
+            {field.prefix || "Rp"}
+          </span>
+        ) : null}
+        <NumericFormat
+          id={field.name}
+          className={`${commonClass} hrd-currency-input`}
+          value={value ?? ""}
+          thousandSeparator="."
+          decimalSeparator=","
+          decimalScale={field.decimalScale != null ? field.decimalScale : 0}
+          allowNegative={false}
+          disabled={disabled}
+          placeholder={placeholder || "0"}
+          onValueChange={(vals) => onFieldChange(field, vals.value)}
+        />
+      </div>
+    );
+  }
+
+  if (isPercentField(field)) {
+    const maxPct = field.max != null ? Number(field.max) : 100;
+    const scale = field.decimalScale != null ? field.decimalScale : 2;
+    return (
+      <div className="form-control-wrap hrd-percent-wrap">
+        <NumericFormat
+          id={field.name}
+          className={`${commonClass} hrd-percent-input`}
+          value={value ?? ""}
+          thousandSeparator=""
+          decimalSeparator=","
+          decimalScale={scale}
+          fixedDecimalScale={false}
+          allowNegative={false}
+          disabled={disabled}
+          placeholder={placeholder || "0"}
+          isAllowed={(vals) => {
+            const n = vals.floatValue;
+            if (n == null) return true;
+            return n >= 0 && n <= maxPct;
+          }}
+          onValueChange={(vals) => onFieldChange(field, vals.value)}
+        />
+        <span className="hrd-percent-suffix" aria-hidden>
+          %
+        </span>
+      </div>
+    );
+  }
+
+  const inputType = field.inputType || field.type || "text";
+  const isNumber = inputType === "number";
+  const isYear = field.mask === "year" || field.validate === "year";
   return (
-    <div className="form-control-wrap">
+    <div className={`form-control-wrap${isNumber ? " form-control-wrap--number" : ""}`}>
       <input
         id={field.name}
-        type={field.inputType || field.type || "text"}
+        type={isNumber ? "number" : "text"}
         className={commonClass}
         value={value ?? ""}
         disabled={disabled}
         placeholder={placeholder}
+        inputMode={field.inputMode || (isYear ? "numeric" : undefined)}
+        maxLength={field.maxLength != null ? field.maxLength : isYear ? 4 : undefined}
+        pattern={isYear ? "[0-9]{4}" : undefined}
+        autoComplete={isYear ? "off" : undefined}
+        min={field.min != null ? field.min : undefined}
+        max={field.max != null ? field.max : undefined}
+        step={field.step != null ? field.step : isNumber ? 1 : undefined}
         onChange={(e) => onFieldChange(field, e.target.value)}
+        onKeyDown={
+          isYear
+            ? (e) => {
+                /* izinkan kontrol + digit saja */
+                if (
+                  e.ctrlKey ||
+                  e.metaKey ||
+                  e.altKey ||
+                  [
+                    "Backspace",
+                    "Delete",
+                    "Tab",
+                    "Escape",
+                    "Enter",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Home",
+                    "End",
+                  ].includes(e.key)
+                ) {
+                  return;
+                }
+                if (!/^\d$/.test(e.key)) e.preventDefault();
+              }
+            : undefined
+        }
       />
     </div>
   );
@@ -162,15 +496,42 @@ const FormModal = ({
   size = "lg",
   /** "sc" = Seller Center shell (personel / kontrak) */
   variant = "default",
+  /** e.g. [["Pegawai","Kontrak"],["Penempatan"]] → 2 kolom */
+  sectionColumns,
+  className = "",
+  /** Override HRD lookups (marcomm / regional pages pass their own). */
+  lookupOptionsFn,
+  /** Optional: rewrite section title from formData (e.g. STORE RC002). */
+  resolveSectionTitle,
 }) => {
   const isSc = variant === "sc";
+  /* SC = shell kontrak HRD: selalu cols2 (flat + aksen), default 1 section jika tak di-set. */
+  const effectiveSectionColumns = useMemo(() => {
+    if (Array.isArray(sectionColumns) && sectionColumns.length > 0) return sectionColumns;
+    if (isSc) return [["Data"]];
+    return null;
+  }, [sectionColumns, isSc]);
+  const hasCols = Array.isArray(effectiveSectionColumns) && effectiveSectionColumns.length > 0;
+  const scSingleCol =
+    isSc &&
+    hasCols &&
+    effectiveSectionColumns.length === 1 &&
+    (effectiveSectionColumns[0] || []).length <= 1;
   const [errors, setErrors] = useState({});
   const [lookupMap, setLookupMap] = useState({});
   const [lookupsLoading, setLookupsLoading] = useState(false);
 
+  const normalizedFields = useMemo(() => {
+    if (!isSc || !hasCols) return fields || [];
+    const defaultSection = effectiveSectionColumns[0]?.[0] || "Data";
+    return (fields || []).map((field) =>
+      field.section ? field : { ...field, section: defaultSection }
+    );
+  }, [fields, isSc, hasCols, effectiveSectionColumns]);
+
   const lookupFields = useMemo(
-    () => (fields || []).filter((f) => f.lookupKey || f.lookup),
-    [fields]
+    () => (normalizedFields || []).filter((f) => f.lookupKey || f.lookup),
+    [normalizedFields]
   );
 
   useEffect(() => {
@@ -193,7 +554,30 @@ const FormModal = ({
             next[f.name] = [];
             return;
           }
-          next[f.name] = await hrdLookupOptions(type, { parentId });
+          const resolveLookup = lookupOptionsFn || hrdLookupOptions;
+          let opts = await resolveLookup(type, { parentId });
+          /* pastikan value edit ada di options (mis. NIK di luar TOP lookup) */
+          const cur = formData?.[f.name];
+          if (cur != null && String(cur) !== "") {
+            const has = opts.some((o) => String(o.value) === String(cur));
+            if (!has) {
+              const labelBits = [
+                cur,
+                formData?.nama || formData?.employee_name || "",
+              ].filter(Boolean);
+              opts = [
+                {
+                  value: String(cur),
+                  label: labelBits.join(" — "),
+                  nama: formData?.nama || formData?.employee_name || "",
+                  department: formData?.department || "",
+                  jabatan: formData?.jabatan || "",
+                },
+                ...opts,
+              ];
+            }
+          }
+          next[f.name] = opts;
         })
       );
       if (!cancelled) {
@@ -216,10 +600,15 @@ const FormModal = ({
   ]);
 
   const handleFieldChange = (field, rawValue) => {
-    const nextValue = field.mask ? applyFieldMask(field.mask, rawValue) : rawValue;
+    const nextValue =
+      isCurrencyField(field) || isPercentField(field)
+        ? rawValue
+        : field.mask
+          ? applyFieldMask(field.mask, rawValue)
+          : rawValue;
     onChange(field.name, nextValue);
     // clear dependent child when parent changes
-    (fields || []).forEach((child) => {
+    (normalizedFields || []).forEach((child) => {
       if (child.lookupParentField === field.name) {
         onChange(child.name, "");
       }
@@ -235,7 +624,7 @@ const FormModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const nextErrors = validateFormFields(fields, formData);
+    const nextErrors = validateFormFields(normalizedFields, formData);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length === 0) {
       onSubmit();
@@ -268,11 +657,11 @@ const FormModal = ({
         out.push({
           name: `__range_${f.name}_${toDef.name}`,
           type: "daterange",
-          label: "Date Range",
+          label: f.rangeLabel || f.label || "Date Range",
           fromKey: f.name,
           toKey: toDef.name,
           required: !!(f.required || toDef.required),
-          col: f.col || 6,
+          col: f.rangeCol || f.col || 12,
           section: f.section,
         });
         return;
@@ -284,30 +673,186 @@ const FormModal = ({
   };
 
   const sections = useMemo(() => {
-    const list = fields || [];
-    const shape = (fs) => (isSc ? fs : collapseDateRanges(fs));
+    const list = normalizedFields || [];
+    /* Collapse from/to pairs for SC + default (ASP Point Register = Masa Berlaku). */
+    const shape = (fs) => collapseDateRanges(fs);
     const hasSection = list.some((f) => f.section);
     if (!hasSection) return [{ title: null, fields: shape(list) }];
     const map = [];
+    const orphan = [];
     list.forEach((f) => {
-      const secTitle = f.section || "Umum";
-      let bucket = map.find((s) => s.title === secTitle);
+      /* field tanpa section (biasanya hidden id) → jangan buat bucket "Umum" */
+      if (!f.section) {
+        orphan.push(f);
+        return;
+      }
+      let bucket = map.find((s) => s.title === f.section);
       if (!bucket) {
-        bucket = { title: secTitle, fields: [] };
+        bucket = { title: f.section, fields: [] };
         map.push(bucket);
       }
       bucket.fields.push(f);
     });
+    if (orphan.length) {
+      if (map.length) map[0].fields = [...orphan, ...map[0].fields];
+      else map.push({ title: null, fields: orphan });
+    }
     return map.map((s) => ({ ...s, fields: shape(s.fields) }));
-  }, [fields, isSc]);
+  }, [normalizedFields, isSc]);
+
+  const titledSectionCount = useMemo(
+    () =>
+      sections.filter((s) =>
+        s.title &&
+        (s.fields || []).some((f) => f.type !== "hidden" && !f.hidden)
+      ).length,
+    [sections]
+  );
+
+  const renderSection = (section) => {
+    const sectionTitle =
+      section.title && typeof resolveSectionTitle === "function"
+        ? resolveSectionTitle(section.title, formData) || section.title
+        : section.title;
+    return (
+    <div key={section.title || "main"} className="hrd-modal-section">
+      {/* cols2/kontrak: selalu tampilkan judul+aksen. Non-cols: hide jika cuma 1 section. */}
+      {sectionTitle && (hasCols || titledSectionCount > 1) ? (
+        <div className="hrd-modal-section-title">{sectionTitle}</div>
+      ) : null}
+      <Row className="g-3">
+        {section.fields.map((field) => {
+          if (typeof field.visible === "function" && !field.visible(formData)) return null;
+          if (field.type === "hidden" || field.hidden) {
+            return (
+              <React.Fragment key={field.name}>
+                {renderFieldInput(
+                  field,
+                  formData[field.name],
+                  false,
+                  handleFieldChange,
+                  null,
+                  formData
+                )}
+              </React.Fragment>
+            );
+          }
+          const disabled = !!field.disabled;
+          const colSize =
+            field.col ||
+            (field.type === "checkbox" || field.type === "radio"
+              ? 12
+              : field.type === "daterange"
+                ? 6
+              : field.type === "html_preview"
+                ? 12
+                : 6);
+          const dynOpts =
+            field.options && field.options.length
+              ? field.options
+              : lookupMap[field.name];
+          const rangeErr =
+            field.type === "daterange"
+              ? errors[field.fromKey] || errors[field.toKey]
+              : null;
+          const fieldErr = errors[field.name] || rangeErr;
+          const hideLabel = field.hideLabel || field.type === "html_preview";
+
+          return (
+            <Col md={colSize} key={field.name}>
+              <div className={`form-group${fieldErr ? " error" : ""}`}>
+                {!hideLabel && field.type !== "checkbox" && (
+                  <label
+                    className={isSc ? "hrd-form-label" : "form-label"}
+                    htmlFor={field.name}
+                  >
+                    {field.label}
+                    {field.required && <span className="text-danger ms-1">*</span>}
+                  </label>
+                )}
+                {renderFieldInput(
+                  field,
+                  formData[field.name],
+                  disabled,
+                  handleFieldChange,
+                  dynOpts,
+                  formData
+                )}
+                {field.preview ? <FieldImagePreview src={formData[field.name]} /> : null}
+                {field.upload ? (
+                  <FieldImageUpload
+                    field={field}
+                    disabled={disabled}
+                    onChange={(path) => handleFieldChange(field, path)}
+                  />
+                ) : null}
+                {field.help && !fieldErr && (
+                  <span className="form-note">{field.help}</span>
+                )}
+                {fieldErr && <span className="invalid">{fieldErr}</span>}
+              </div>
+            </Col>
+          );
+        })}
+      </Row>
+    </div>
+    );
+  };
+
+  const sectionBlocks = (() => {
+    if (!hasCols) return sections.map(renderSection);
+    const used = new Set();
+    const cols = effectiveSectionColumns.map((titles, idx) => {
+      const items = titles
+        .map((t) => {
+          const sec = sections.find((s) => s.title === t);
+          if (sec) used.add(sec.title);
+          return sec;
+        })
+        .filter(Boolean);
+      return (
+        <div key={`col-${idx}`} className="hrd-modal-col">
+          {items.map(renderSection)}
+        </div>
+      );
+    });
+    const leftover = sections.filter(
+      (s) =>
+        !used.has(s.title) &&
+        (s.fields || []).some((f) => f.type !== "hidden" && !f.hidden)
+    );
+    if (leftover.length) {
+      cols.push(
+        <div key="col-extra" className="hrd-modal-col hrd-modal-col--full">
+          {leftover.map(renderSection)}
+        </div>
+      );
+    }
+    return <div className="hrd-modal-cols">{cols}</div>;
+  })();
+
+  const cls = className || "";
+  const wantWide = cls.includes("hrd-form-modal--wide");
+  const dialogClass = [
+    "modal-dialog-centered",
+    "admin-form-modal",
+    "hrd-form-modal",
+    isSc ? "hrd-form-modal--sc" : "",
+    hasCols ? "hrd-form-modal--cols2" : "",
+    isSc ? "hrd-kontrak-form-anim" : "",
+    scSingleCol && !wantWide && !cls.includes("cols-compact")
+      ? "hrd-form-modal--cols-compact"
+      : "",
+    cls,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <Modal
       isOpen={isOpen}
       toggle={onClose}
-      className={`modal-dialog-centered admin-form-modal hrd-form-modal${
-        isSc ? " hrd-form-modal--sc" : ""
-      }`}
+      className={dialogClass}
       contentClassName={isSc ? "dgs-modal-content" : undefined}
       size={size}
     >
@@ -340,76 +885,7 @@ const FormModal = ({
             </div>
           )}
 
-          {sections.map((section) => (
-            <div key={section.title || "main"} className="hrd-modal-section">
-              {section.title ? (
-                <div className="hrd-modal-section-title">{section.title}</div>
-              ) : null}
-              <Row className="g-3">
-                {section.fields.map((field) => {
-                  if (field.type === "hidden" || field.hidden) {
-                    return (
-                      <React.Fragment key={field.name}>
-                        {renderFieldInput(
-                          field,
-                          formData[field.name],
-                          false,
-                          handleFieldChange,
-                          null,
-                          formData
-                        )}
-                      </React.Fragment>
-                    );
-                  }
-                  const disabled = !!field.disabled;
-                  const colSize =
-                    field.col ||
-                    (field.type === "checkbox" || field.type === "radio"
-                      ? 12
-                      : field.type === "daterange"
-                        ? 6
-                        : 6);
-                  const dynOpts =
-                    field.options && field.options.length
-                      ? field.options
-                      : lookupMap[field.name];
-                  const rangeErr =
-                    field.type === "daterange"
-                      ? errors[field.fromKey] || errors[field.toKey]
-                      : null;
-                  const fieldErr = errors[field.name] || rangeErr;
-
-                  return (
-                    <Col md={colSize} key={field.name}>
-                      <div className={`form-group${fieldErr ? " error" : ""}`}>
-                        {field.type !== "checkbox" && (
-                          <label
-                            className={isSc ? "hrd-form-label" : "form-label"}
-                            htmlFor={field.name}
-                          >
-                            {field.label}
-                            {field.required && <span className="text-danger ms-1">*</span>}
-                          </label>
-                        )}
-                        {renderFieldInput(
-                          field,
-                          formData[field.name],
-                          disabled,
-                          handleFieldChange,
-                          dynOpts,
-                          formData
-                        )}
-                        {field.help && !fieldErr && (
-                          <span className="form-note">{field.help}</span>
-                        )}
-                        {fieldErr && <span className="invalid">{fieldErr}</span>}
-                      </div>
-                    </Col>
-                  );
-                })}
-              </Row>
-            </div>
-          ))}
+          {sectionBlocks}
 
           {isSc ? (
             <div className="dgs-modal-foot hrd-modal-footer hrd-modal-footer--sc">

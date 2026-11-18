@@ -27,6 +27,7 @@ import BankTab from "./personel-info/tabs/BankTab";
 import UploadTab from "./personel-info/tabs/UploadTab";
 import "../dgs/dgs.css";
 import "./hrd-personel.css";
+import "./hrd-kontrak.css";
 
 const service = createHrdService("abs/personel", { crud: true });
 

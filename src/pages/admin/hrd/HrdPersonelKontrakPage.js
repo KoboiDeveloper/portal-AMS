@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Modal, ModalBody } from "reactstrap";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -7,9 +7,13 @@ import AccessGuard from "../../../components/admin/AccessGuard";
 import FormModal from "../../../components/admin/common/FormModal";
 import ConfirmDialog from "../../../components/admin/common/ConfirmDialog";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
-import { extractRows, notifyResponse } from "../../../lib/response";
+import { extractRow, extractRows, notifyResponse } from "../../../lib/response";
 import { normalizeFormPayload, applyFieldMask } from "../../../lib/formFieldUtils";
 import { useActionPermissions } from "../../../hooks/useActionPermissions";
+import {
+  createHrdService,
+  hrdPersonelInfoService,
+} from "../../../services/hrd/hrd.service";
 import {
   ScBadge,
   ScBtn,
@@ -18,8 +22,13 @@ import {
   ScPageHeader,
   ScSkeletonBlock,
 } from "../dgs/sc";
+import { RivStickyThead } from "../regional/RivStickyThead";
 import HrdHScrollRail from "./HrdHScrollRail";
 import { hrdAbsKontrak } from "./hrdConfigs";
+import {
+  applyKontrakAutoFields,
+  terbilangBulan,
+} from "./kontrakFormUtils";
 import "../dgs/dgs.css";
 import "../regional/reg-mp-ar-list.css";
 import "./hrd-personel.css";
@@ -27,7 +36,50 @@ import "./hrd-kontrak.css";
 
 const config = hrdAbsKontrak;
 const service = config.service;
+const personelService = createHrdService("abs/personel", { crud: true });
 const pageSize = config.pageSize || 15;
+
+const SORT_COLS = [
+  { key: "employee_name", label: "Pegawai", type: "str" },
+  { key: "department_name", label: "Departemen", type: "str" },
+  { key: "jabatan_name", label: "Jabatan", type: "str" },
+  { key: "status_pegawai", label: "Status", type: "str" },
+  { key: "tgl_mulai", label: "Mulai", type: "date" },
+  { key: "tanggal_berakhir", label: "Selesai", type: "date" },
+];
+
+const cmpStr = (a, b, dir) => {
+  const c = String(a ?? "").localeCompare(String(b ?? ""), "id", {
+    sensitivity: "base",
+    numeric: true,
+  });
+  return dir === "desc" ? -c : c;
+};
+
+const cmpDate = (a, b, dir, todayMs) => {
+  const da = parseYmd(a)?.getTime();
+  const db = parseYmd(b)?.getTime();
+  if (da == null && db == null) return 0;
+  if (da == null) return 1;
+  if (db == null) return -1;
+  if (dir === "near") {
+    const dist = Math.abs(da - todayMs) - Math.abs(db - todayMs);
+    if (dist !== 0) return dist;
+    return da - db;
+  }
+  return dir === "desc" ? db - da : da - db;
+};
+
+const sortValOf = (row, key) => {
+  if (key === "department_name") return deptNameOf(row);
+  return row?.[key];
+};
+
+const sortMark = (key, sort) => {
+  if (sort.key !== key) return "";
+  if (sort.dir === "near") return " ≈";
+  return sort.dir === "asc" ? " ↑" : " ↓";
+};
 
 const startOfDay = (d) => {
   const x = new Date(d);
@@ -114,19 +166,43 @@ const HrdKontrakSkeleton = () => (
 
 const HrdPersonelKontrakPage = () => {
   const perms = useActionPermissions(config.moduleCode);
+  const tableRef = useRef(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState({ key: "tanggal_berakhir", dir: "near" });
   const [modal, setModal] = useState({ open: false, mode: "add" });
   const [formData, setFormData] = useState(config.initialForm || {});
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, row: null });
   const [expiryPopup, setExpiryPopup] = useState({ open: false, dept: "" });
+  const [pick, setPick] = useState({
+    open: false,
+    q: "",
+    loading: false,
+    rows: [],
+    error: "",
+  });
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const until = useMemo(() => addMonths(today, 2), [today]);
+
+  const toggleSort = useCallback((key) => {
+    const col = SORT_COLS.find((c) => c.key === key);
+    setSort((s) => {
+      if (s.key !== key) {
+        return { key, dir: col?.type === "date" && key === "tanggal_berakhir" ? "near" : "asc" };
+      }
+      if (col?.type === "date" && key === "tanggal_berakhir") {
+        const next = s.dir === "near" ? "asc" : s.dir === "asc" ? "desc" : "near";
+        return { key, dir: next };
+      }
+      return { key, dir: s.dir === "asc" ? "desc" : "asc" };
+    });
+    setPage(1);
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -177,19 +253,104 @@ const HrdPersonelKontrakPage = () => {
     return expiringRows.filter((r) => deptNameOf(r) === expiryPopup.dept);
   }, [expiryPopup, expiringRows]);
 
-  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  /** Default: selesai paling dekat ke hari ini; header klik untuk ganti kolom/arah. */
+  const sortedRows = useMemo(() => {
+    const todayMs = today.getTime();
+    const col = SORT_COLS.find((c) => c.key === sort.key);
+    const type = col?.type || "str";
+    return [...rows].sort((a, b) => {
+      const av = sortValOf(a, sort.key);
+      const bv = sortValOf(b, sort.key);
+      const cmp =
+        type === "date"
+          ? cmpDate(av, bv, sort.dir, todayMs)
+          : cmpStr(av, bv, sort.dir);
+      if (cmp !== 0) return cmp;
+      return Number(b.id || 0) - Number(a.id || 0);
+    });
+  }, [rows, today, sort]);
+
+  const pageCount = Math.max(1, Math.ceil(sortedRows.length / pageSize));
   const pageRows = useMemo(() => {
     const start = (page - 1) * pageSize;
-    return rows.slice(start, start + pageSize);
-  }, [rows, page]);
+    return sortedRows.slice(start, start + pageSize);
+  }, [sortedRows, page]);
 
   const canCreate = !perms.loading && perms.CREATE;
   const canEdit = !perms.loading && perms.UPDATE;
   const canDelete = !perms.loading && perms.DELETE;
 
+  const closePick = () =>
+    setPick({ open: false, q: "", loading: false, rows: [], error: "" });
+
+  const searchPick = useCallback(async (qRaw) => {
+    const q = String(qRaw ?? "").trim();
+    if (q.length < 2) {
+      setPick((p) => ({
+        ...p,
+        rows: [],
+        error: q ? "Ketik minimal 2 karakter" : "",
+        loading: false,
+      }));
+      return;
+    }
+    setPick((p) => ({ ...p, loading: true, error: "" }));
+    try {
+      const res = await personelService.list({ search: q, status: "ACTIVE" });
+      const list = extractRows(res).slice(0, 40);
+      setPick((p) => ({
+        ...p,
+        loading: false,
+        rows: list,
+        error: list.length ? "" : "Pegawai tidak ditemukan",
+      }));
+    } catch (err) {
+      setPick((p) => ({
+        ...p,
+        loading: false,
+        rows: [],
+        error: err?.responseMessage || "Gagal mencari pegawai",
+      }));
+    }
+  }, []);
+
   const openAdd = () => {
     setFormData({ ...(config.initialForm || {}) });
-    setModal({ open: true, mode: "add" });
+    setModal({ open: false, mode: "add" });
+    setPick({ open: true, q: "", loading: false, rows: [], error: "" });
+  };
+
+  const pickEmployee = async (emp) => {
+    const nik = emp?.nik || "";
+    const name = emp?.employee_name || "";
+    const pegawaiId = emp?.id || emp?.pegawai_id || "";
+    let alamat = emp?.alamat || emp?.tinggal_jalan || "";
+    if (!alamat && pegawaiId) {
+      try {
+        const addrRes = await hrdPersonelInfoService.alamat.get(pegawaiId);
+        const addr = extractRow(addrRes);
+        alamat =
+          addr?.tinggal_jalan ||
+          addr?.alamat ||
+          [addr?.tinggal_kelurahan, addr?.tinggal_kecamatan].filter(Boolean).join(", ") ||
+          "";
+      } catch {
+        /* ignore — alamat optional for display */
+      }
+    }
+    if (!alamat) {
+      alamat = [emp?.department, emp?.branch_name].filter(Boolean).join(" · ") || "—";
+    }
+    closePick();
+    setFormData({
+      ...(config.initialForm || {}),
+      pegawai_id: pegawaiId,
+      nik,
+      employee_name: name,
+      alamat,
+    });
+    // slight delay so pick closes then form animates in
+    window.setTimeout(() => setModal({ open: true, mode: "add" }), 120);
   };
 
   const openEdit = (row) => {
@@ -201,6 +362,8 @@ const HrdPersonelKontrakPage = () => {
       }
       mapped[field.name] = value;
     });
+    // sync terbilang dari lama (data lama kadang "DUA TAHUN")
+    if (mapped.lama_bulan) mapped.terbilang = terbilangBulan(mapped.lama_bulan);
     setFormData(mapped);
     setModal({ open: true, mode: "edit", row });
   };
@@ -244,10 +407,19 @@ const HrdPersonelKontrakPage = () => {
     }
   };
 
-  const modalFields = (config.fields || []).map((field) => ({
-    ...field,
-    disabled: field.disabledOnEdit && modal.mode === "edit",
-  }));
+  const hidePegawaiSection =
+    modal.mode === "edit" || (modal.mode === "add" && Boolean(formData.nik));
+
+  const modalFields = (config.fields || [])
+    .filter((field) => !(hidePegawaiSection && field.section === "Pegawai"))
+    .map((field) => ({
+      ...field,
+      disabled: !!(field.disabled || (field.disabledOnEdit && modal.mode === "edit")),
+    }));
+
+  const modalSectionColumns = hidePegawaiSection
+    ? [["Kontrak"], ["Penempatan"]]
+    : [["Pegawai", "Kontrak"], ["Penempatan"]];
 
   const openExpiry = (dept) => setExpiryPopup({ open: true, dept: dept || "" });
 
@@ -255,7 +427,10 @@ const HrdPersonelKontrakPage = () => {
     <AccessGuard moduleCode={config.moduleCode} permission="VIEW">
       <Head title={config.title} />
       <Content>
-        <PageSmoothScroll revision={`${loading ? 1 : 0}-${page}`} className="riv-page-scroll">
+        <PageSmoothScroll
+          revision={`${loading ? 1 : 0}-${page}-${sort.key}-${sort.dir}`}
+          className="riv-page-scroll"
+        >
           <div className="hrd-sc hrd-kontrak dgs-dash sc-scope">
             <ScPageHeader
               title="Personel kontrak"
@@ -300,7 +475,7 @@ const HrdPersonelKontrakPage = () => {
                       {until.toLocaleDateString("id-ID")} · exclude status Tetap
                     </span>
                   </div>
-                  <ScBadge tone={expiringRows.length ? "warn" : "ok"}>
+                  <ScBadge tone={expiringRows.length ? "bad" : "ok"}>
                     {expiringRows.length} kontrak
                   </ScBadge>
                 </div>
@@ -356,22 +531,26 @@ const HrdPersonelKontrakPage = () => {
                   />
                 ) : (
                   <>
-                    <div className="hrd-list-bar">
-                      <span className="hrd-list-bar__count">
-                        {rows.length.toLocaleString("id-ID")} kontrak
-                      </span>
-                    </div>
                     <div className="sc-panel sc-panel--flush">
                       <div className="dgs-table-wrap" style={{ maxHeight: "none", border: 0 }}>
-                        <table className="dgs-table">
+                        <table ref={tableRef} className="dgs-table">
                           <thead>
                             <tr>
-                              <th>Pegawai</th>
-                              <th>Departemen</th>
-                              <th>Jabatan</th>
-                              <th>Status</th>
-                              <th>Mulai</th>
-                              <th>Selesai</th>
+                              {SORT_COLS.map((c) => (
+                                <th
+                                  key={c.key}
+                                  className={`dgs-th-sort${sort.key === c.key ? " is-sorted" : ""}`}
+                                  onClick={() => toggleSort(c.key)}
+                                  title={
+                                    c.key === "tanggal_berakhir"
+                                      ? "Klik: terdekat → lama → baru"
+                                      : "Klik untuk urutkan"
+                                  }
+                                >
+                                  {c.label}
+                                  {sortMark(c.key, sort)}
+                                </th>
+                              ))}
                               <th />
                             </tr>
                           </thead>
@@ -477,27 +656,115 @@ const HrdPersonelKontrakPage = () => {
                         </button>
                       </div>
                     ) : null}
+
+                    <RivStickyThead
+                      tableRef={tableRef}
+                      enabled={!loading && sortedRows.length > 0}
+                      tableClassName="dgs-table"
+                      interactive
+                    />
                   </>
                 )}
               </>
             ) : null}
 
+            <Modal
+              isOpen={pick.open}
+              toggle={closePick}
+              size="md"
+              className="modal-dialog-centered admin-form-modal hrd-form-modal hrd-form-modal--sc hrd-kontrak-pick-modal"
+              contentClassName="dgs-modal-content"
+            >
+              <div className="hrd-modal-head">
+                <div>
+                  <h5 className="hrd-modal-head__title">Pilih pegawai</h5>
+                  <p className="hrd-modal-head__sub">Cari by NIK atau nama, lalu lanjut isi kontrak</p>
+                </div>
+                <button
+                  type="button"
+                  className="hrd-modal-head__close"
+                  onClick={closePick}
+                  aria-label="Tutup"
+                >
+                  <Icon name="cross" />
+                </button>
+              </div>
+              <ModalBody className="dgs-modal-body hrd-modal-body hrd-kontrak-pick-body">
+                <div className="hrd-kontrak-pick-search">
+                  <input
+                    className="form-control"
+                    autoFocus
+                    placeholder="Ketik NIK atau nama…"
+                    value={pick.q}
+                    onChange={(e) => setPick((p) => ({ ...p, q: e.target.value }))}
+                    onKeyDown={(e) => e.key === "Enter" && searchPick(pick.q)}
+                  />
+                  <ScBtn disabled={pick.loading} onClick={() => searchPick(pick.q)}>
+                    <Icon name="search" /> Cari
+                  </ScBtn>
+                </div>
+                {pick.loading ? (
+                  <p className="hrd-kontrak-pick-hint">Mencari…</p>
+                ) : null}
+                {!pick.loading && pick.error ? (
+                  <p className="hrd-kontrak-pick-hint is-muted">{pick.error}</p>
+                ) : null}
+                {!pick.loading && pick.rows.length > 0 ? (
+                  <ul className="hrd-kontrak-pick-list">
+                    {pick.rows.map((emp) => {
+                      const meta =
+                        emp.alamat ||
+                        emp.tinggal_jalan ||
+                        [emp.department, emp.branch_name].filter(Boolean).join(" · ") ||
+                        "—";
+                      return (
+                        <li key={emp.id || emp.nik}>
+                          <button
+                            type="button"
+                            className="hrd-kontrak-pick-item"
+                            onClick={() => pickEmployee(emp)}
+                          >
+                            <strong className="hrd-kontrak-pick-item__name">
+                              {emp.employee_name || "—"}
+                            </strong>
+                            <span className="hrd-kontrak-pick-item__nik">
+                              {emp.nik || "—"}
+                            </span>
+                            <span className="hrd-kontrak-pick-item__addr">{meta}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </ModalBody>
+              <div className="dgs-modal-foot">
+                <ScBtn variant="soft" onClick={closePick}>
+                  Batal
+                </ScBtn>
+              </div>
+            </Modal>
+
             <FormModal
               isOpen={modal.open}
               variant="sc"
               size={config.modalSize || "xl"}
+              className="hrd-kontrak-form-anim"
+              sectionColumns={modalSectionColumns}
               title={
                 modal.mode === "add" ? "Tambah Personel Kontrak" : "Ubah Personel Kontrak"
               }
               subtitle={
-                modal.mode === "edit"
-                  ? [formData.nik, formData.employee_name].filter(Boolean).join(" · ") ||
-                    "Perbarui data kontrak pegawai"
-                  : "Lengkapi data kontrak pegawai baru"
+                [formData.nik, formData.employee_name].filter(Boolean).join(" · ") ||
+                (modal.mode === "edit"
+                  ? "Perbarui data kontrak pegawai"
+                  : "Lengkapi data kontrak pegawai baru")
               }
               fields={modalFields}
               formData={formData}
-              onChange={(name, value) => setFormData((prev) => ({ ...prev, [name]: value }))}
+              onChange={(name, value) => {
+                setFormData((prev) => applyKontrakAutoFields(prev, name, value));
+              }}
               onSubmit={handleSave}
               onClose={() => setModal({ open: false, mode: "add" })}
               loading={saving}
@@ -518,8 +785,8 @@ const HrdPersonelKontrakPage = () => {
             <Modal
               isOpen={expiryPopup.open}
               toggle={() => setExpiryPopup({ open: false, dept: "" })}
-              size="lg"
-              className="modal-dialog-centered admin-form-modal hrd-form-modal hrd-form-modal--sc"
+              size="xl"
+              className="modal-dialog-centered admin-form-modal hrd-form-modal hrd-form-modal--sc hrd-kontrak-expiry-modal"
               contentClassName="dgs-modal-content"
             >
               <div className="hrd-modal-head">
@@ -542,7 +809,7 @@ const HrdPersonelKontrakPage = () => {
                 {popupRows.length === 0 ? (
                   <p className="text-soft mb-0">Tidak ada data.</p>
                 ) : (
-                  <div className="dgs-table-wrap" style={{ maxHeight: 420, border: 0 }}>
+                  <div className="dgs-table-wrap hrd-kontrak-expiry-table" style={{ maxHeight: 420, border: 0 }}>
                     <table className="dgs-table">
                       <thead>
                         <tr>

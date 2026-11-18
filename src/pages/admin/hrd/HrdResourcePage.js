@@ -37,6 +37,7 @@ const HrdResourcePage = ({ routeKey }) => {
         description={processCfg.description}
         fields={processCfg.fields}
         dualActions={!!processCfg.dualActions}
+        actionLabel={processCfg.actionLabel}
       />
     );
   }

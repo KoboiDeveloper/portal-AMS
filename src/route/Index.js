@@ -210,6 +210,7 @@ import {
   HrdParPangkatPage,
   HrdParJabatanPage,
   HrdParSmDeptPage,
+  HrdParSmDeptInfoPage,
   HrdParEomPage,
   HrdRptAbsenTotalPage,
   HrdRptAbsenNasionalPage,
@@ -287,6 +288,39 @@ import {
   RegPrintSsrPage,
   RegPassSoPage,
 } from "../pages/admin/regional/pages";
+import {
+  MarcommDashboardPage,
+  MarcommExportDataMemberPage,
+  MarcommMemberAnalyticsPage,
+  MarcommMemberListPage,
+  MarcommMemberInfoPage,
+  MarcommMemberTransactionPage,
+  MarcommMemberPromoPage,
+  MarcommMemberVoucherPage,
+  MarcommMemberRewardsPage,
+  MarcommMemberMissionPage,
+  MarcommMemberNotificationPage,
+  MarcommVoucherGeneratedPage,
+  MarcommVoucherReportPage,
+  MarcommVoucherUsedPage,
+  MarcommReportGiftPage,
+  MarcommReportRedemptionPage,
+  MarcommReportBirthdayVoucherPage,
+  MarcommMasterPointRegisterPage,
+  MarcommMasterStoreLocationPage,
+  MarcommMasterFaqPage,
+  MarcommMasterVoucherCategoryPage,
+  MarcommMasterGiftCategoryPage,
+  MarcommMasterSyaratKetentuanPage,
+  MarcommMasterFaqCategoryPage,
+  MarcommMasterSpecialHolidayPage,
+  MarcommMasterTierPage,
+  MarcommMissionDetailPage,
+  MarcommGiftDetailPage,
+  MarcommNotificationDetailPage,
+  MarcommVoucherGeneratedEditorPage,
+  MarcommMasterTierDetailPage,
+} from "../pages/admin/marcomm/pages";
 import DgsDashboardPage from "../pages/admin/dgs/DgsDashboardPage";
 import DgsReturDashboardPage from "../pages/admin/dgs/DgsReturDashboardPage";
 import DgsGudangReturPage from "../pages/admin/dgs/DgsGudangReturPage";
@@ -565,6 +599,8 @@ const Router = () => {
             <Route path="hrd/par/pangkat" element={<HrdParPangkatPage />} />
             <Route path="hrd/par/jabatan" element={<HrdParJabatanPage />} />
             <Route path="hrd/par/sm-dept" element={<HrdParSmDeptPage />} />
+            <Route path="hrd/par/sm-dept/new" element={<HrdParSmDeptInfoPage />} />
+            <Route path="hrd/par/sm-dept/:id" element={<HrdParSmDeptInfoPage />} />
             <Route path="hrd/par/eom" element={<HrdParEomPage />} />
             <Route path="hrd/rpt/absen-total" element={<HrdRptAbsenTotalPage />} />
             <Route path="hrd/rpt/absen-nasional" element={<HrdRptAbsenNasionalPage />} />
@@ -585,6 +621,42 @@ const Router = () => {
             <Route path="hrd/cab/thr" element={<HrdCabThrPage />} />
             <Route path="hrd/cab/monthly-process" element={<HrdCabMonthlyPage />} />
             <Route path="hrd/cab/payment-request" element={<HrdCabPaymentPage />} />
+            {/* Marcomm (Marketing) */}
+            <Route path="marcomm/dashboard" element={<MarcommDashboardPage />} />
+            <Route path="marcomm/member/list" element={<MarcommMemberListPage />} />
+            <Route path="marcomm/member/transaction" element={<MarcommMemberTransactionPage />} />
+            <Route path="marcomm/member/info" element={<MarcommMemberInfoPage />} />
+            <Route path="marcomm/member/promo" element={<MarcommMemberPromoPage />} />
+            <Route path="marcomm/member/voucher" element={<MarcommMemberVoucherPage />} />
+            <Route path="marcomm/member/rewards/new" element={<MarcommGiftDetailPage />} />
+            <Route path="marcomm/member/rewards/:id" element={<MarcommGiftDetailPage />} />
+            <Route path="marcomm/member/rewards" element={<MarcommMemberRewardsPage />} />
+            <Route path="marcomm/member/mission/new" element={<MarcommMissionDetailPage />} />
+            <Route path="marcomm/member/mission/:id" element={<MarcommMissionDetailPage />} />
+            <Route path="marcomm/member/mission" element={<MarcommMemberMissionPage />} />
+            <Route path="marcomm/member/notification/new" element={<MarcommNotificationDetailPage />} />
+            <Route path="marcomm/member/notification/:id" element={<MarcommNotificationDetailPage />} />
+            <Route path="marcomm/member/notification" element={<MarcommMemberNotificationPage />} />
+            <Route path="marcomm/member/export" element={<MarcommExportDataMemberPage />} />
+            <Route path="marcomm/member/analytics" element={<MarcommMemberAnalyticsPage />} />
+            <Route path="marcomm/voucher/generated/new" element={<MarcommVoucherGeneratedEditorPage />} />
+            <Route path="marcomm/voucher/generated/:id" element={<MarcommVoucherGeneratedEditorPage />} />
+            <Route path="marcomm/voucher/generated" element={<MarcommVoucherGeneratedPage />} />
+            <Route path="marcomm/voucher/report" element={<MarcommVoucherReportPage />} />
+            <Route path="marcomm/voucher/used" element={<MarcommVoucherUsedPage />} />
+            <Route path="marcomm/report/gift" element={<MarcommReportGiftPage />} />
+            <Route path="marcomm/report/redemption" element={<MarcommReportRedemptionPage />} />
+            <Route path="marcomm/report/birthday-voucher" element={<MarcommReportBirthdayVoucherPage />} />
+            <Route path="marcomm/master/point-register" element={<MarcommMasterPointRegisterPage />} />
+            <Route path="marcomm/master/store-location" element={<MarcommMasterStoreLocationPage />} />
+            <Route path="marcomm/master/faq" element={<MarcommMasterFaqPage />} />
+            <Route path="marcomm/master/voucher-category" element={<MarcommMasterVoucherCategoryPage />} />
+            <Route path="marcomm/master/gift-category" element={<MarcommMasterGiftCategoryPage />} />
+            <Route path="marcomm/master/syarat-ketentuan" element={<MarcommMasterSyaratKetentuanPage />} />
+            <Route path="marcomm/master/faq-category" element={<MarcommMasterFaqCategoryPage />} />
+            <Route path="marcomm/master/special-holiday" element={<MarcommMasterSpecialHolidayPage />} />
+            <Route path="marcomm/master/tier/:id" element={<MarcommMasterTierDetailPage />} />
+            <Route path="marcomm/master/tier" element={<MarcommMasterTierPage />} />
             <Route path="regional/dashboard" element={<RegDashboardPage />} />
             <Route path="regional/taxi/payment-dashboard" element={<RegTaxiPaymentDashPage />} />
             <Route path="regional/rpt/sales/total-sales" element={<RegMobileTotSalesPage />} />

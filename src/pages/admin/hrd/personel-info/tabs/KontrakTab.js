@@ -30,6 +30,10 @@ const KontrakTab = ({ pegawai }) => (
     columns={COLUMNS}
     sortKeys={SORT_KEYS}
     snapshotItems={snapshotItems}
+    sectionColumns={[["Kontrak"], ["Penempatan"]]}
+    hideSections={["Pegawai"]}
+    modalClassName="hrd-kontrak-form-anim"
+    formAuto="kontrak"
   />
 );
 

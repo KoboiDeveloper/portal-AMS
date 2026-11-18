@@ -8,9 +8,10 @@ import { parseAppDate, formatAppDateYmd } from "../../../../components/AppDateRa
 import { buildImageProfileUrl } from "../../../../lib/imageProfile";
 import { extractRow, extractRows, notifyResponse } from "../../../../lib/response";
 import { normalizeFormPayload } from "../../../../lib/formFieldUtils";
-import { hrdLookupOptions } from "../../../../services/hrd/hrd.service";
+import { hrdLookupOptions, hrdPersonelInfoService } from "../../../../services/hrd/hrd.service";
 import { useActionPermissions } from "../../../../hooks/useActionPermissions";
 import { ScBtn, ScEmptyState, ScError, ScSkeletonBlock } from "../../dgs/sc";
+import { applyKontrakAutoFields, terbilangBulan } from "../kontrakFormUtils";
 
 export const PERSONEL_MODULE = "HRD_ABS_PERSONEL";
 
@@ -328,6 +329,15 @@ export const PersonelSubTable = ({
   emptyHint,
   onRows,
   idField = "id",
+  /** e.g. [["Kontrak"],["Penempatan"]] */
+  sectionColumns,
+  modalClassName = "",
+  /** section titles to hide (e.g. Pegawai — sudah di subtitle) */
+  hideSections = NO_LOCK,
+  /** "kontrak" | "status" | "promosi" */
+  formAuto = "",
+  /** "table" | "stack" — stack = list card, nomor+tanggal digabung */
+  listMode = "table",
 }) => {
   const perms = useActionPermissions(moduleCode);
   const canCreate = !perms.loading && perms.CREATE;
@@ -369,16 +379,110 @@ export const PersonelSubTable = ({
     load();
   }, [load]);
 
-  const openAdd = () => {
-    setFormData({ ...baseForm, ...(prefill || {}) });
+  const mapStatusAliases = (detail, mapped) => {
+    const out = { ...mapped };
+    const pick = (...vals) => vals.find((v) => v != null && v !== "" && v !== "—" && v !== " - ");
+    if (!pick(out.no_status)) out.no_status = pick(detail.nomor, detail.no_status) || out.no_status || "";
+    if (!pick(out.tanggal_aktif)) {
+      out.tanggal_aktif = pick(detail.tanggal_efektif, detail.tanggal_aktif) || out.tanggal_aktif || "";
+    }
+    if (!pick(out.tanggal_surat_status)) {
+      out.tanggal_surat_status =
+        pick(detail.tanggal_surat_status, detail.tanggal_status) || out.tanggal_surat_status || "";
+    }
+    if (!pick(out.status_sebelum)) {
+      out.status_sebelum =
+        pick(detail.status_sebelum, detail.status_lama, detail.status_baru) || out.status_sebelum || "—";
+    }
+    if (!pick(out.group_pegawai_sebelum)) {
+      out.group_pegawai_sebelum =
+        pick(detail.group_pegawai_sebelum, detail.group_lama, detail.group_baru) ||
+        out.group_pegawai_sebelum ||
+        "—";
+    }
+    if (!pick(out.status_sekarang) && detail.status_sekarang != null) {
+      out.status_sekarang = String(detail.status_sekarang);
+    }
+    if (!pick(out.group_sekarang) && detail.group_sekarang != null) {
+      out.group_sekarang = String(detail.group_sekarang);
+    }
+    if (!pick(out.catatan) && detail.catatan != null) out.catatan = detail.catatan;
+    if (detail.pegawai_id) out.pegawai_id = detail.pegawai_id;
+    return out;
+  };
+
+  const openAdd = async () => {
+    let mapped = { ...baseForm, ...(prefill || {}) };
+    if (formAuto === "kontrak" && mapped.lama_bulan) {
+      mapped.terbilang = terbilangBulan(mapped.lama_bulan);
+    }
+    if (formAuto === "status" && rows.length) {
+      const latest = [...rows].sort((a, b) => Number(b.id || 0) - Number(a.id || 0))[0];
+      mapped = mapStatusAliases(
+        {
+          status_sebelum: latest?.status_baru || latest?.status_lama,
+          group_pegawai_sebelum: latest?.group_baru || latest?.group_lama,
+        },
+        mapped
+      );
+    }
+    if (formAuto === "promosi" && pegawaiId) {
+      try {
+        const last = extractRow(await hrdPersonelInfoService.promosiLast(pegawaiId));
+        if (last) {
+          mapped.department_sebelum = last.department_sebelum || "—";
+          mapped.pangkat_sebelum = last.pangkat_sebelum || "—";
+          mapped.jabatan_sebelum = last.jabatan_sebelum || "—";
+          mapped.golongan_sebelum = last.golongan_sebelum || "—";
+          mapped.tingkat_sebelum = last.tingkat_sebelum || "—";
+          if (last.department_sebelum_id != null) {
+            mapped.department_sebelum_id = String(last.department_sebelum_id);
+          }
+          if (last.pangkat_sebelum_id != null) {
+            mapped.pangkat_sebelum_id = String(last.pangkat_sebelum_id);
+          }
+          if (last.jabatan_sebelum_id != null) {
+            mapped.jabatan_sebelum_id = String(last.jabatan_sebelum_id);
+          }
+          if (last.golongan_sebelum_id != null) {
+            mapped.golongan_sebelum_id = String(last.golongan_sebelum_id);
+          }
+          if (last.tingkat_sebelum_id != null) {
+            mapped.tingkat_sebelum_id = String(last.tingkat_sebelum_id);
+          }
+        }
+      } catch {
+        /* fallback: latest list row label */
+        if (rows.length) {
+          const latest = [...rows].sort((a, b) => Number(b.id || 0) - Number(a.id || 0))[0];
+          mapped.jabatan_sebelum = latest?.jabatan_sekarang || latest?.jabatan_sebelum || "—";
+        }
+      }
+    }
+    setFormData(mapped);
     setModal({ open: true, mode: "add", row: null });
   };
 
-  const openEdit = (row) => {
-    const mapped = { ...baseForm, ...(prefill || {}) };
+  const openEdit = async (row) => {
+    let detail = row;
+    try {
+      if (row?.[idField] != null && service?.get) {
+        const res = await service.get(row[idField]);
+        detail = { ...row, ...(extractRow(res) || {}) };
+      }
+    } catch {
+      detail = row;
+    }
+    let mapped = { ...baseForm, ...(prefill || {}) };
     fields.forEach((f) => {
-      if (row[f.name] != null) mapped[f.name] = toFormValue(row[f.name], f.type);
+      if (detail[f.name] != null) mapped[f.name] = toFormValue(detail[f.name], f.type);
     });
+    if (formAuto === "kontrak" && mapped.lama_bulan) {
+      mapped.terbilang = terbilangBulan(mapped.lama_bulan);
+    }
+    if (formAuto === "status" || fields.some((f) => f.name === "status_sebelum")) {
+      mapped = mapStatusAliases(detail, mapped);
+    }
     setFormData(mapped);
     setModal({ open: true, mode: "edit", row });
   };
@@ -437,9 +541,23 @@ export const PersonelSubTable = ({
   };
 
   const modalFields = useMemo(
-    () => fields.map((f) => ({ ...f, disabled: f.disabled || lockFields.includes(f.name) })),
-    [fields, lockFields]
+    () =>
+      fields
+        .filter((f) => !hideSections.includes(f.section))
+        .map((f) => ({
+          ...f,
+          disabled: !!(f.disabled || lockFields.includes(f.name)),
+        })),
+    [fields, lockFields, hideSections]
   );
+
+  const handleFormChange = (name, value) => {
+    setFormData((prev) =>
+      formAuto === "kontrak"
+        ? applyKontrakAutoFields(prev, name, value)
+        : { ...prev, [name]: value }
+    );
+  };
 
   const showActions = canEdit || canDelete;
 
@@ -469,7 +587,59 @@ export const PersonelSubTable = ({
         />
       ) : null}
 
-      {!loading && !error && rows.length > 0 ? (
+      {!loading && !error && rows.length > 0 && listMode === "stack" ? (
+        <ul className="hrd-hist-list">
+          {rows.map((row, idx) => {
+            const nomor = row.nomor || row.no_promosi || row.no_mutasi || "—";
+            const tgl = fmtDate(row.tanggal_efektif || row.tanggal_aktif);
+            const from = row.jabatan_sebelum || row.cabang_sebelum || "—";
+            const to = row.jabatan_sekarang || row.cabang_sekarang || "—";
+            return (
+              <li
+                key={row[idField] ?? idx}
+                className={`hrd-hist-item${canEdit ? " is-clickable" : ""}`}
+                onClick={() => canEdit && openEdit(row)}
+              >
+                <div className="hrd-hist-item__main">
+                  <p className="hrd-hist-item__nomor">{nomor}</p>
+                  <p className="hrd-hist-item__meta">{tgl}</p>
+                  <p className="hrd-hist-item__change">
+                    <span>{from}</span>
+                    <Icon name="arrow-right" />
+                    <span>{to}</span>
+                  </p>
+                </div>
+                {showActions ? (
+                  <div className="hrd-row-actions" onClick={(e) => e.stopPropagation()}>
+                    {canEdit ? (
+                      <button
+                        type="button"
+                        className="hrd-icon-btn"
+                        title="Ubah"
+                        onClick={() => openEdit(row)}
+                      >
+                        <Icon name="edit" />
+                      </button>
+                    ) : null}
+                    {canDelete ? (
+                      <button
+                        type="button"
+                        className="hrd-icon-btn is-danger"
+                        title="Hapus"
+                        onClick={() => setConfirm({ open: true, row })}
+                      >
+                        <Icon name="trash" />
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      {!loading && !error && rows.length > 0 && listMode !== "stack" ? (
         <div className="dgs-table-wrap hrd-sub__wrap">
           <table className="dgs-table">
             <thead>
@@ -529,6 +699,8 @@ export const PersonelSubTable = ({
         isOpen={modal.open}
         variant="sc"
         size={modalSize}
+        className={modalClassName}
+        sectionColumns={sectionColumns}
         title={modal.mode === "add" ? `Tambah ${title}` : `Ubah ${title}`}
         subtitle={
           [prefill?.nik, prefill?.employee_name].filter(Boolean).join(" · ") ||
@@ -536,7 +708,7 @@ export const PersonelSubTable = ({
         }
         fields={modalFields}
         formData={formData}
-        onChange={(name, value) => setFormData((prev) => ({ ...prev, [name]: value }))}
+        onChange={handleFormChange}
         onSubmit={handleSave}
         onClose={closeModal}
         loading={saving}
@@ -592,9 +764,18 @@ export const PersonelHistoryPanel = ({
   sortKeys,
   snapshotTitle,
   title,
+  sectionColumns,
+  modalClassName = "",
+  hideSections = NO_LOCK,
+  formAuto = "",
+  listMode = "table",
+  /** async (pegawaiId) => row — override snapshot (e.g. current penempatan) */
+  loadCurrent,
 }) => {
   const [rows, setRows] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [current, setCurrent] = useState(null);
+  const [currentLoaded, setCurrentLoaded] = useState(!loadCurrent);
 
   const latest = useMemo(() => {
     if (!rows.length) return null;
@@ -604,6 +785,29 @@ export const PersonelHistoryPanel = ({
         Number(b.id || 0) - Number(a.id || 0)
     )[0];
   }, [rows, sortKeys]);
+
+  useEffect(() => {
+    if (!loadCurrent || !pegawai?.id) {
+      setCurrent(null);
+      setCurrentLoaded(true);
+      return undefined;
+    }
+    let cancelled = false;
+    setCurrentLoaded(false);
+    loadCurrent(pegawai.id)
+      .then((row) => {
+        if (!cancelled) setCurrent(row || null);
+      })
+      .catch(() => {
+        if (!cancelled) setCurrent(null);
+      })
+      .finally(() => {
+        if (!cancelled) setCurrentLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loadCurrent, pegawai?.id]);
 
   const prefill = useMemo(
     () => ({ nik: pegawai.nik || "", employee_name: pegawai.employee_name || "" }),
@@ -615,22 +819,34 @@ export const PersonelHistoryPanel = ({
     setLoaded(true);
   }, []);
 
+  const snapshotRow = loadCurrent ? current : latest;
+  const showSnapshot = loadCurrent ? currentLoaded : loaded;
+
   return (
     <>
-      {loaded ? (
-        <PersonelSnapshot title={snapshotTitle} items={snapshotItems(latest || {})} row={latest} />
+      {showSnapshot ? (
+        <PersonelSnapshot
+          title={snapshotTitle}
+          items={snapshotItems(snapshotRow || {})}
+          row={snapshotRow}
+        />
       ) : null}
       <PersonelSubTable
         title={title}
         service={config.service}
         pegawaiId={pegawai.id}
-        moduleCode={config.moduleCode}
+        moduleCode={PERSONEL_MODULE}
         columns={columns}
         fields={config.fields}
         modalSize={config.modalSize || "xl"}
         prefill={prefill}
         lockFields={LOCK_NIK}
         onRows={handleRows}
+        sectionColumns={sectionColumns}
+        modalClassName={modalClassName}
+        hideSections={hideSections}
+        formAuto={formAuto}
+        listMode={listMode}
       />
     </>
   );

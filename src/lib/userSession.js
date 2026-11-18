@@ -49,6 +49,9 @@ export const getDefaultHomePath = (user, navigation) => {
   if (roles.includes("HRD")) {
     return "/admin/hrd/dashboard";
   }
+  if (roles.includes("MARKETING")) {
+    return "/admin/marcomm/dashboard";
+  }
   const firstLink = collectMenuLinks(navigation)[0];
   return firstLink || "/admin/dashboard";
 };

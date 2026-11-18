@@ -14,10 +14,8 @@ import {
 } from "../../../components/Component";
 import AccessGuard from "../../../components/admin/AccessGuard";
 import { PageSmoothScroll } from "../../../components/PageSmoothScroll";
-import {
-  createRegionalService,
-  regionalLookupOptions,
-} from "../../../services/regional/regional.service";
+import { createRegionalService } from "../../../services/regional/regional.service";
+import { createMarcommService, marcommLookupOptions } from "../../../services/marcomm/marcomm.service";
 import api from "../../../lib/api";
 import { extractRows, isSuccess } from "../../../lib/response";
 import { RivStickyThead } from "./RivStickyThead";
@@ -25,9 +23,6 @@ import "./reg-reg-report.css";
 import "./reg-sales-detail.css";
 import "./reg-inv-report.css";
 import "./reg-voucher-report.css";
-
-/** Legacy module/Tools/voucher_rpt.aspx — Voucher Fisik */
-const svc = createRegionalService("rpt/voucher/fisik", { crud: false });
 
 const filterSelectStyles = {
   control: (base) => ({ ...base, minHeight: 32, height: 32, fontSize: "0.8125rem" }),
@@ -95,7 +90,22 @@ const BATCH_SORT_COLS = [
   { key: "QTY_Z", label: "Sisa", className: "num" },
 ];
 
-const RegVoucherFisikPage = () => {
+const RegVoucherFisikPage = ({
+  moduleCode = "REG_RPT_VOUCHER_FISIK",
+  pageTitle = "Voucher Fisik",
+  apiScope = "regional",
+  listPath = "rpt/voucher/fisik",
+}) => {
+  const svc = useMemo(
+    () =>
+      apiScope === "marcomm"
+        ? createMarcommService(listPath, { crud: false })
+        : createRegionalService(listPath, { crud: false }),
+    [apiScope, listPath]
+  );
+  const lookupOptions = apiScope === "marcomm" ? marcommLookupOptions : regionalLookupOptions;
+  const detailBase =
+    apiScope === "marcomm" ? `/marcomm/${listPath}` : `/regional/${listPath}`;
   const tableRef = useRef(null);
   const [sm, setSm] = useState(false);
   const [brandId, setBrandId] = useState("");
@@ -116,19 +126,19 @@ const RegVoucherFisikPage = () => {
   const [sortConfig, setSortConfig] = useState({ key: "CRE_DATE", direction: "desc" });
 
   useEffect(() => {
-    regionalLookupOptions("brand").then((opts) => {
+    lookupOptions("brand").then((opts) => {
       const list = Array.isArray(opts) ? opts : [];
       setBrandOpts([ALL_OPT, ...list.filter((o) => String(o.value).toUpperCase() !== "ALL")]);
     });
-  }, []);
+  }, [lookupOptions]);
 
   useEffect(() => {
-    regionalLookupOptions("store", { parentId: brandId === "ALL" ? "" : brandId || "" }).then((opts) => {
+    lookupOptions("store", { parentId: brandId === "ALL" ? "" : brandId || "" }).then((opts) => {
       const list = Array.isArray(opts) ? opts : [];
       setStoreOpts([ALL_OPT, ...list.filter((o) => String(o.value).toUpperCase() !== "ALL")]);
     });
     setStoreId("");
-  }, [brandId]);
+  }, [brandId, lookupOptions]);
 
   const cacheKey = (id, st) => `${id}::${st || "ALL"}`;
   const canSearch = Boolean(brandId && storeId && year);
@@ -169,7 +179,7 @@ const RegVoucherFisikPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [keywords, brandId, storeId, year]);
+  }, [keywords, brandId, storeId, year, svc]);
 
   const loadDetail = useCallback(async (id, st) => {
     if (!id) return;
@@ -177,7 +187,7 @@ const RegVoucherFisikPage = () => {
     setDetailLoading(id);
     setDetailError((prev) => ({ ...prev, [id]: "" }));
     try {
-      const res = await api.get(`/regional/rpt/voucher/fisik/${encodeURIComponent(id)}/detail`, {
+      const res = await api.get(`${detailBase}/${encodeURIComponent(id)}/detail`, {
         params: { status: st || "ALL" },
       });
       if (!isSuccess(res)) {
@@ -190,7 +200,7 @@ const RegVoucherFisikPage = () => {
     } finally {
       setDetailLoading("");
     }
-  }, []);
+  }, [detailBase]);
 
   const toggleOpen = useCallback(
     (id) => {
@@ -241,15 +251,15 @@ const RegVoucherFisikPage = () => {
   };
 
   return (
-    <AccessGuard moduleCode="REG_RPT_VOUCHER_FISIK">
-      <Head title="Voucher Fisik" />
+    <AccessGuard moduleCode={moduleCode}>
+      <Head title={pageTitle} />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll rvch-page">
           <BlockHead size="sm">
             <BlockBetween>
               <BlockHeadContent>
                 <BlockTitle page tag="h3">
-                  Voucher Fisik
+                  {pageTitle}
                 </BlockTitle>
                 <BlockDes className="text-soft">
                   {view

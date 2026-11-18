@@ -1,0 +1,270 @@
+/* List absen Store — grouped by employee */
+.hrd-att .hrd-att__filters {
+  align-items: flex-end;
+}
+
+.hrd-att .form-control-select {
+  width: 100%;
+}
+
+.hrd-att .hrd-ps__control {
+  min-height: 36px !important;
+  height: 36px !important;
+}
+
+.hrd-att .hrd-ps__value-container {
+  height: 100% !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+}
+
+.hrd-att .hrd-ps__single-value,
+.hrd-att .hrd-ps__placeholder {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  line-height: 20px !important;
+  max-width: 100% !important;
+}
+
+.hrd-att .hrd-ps__indicators {
+  display: none !important;
+}
+
+.hrd-att__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+  font-size: 0.8125rem;
+  color: #5b6b7c;
+}
+
+.hrd-att__summary strong {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1a2b3c;
+  font-variant-numeric: tabular-nums;
+}
+
+.hrd-att__summary-sep {
+  color: #c5ccd6;
+  font-weight: 600;
+}
+
+.hrd-att__summary-miss {
+  color: #c2410c;
+}
+
+.hrd-att__summary-miss strong {
+  color: #9a3412;
+}
+
+.hrd-att__board {
+  background: var(--sc-surface, #fff);
+  border: 1px solid var(--sc-border, #e3e5e7);
+  border-radius: 10px;
+  overflow: visible;
+}
+
+/* Satu scroll saja (page) — jangan nested overflow */
+.hrd-att__table-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.hrd-att__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+}
+
+/* Sticky via RivStickyThead only — CSS sticky breaks under Locomotive (white-on-white). */
+.hrd-att__table thead th {
+  position: static;
+  background: #0f2a44 !important;
+  color: #fff !important;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  border-bottom: 1px solid #0a1d30;
+  white-space: nowrap;
+}
+
+.hrd-att__table thead th.hrd-att-sticky-emp {
+  min-width: 220px;
+}
+
+.hrd-att__table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eef1f4;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.hrd-att-sticky-emp {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #fff;
+  min-width: 220px;
+}
+
+.hrd-att-group td {
+  padding: 0;
+  border-bottom: 1px solid #e3e5e7;
+  background: #f7f9fb;
+}
+
+.hrd-att-group__btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.hrd-att-group__btn:hover {
+  background: rgba(0, 154, 148, 0.06);
+}
+
+.hrd-att-group__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hrd-att-group__meta strong {
+  font-size: 0.875rem;
+  color: #1a2b3c;
+  line-height: 1.25;
+}
+
+.hrd-att-group__meta span {
+  font-size: 0.75rem;
+  color: #6c727a;
+}
+
+.hrd-att-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.hrd-att-avatar.tone-0,
+.hrd-att-group.tone-0 .hrd-att-avatar {
+  background: linear-gradient(135deg, #009a94, #2bbbad);
+}
+.hrd-att-avatar.tone-1,
+.hrd-att-group.tone-1 .hrd-att-avatar {
+  background: linear-gradient(135deg, #3d6bf3, #6b8cff);
+}
+.hrd-att-avatar.tone-2,
+.hrd-att-group.tone-2 .hrd-att-avatar {
+  background: linear-gradient(135deg, #e07a2f, #f0a35a);
+}
+.hrd-att-avatar.tone-3,
+.hrd-att-group.tone-3 .hrd-att-avatar {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+.hrd-att-avatar.tone-4,
+.hrd-att-group.tone-4 .hrd-att-avatar {
+  background: linear-gradient(135deg, #db2777, #f472b6);
+}
+
+.hrd-att-day td {
+  background: #fff;
+}
+
+.hrd-att-day:hover td {
+  background: #eef8f7;
+}
+
+.hrd-att-day.is-incomplete td {
+  background: #fff8f0;
+}
+
+.hrd-att-day__emp {
+  color: #6c727a;
+  font-size: 0.75rem;
+}
+
+.hrd-att-day__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c5ccd6;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.hrd-att-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hrd-att-time.is-in {
+  color: #0f766e;
+}
+
+.hrd-att-time.is-out {
+  color: #1d4ed8;
+}
+
+.hrd-att-time.is-miss {
+  color: #c2410c;
+}
+
+/* Locomotive sticky clone — mirror live thead */
+.riv-sticky-clone:has(.hrd-att__table) {
+  z-index: 1040;
+  background: #0f2a44 !important;
+  box-shadow: 0 2px 8px rgba(15, 42, 68, 0.18);
+}
+
+.riv-sticky-clone__table.hrd-att__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+  background: #0f2a44 !important;
+  color: #fff !important;
+}
+
+.riv-sticky-clone__table.hrd-att__table thead th {
+  position: static !important;
+  background: #0f2a44 !important;
+  color: #fff !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 10px 12px !important;
+  border-bottom: 1px solid #0a1d30 !important;
+  white-space: nowrap;
+}
+

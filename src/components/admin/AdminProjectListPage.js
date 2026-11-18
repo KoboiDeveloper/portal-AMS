@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { appPath } from "../../lib/paths";
 import Head from "../../layout/head/Head";
 import Content from "../../layout/content/Content";
 import {
@@ -25,10 +27,12 @@ import ConfirmDialog from "./common/ConfirmDialog";
 import ResetPasswordModal from "./common/ResetPasswordModal";
 import ErrorState from "./common/ErrorState";
 import AccessGuard from "./AccessGuard";
-import { extractRows, notifyResponse } from "../../lib/response";
+import { extractRow, extractRows, isSuccess, notifyResponse } from "../../lib/response";
+import { toast } from "react-toastify";
 import { normalizeFormPayload, applyFieldMask } from "../../lib/formFieldUtils";
 import { useActionPermissions } from "../../hooks/useActionPermissions";
 import { hrdLookupOptions } from "../../services/hrd/hrd.service";
+import { exportStyledXlsx } from "../../lib/exportStyledXlsx";
 import AppDatePicker from "../AppDatePicker";
 import AppDateRangePicker, { parseAppDate } from "../AppDateRangePicker";
 
@@ -75,25 +79,88 @@ const filterSelectStyles = {
   }),
 };
 
+const listStateStorageKey = (config) =>
+  `admin.listState.${config?.moduleCode || config?.path || config?.title || "page"}`;
+
+const readListState = (config) => {
+  if (config?.persistListState === false) return null;
+  try {
+    const raw = sessionStorage.getItem(listStateStorageKey(config));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeListState = (config, payload) => {
+  if (config?.persistListState === false) return;
+  try {
+    sessionStorage.setItem(listStateStorageKey(config), JSON.stringify(payload));
+  } catch {
+    /* ignore quota / private mode */
+  }
+};
+
 const AdminProjectListPage = ({ config }) => {
+  const navigate = useNavigate();
   const resolveLookupOptions = config.lookupOptionsFn || hrdLookupOptions;
+  const savedListState = useMemo(() => readListState(config), [config]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sm, setSm] = useState(false);
-  const [search, setSearch] = useState("");
-  const [isActive, setIsActive] = useState("");
-  const [extraFilters, setExtraFilters] = useState(config.initialExtraFilters || {});
+  const [search, setSearch] = useState(() => savedListState?.search ?? "");
+  const [isActive, setIsActive] = useState(() => savedListState?.isActive ?? "");
+  const [statusPick, setStatusPick] = useState(
+    () => savedListState?.statusPick ?? (config.statusDefault || "")
+  );
+  const statusOptions = Array.isArray(config.statusOptions) ? config.statusOptions : null;
+  const [extraFilters, setExtraFilters] = useState(
+    () => savedListState?.extraFilters ?? (config.initialExtraFilters || {})
+  );
   const [filterOptions, setFilterOptions] = useState({});
   const [modal, setModal] = useState({ open: false, mode: "add" });
   const [formData, setFormData] = useState(config.initialForm || {});
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, row: null });
   const [resetModal, setResetModal] = useState({ open: false, row: null });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => savedListState?.currentPage || 1);
   const [itemPerPage] = useState(config.pageSize || 10);
+  const [exporting, setExporting] = useState(false);
   const extraPermissions = config.extraPermissions || [];
-  const perms = useActionPermissions(config.readOnly ? null : config.moduleCode, extraPermissions);
+  const hasAddMenu = Array.isArray(config.addMenu) && config.addMenu.length > 0;
+  const navCreate = Boolean(config.addPath || hasAddMenu);
+  const perms = useActionPermissions(
+    config.readOnly && !navCreate ? null : config.moduleCode,
+    extraPermissions
+  );
+
+  const resolveDetailHref = useCallback(
+    (row) => {
+      if (typeof config.getDetailHref === "function") return config.getDetailHref(row);
+      if (typeof config.detailPath === "function") return config.detailPath(row);
+      if (config.detailPath && row) {
+        const id = row[config.idField] ?? row.id ?? row.ID;
+        return config.detailPath.replace(":id", encodeURIComponent(String(id ?? "")));
+      }
+      return null;
+    },
+    [config]
+  );
+
+  const goDetail = useCallback(
+    (row) => {
+      if (typeof config.onRowClick === "function") {
+        config.onRowClick(row);
+        return;
+      }
+      const href = resolveDetailHref(row);
+      if (href) navigate(href);
+    },
+    [config, navigate, resolveDetailHref]
+  );
 
   const filterDefs = useMemo(() => {
     if (Array.isArray(config.filterDefs) && config.filterDefs.length) return config.filterDefs;
@@ -143,7 +210,7 @@ const AdminProjectListPage = ({ config }) => {
         out.push({
           kind: "daterange",
           key: `${f.name}__${toDef.name}`,
-          label: "Date Range",
+          label: f.label || toDef?.label || "Date Range",
           fromKey: f.name,
           toKey: toDef.name,
         });
@@ -156,7 +223,7 @@ const AdminProjectListPage = ({ config }) => {
         out.push({
           kind: "daterange",
           key: `${f.name}__${toF.name}`,
-          label: "Date Range",
+          label: f.label || toF?.label || "Date Range",
           fromKey: f.name,
           toKey: toF.name,
         });
@@ -254,16 +321,44 @@ const AdminProjectListPage = ({ config }) => {
       }
       setRows(data);
       setCurrentPage(1);
+      writeListState(config, {
+        search,
+        isActive,
+        statusPick,
+        extraFilters,
+        currentPage: 1,
+        queried: true,
+      });
     } catch (err) {
       setError(err?.responseMessage || "Failed to load data");
       setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [config, listParams, requiredFilterNames, filtersReady]);
+  }, [
+    config,
+    listParams,
+    requiredFilterNames,
+    filtersReady,
+    search,
+    isActive,
+    statusPick,
+    extraFilters,
+  ]);
 
-  /* Never auto-fetch — data only loads when user clicks Cari / refresh.
-     Clear rows if required filters are incomplete so stale data is not shown. */
+  /* Keep filter UI in sync while user edits (before/without reload). */
+  useEffect(() => {
+    writeListState(config, {
+      search,
+      isActive,
+      statusPick,
+      extraFilters,
+      currentPage,
+      queried: Boolean(savedListState?.queried || rows.length),
+    });
+  }, [config, search, isActive, statusPick, extraFilters, currentPage, rows.length, savedListState?.queried]);
+
+  /* Lists with required filters wait for Cari. autoLoad fetches once on open (mpromo.aspx). */
   useEffect(() => {
     if (requiredFilterNames.length && !filtersReady) {
       setRows([]);
@@ -272,19 +367,67 @@ const AdminProjectListPage = ({ config }) => {
     }
   }, [requiredFilterNames.length, filtersReady]);
 
+  useEffect(() => {
+    const shouldLoad =
+      config.autoLoad || (savedListState?.queried && (!requiredFilterNames.length || filtersReady));
+    if (!shouldLoad) return undefined;
+    if (requiredFilterNames.length && !filtersReady) return undefined;
+    loadData();
+    return undefined;
+    // Initial / restored load only. Later Cari / search uses the current loadData.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.autoLoad]);
+
   const openAdd = () => {
+    if (config.addPath) {
+      navigate(config.addPath);
+      return;
+    }
     setFormData({ ...(config.initialForm || {}) });
     setModal({ open: true, mode: "add" });
   };
 
-  const openEdit = (row) => {
+  const openEdit = async (row) => {
+    let source = row;
+    if (config.loadDetailOnEdit && config.service?.get) {
+      const pickId = (obj, name) => {
+        if (!obj || name == null) return undefined;
+        if (obj[name] !== undefined && obj[name] !== null && obj[name] !== "") return obj[name];
+        const found = Object.keys(obj).find((k) => k.toLowerCase() === String(name).toLowerCase());
+        return found != null ? obj[found] : undefined;
+      };
+      const id =
+        pickId(row, config.idField) ??
+        pickId(row, "id") ??
+        pickId(row, "store") ??
+        row?.ID;
+      if (id !== undefined && id !== null && id !== "") {
+        try {
+          const res = await config.service.get(id);
+          if (isSuccess(res)) source = extractRow(res) || row;
+        } catch {
+          source = row;
+        }
+      }
+    }
+    const sourceRow = typeof config.mapRowToForm === "function" ? config.mapRowToForm(source) : source;
+    const pickFieldValue = (obj, name) => {
+      if (!obj || name == null) return undefined;
+      if (obj[name] !== undefined && obj[name] !== null && obj[name] !== "") return obj[name];
+      const found = Object.keys(obj).find((k) => k.toLowerCase() === String(name).toLowerCase());
+      return found != null ? obj[found] : undefined;
+    };
     const mapped = { ...(config.initialForm || {}) };
     (config.fields || []).forEach((field) => {
-      let value = row[field.name] ?? mapped[field.name];
+      let value =
+        pickFieldValue(sourceRow, field.name) ??
+        pickFieldValue(source, field.name) ??
+        pickFieldValue(row, field.name) ??
+        mapped[field.name];
       if (field.mask && value != null && value !== "") {
         value = applyFieldMask(field.mask, value);
       }
-      mapped[field.name] = value;
+      mapped[field.name] = value ?? "";
     });
     setFormData(mapped);
     setModal({ open: true, mode: "edit", row });
@@ -301,16 +444,28 @@ const AdminProjectListPage = ({ config }) => {
       if (payload.store_id === "") payload.store_id = null;
       if (payload.parent_branch_id === "") payload.parent_branch_id = null;
       if (payload.parent_module_code === "") payload.parent_module_code = null;
+      const body =
+        typeof config.mapFormToPayload === "function" ? config.mapFormToPayload(payload) : payload;
 
       let res;
       if (modal.mode === "add") {
         res = config.onCreate
-          ? await config.onCreate(payload)
-          : await config.service.create(payload);
+          ? await config.onCreate(body)
+          : await config.service.create(body);
       } else {
+        const pickId = (obj, name) => {
+          if (!obj || name == null) return undefined;
+          if (obj[name] !== undefined && obj[name] !== null && obj[name] !== "") return obj[name];
+          const found = Object.keys(obj).find((k) => k.toLowerCase() === String(name).toLowerCase());
+          return found != null ? obj[found] : undefined;
+        };
+        const editId =
+          pickId(formData, config.idField) ||
+          pickId(modal.row, config.idField) ||
+          pickId(modal.row, "id");
         res = config.onUpdate
-          ? await config.onUpdate(modal.row[config.idField], payload)
-          : await config.service.update(modal.row[config.idField], payload);
+          ? await config.onUpdate(editId, body)
+          : await config.service.update(editId, body);
       }
 
       const successMsg =
@@ -319,7 +474,8 @@ const AdminProjectListPage = ({ config }) => {
           : "Updated successfully";
 
       if (notifyResponse(res, successMsg)) {
-        setModal({ open: false, mode: "add" });
+        /* Jangan reset mode di sini — biar judul tidak glitch Ubah→Tambah saat animasi close. */
+        setModal((prev) => ({ ...prev, open: false }));
         loadData();
       }
     } catch (err) {
@@ -333,9 +489,16 @@ const AdminProjectListPage = ({ config }) => {
     if (!confirm.row) return;
     setSaving(true);
     try {
+      const pickId = (obj, name) => {
+        if (!obj || name == null) return undefined;
+        if (obj[name] !== undefined && obj[name] !== null && obj[name] !== "") return obj[name];
+        const found = Object.keys(obj).find((k) => k.toLowerCase() === String(name).toLowerCase());
+        return found != null ? obj[found] : undefined;
+      };
+      const deleteId = pickId(confirm.row, config.idField) || pickId(confirm.row, "id");
       const res = config.onDelete
         ? await config.onDelete(confirm.row)
-        : await config.service.remove(confirm.row[config.idField]);
+        : await config.service.remove(deleteId);
 
       if (notifyResponse(res, config.deleteSuccessMessage || "Deleted successfully")) {
         setConfirm({ open: false, row: null });
@@ -348,24 +511,89 @@ const AdminProjectListPage = ({ config }) => {
     }
   };
 
-  const statusLabel = isActive === "" ? "All Status" : isActive === "true" ? "Active" : "Inactive";
-  const canCreate = !config.readOnly && !perms.loading && perms.CREATE;
+  const promoStatusOf = (row) => {
+    const status = String(row?.STATUS || row?.status || "").trim().toUpperCase();
+    if (status) return status;
+    const on = row?.is_active === true || row?.is_active === 1 || row?.is_active === "1";
+    return on ? "AKTIF" : "NONAKTIF";
+  };
+  const visibleRows = useMemo(() => {
+    if (!statusOptions || !statusPick) return rows;
+    const want = String(statusPick).toUpperCase();
+    return rows.filter((row) => promoStatusOf(row) === want);
+  }, [rows, statusPick, statusOptions]);
+  const statusLabel = statusOptions
+    ? statusOptions.find((opt) => opt.value === statusPick)?.label || "Semua Status"
+    : isActive === ""
+      ? "All Status"
+      : isActive === "true"
+        ? "Active"
+        : "Inactive";
+  const canCreate =
+    !perms.loading &&
+    perms.CREATE &&
+    !config.disableCreate &&
+    (!config.readOnly || navCreate);
+  const canOpenDetail = Boolean(
+    config.onRowClick || config.getDetailHref || config.detailPath
+  );
   const canEdit = !config.readOnly && !config.disableUpdate && !perms.loading && perms.UPDATE;
-  const canDelete = !config.readOnly && !perms.loading && perms.DELETE;
+  const canDelete =
+    !config.readOnly && !config.disableDelete && !perms.loading && perms.DELETE;
   const resetPermission = config.resetPassword?.permission || "RESET_PASSWORD";
   const canChangePassword =
     !!config.resetPassword && !config.readOnly && !perms.loading && perms[resetPermission];
 
-  const extraActions = canChangePassword
-    ? [
-        {
-          key: "changePassword",
-          label: config.resetPassword?.label || "Change Password",
-          icon: "lock-alt",
-          onClick: (row) => setResetModal({ open: true, row }),
-        },
-      ]
-    : [];
+  const statusToggle = config.statusToggle && config.service?.updateStatus;
+
+  const handleStatusToggle = async (row) => {
+    const id = row?.[config.idField];
+    const ngapain =
+      row?.confirm_status ??
+      row?.CONFIRM_STATUS ??
+      row?.status_action ??
+      row?.STATUS_ACTION;
+    if (!id || !ngapain) {
+      notifyResponse({ responseMessage: "Status action tidak tersedia untuk baris ini" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await config.service.updateStatus(id, ngapain);
+      if (notifyResponse(res, "Status diperbarui")) loadData();
+    } catch (err) {
+      notifyResponse(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const extraActions = [
+    ...(canChangePassword
+      ? [
+          {
+            key: "changePassword",
+            label: config.resetPassword?.label || "Change Password",
+            icon: "lock-alt",
+            onClick: (row) => setResetModal({ open: true, row }),
+          },
+        ]
+      : []),
+    ...(statusToggle && canEdit
+      ? [
+          {
+            key: "toggleStatus",
+            label: (row) =>
+              row?.CONFIRM_STATUS ||
+              row?.confirm_status ||
+              config.statusToggleLabel ||
+              "Status",
+            icon: "repeat",
+            onClick: handleStatusToggle,
+          },
+        ]
+      : []),
+  ];
 
   const handleChangePassword = async (payload) => {
     if (!resetModal.row) return;
@@ -387,10 +615,29 @@ const AdminProjectListPage = ({ config }) => {
     }
   };
 
-  const modalFields = (config.fields || []).map((field) => ({
-    ...field,
-    disabled: field.disabledOnEdit && modal.mode === "edit",
-  }));
+  /* SC tanpa sectionColumns → shell flat kontrak HRD (cols-compact + 1 section). */
+  const scModal = (config.modalVariant || "default") === "sc";
+  const scSectionTitle = config.modalSectionTitle || "Data";
+  const scSectionColumns =
+    config.sectionColumns || (scModal ? [[scSectionTitle]] : undefined);
+  const scModalClassName = [
+    scModal ? "hrd-kontrak-form-anim" : "",
+    scModal && !config.sectionColumns ? "hrd-form-modal--cols-compact" : "",
+    config.modalClassName || "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const modalFields = (config.fields || []).map((field) => {
+    const next = {
+      ...field,
+      disabled: !!(field.disabledOnEdit && modal.mode === "edit"),
+    };
+    if (scModal && !config.sectionColumns && !field.section) {
+      next.section = scSectionTitle;
+    }
+    return next;
+  });
 
   const deleteMessage =
     confirm.row && config.getDeleteMessage
@@ -548,6 +795,117 @@ const AdminProjectListPage = ({ config }) => {
     </li>
   );
 
+  const exportCfg = config.exportExcel || null;
+
+  const pickExportCell = (row, key) => {
+    if (!row || key == null) return "";
+    if (row[key] !== undefined && row[key] !== null && row[key] !== "") return row[key];
+    const found = Object.keys(row).find((k) => k.toLowerCase() === String(key).toLowerCase());
+    return found != null ? row[found] ?? "" : "";
+  };
+
+  const buildExportColumns = (sampleRow) => {
+    if (Array.isArray(exportCfg?.columns) && exportCfg.columns.length) return exportCfg.columns;
+    const cols = Array.isArray(config.projectListColumns) ? config.projectListColumns : config.columns || [];
+    const out = [];
+    cols.forEach((c) => {
+      if (!c) return;
+      if (c.type === "title") {
+        if (c.subtitleKey) out.push({ key: c.subtitleKey, label: "Id Member", width: 16 });
+        if (c.titleKey || c.key) out.push({ key: c.titleKey || c.key, label: c.label || "Nama", width: 24 });
+        return;
+      }
+      if (c.key) out.push({ key: c.key, label: c.label || c.key, width: 16, align: c.align });
+    });
+    if (out.length) return out;
+    if (sampleRow) {
+      return Object.keys(sampleRow).map((key) => ({ key, label: key, width: 16 }));
+    }
+    return [];
+  };
+
+  const handleExportExcel = useCallback(async () => {
+    if (!exportCfg) return;
+    if (requiredFilterNames.length && !filtersReady) {
+      notifyResponse({ responseMessage: "Pilih filter dulu sebelum export" });
+      return;
+    }
+    setExporting(true);
+    try {
+      let data = rows;
+      // ASP re-runs SP with current filters — fetch fresh so export matches filter bar
+      if (config.customLoad) {
+        data = await config.customLoad(listParams);
+      } else if (config.service?.list) {
+        const res = await config.service.list(listParams);
+        if (res?.responseCode != null && !isSuccess(res)) {
+          notifyResponse(res);
+          return;
+        }
+        data = extractRows(res);
+      }
+      const list = Array.isArray(data) ? data : [];
+      if (!list.length) {
+        toast.error("Tidak ada data untuk di-export");
+        return;
+      }
+      const columns = buildExportColumns(list[0]);
+      if (!columns.length) {
+        toast.error("Kolom export tidak dikonfigurasi");
+        return;
+      }
+      const fileName =
+        typeof exportCfg.fileName === "function"
+          ? exportCfg.fileName(listParams, extraFilters)
+          : exportCfg.fileName || "export.xlsx";
+      const ok = await exportStyledXlsx({
+        fileName,
+        sheetName: exportCfg.sheetName || "Member",
+        columns,
+        rows: list.map((row) => {
+          const mapped = {};
+          columns.forEach((col) => {
+            mapped[col.key] = pickExportCell(row, col.key);
+          });
+          return mapped;
+        }),
+      });
+      if (ok) toast.success(`File ${fileName} terunduh`);
+    } catch (err) {
+      toast.error(err?.responseMessage || err?.message || "Gagal export");
+    } finally {
+      setExporting(false);
+    }
+  }, [
+    exportCfg,
+    requiredFilterNames.length,
+    filtersReady,
+    rows,
+    config,
+    listParams,
+    extraFilters,
+  ]);
+
+  const renderExportButton = () => {
+    if (!exportCfg) return null;
+    const disabled = exporting || loading || (requiredFilterNames.length > 0 && !filtersReady);
+    return (
+      <li>
+        <Button
+          color="success"
+          size="sm"
+          className="btn-icon"
+          onClick={handleExportExcel}
+          disabled={disabled}
+          title={disabled && !exporting && !loading ? "Pilih filter dulu" : "Export Excel"}
+          aria-label="Export Excel"
+        >
+          <Icon name={exporting ? "loader" : "download"} />
+        </Button>
+      </li>
+    );
+  };
+
   const content = (
     <>
       <Head title={config.title} />
@@ -560,9 +918,9 @@ const AdminProjectListPage = ({ config }) => {
                 {requiredFilterNames.length && !filtersReady
                   ? config.description ||
                     `Isi filter lengkap lalu klik Cari untuk memuat data`
-                  : !rows.length
+                  : !visibleRows.length
                     ? config.description || `Isi filter lalu klik Cari untuk memuat data`
-                    : `You have total ${rows.length} ${config.title.toLowerCase()}`}
+                    : `You have total ${visibleRows.length} ${config.title.toLowerCase()}`}
               </BlockDes>
             </BlockHeadContent>
             <BlockHeadContent>
@@ -584,7 +942,7 @@ const AdminProjectListPage = ({ config }) => {
                           <Input
                             type="text"
                             className="form-control form-control-sm"
-                            placeholder="Search..."
+                            placeholder={config.searchPlaceholder || "Keywords"}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                           />
@@ -592,7 +950,36 @@ const AdminProjectListPage = ({ config }) => {
                       </li>
                     )}
                     {!putFiltersBelow && renderFilterItems()}
-                    {!config.hideStatusFilter && (
+                    {statusOptions ? (
+                      <li>
+                        <UncontrolledDropdown>
+                          <DropdownToggle tag="a" className="dropdown-toggle btn btn-white btn-dim btn-outline-light">
+                            <Icon name="filter-alt" className="d-none d-sm-inline" />
+                            <span>{statusLabel}</span>
+                            <Icon name="chevron-right" className="dd-indc" />
+                          </DropdownToggle>
+                          <DropdownMenu end>
+                            <ul className="link-list-opt no-bdr">
+                              {statusOptions.map((opt) => (
+                                <li key={opt.value || "all"}>
+                                  <DropdownItem
+                                    tag="a"
+                                    href={`#status-${opt.value || "all"}`}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setStatusPick(opt.value);
+                                      setCurrentPage(1);
+                                    }}
+                                  >
+                                    <span>{opt.label}</span>
+                                  </DropdownItem>
+                                </li>
+                              ))}
+                            </ul>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </li>
+                    ) : !config.hideStatusFilter && (
                       <li>
                         <UncontrolledDropdown>
                           <DropdownToggle tag="a" className="dropdown-toggle btn btn-white btn-dim btn-outline-light">
@@ -623,13 +1010,45 @@ const AdminProjectListPage = ({ config }) => {
                       </li>
                     )}
                     {!putFiltersBelow && renderLoadButton()}
-                    {canCreate && (
+                    {!putFiltersBelow && renderExportButton()}
+                    {canCreate && hasAddMenu ? (
                       <li className="nk-block-tools-opt">
-                        <Button color="primary" onClick={openAdd}>
-                          <Icon name="plus" />
-                          <span>{config.addButtonLabel || `Add ${config.title}`}</span>
-                        </Button>
+                        <UncontrolledDropdown>
+                          <DropdownToggle tag="a" className="dropdown-toggle btn btn-primary">
+                            <Icon name="plus" />
+                            <span>{config.addButtonLabel || "Tambah"}</span>
+                            <Icon name="chevron-down" className="dd-indc" />
+                          </DropdownToggle>
+                          <DropdownMenu end>
+                            <ul className="link-list-opt no-bdr">
+                              {config.addMenu.map((item) => (
+                                <li key={item.key || item.label}>
+                                  <DropdownItem
+                                    tag="a"
+                                    href="#add"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      if (item.onClick) item.onClick();
+                                      else if (item.to) navigate(appPath(item.to));
+                                    }}
+                                  >
+                                    <span>{item.label}</span>
+                                  </DropdownItem>
+                                </li>
+                              ))}
+                            </ul>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
                       </li>
+                    ) : (
+                      canCreate && (
+                        <li className="nk-block-tools-opt">
+                          <Button color="primary" onClick={openAdd}>
+                            <Icon name="plus" />
+                            <span>{config.addButtonLabel || `Add ${config.title}`}</span>
+                          </Button>
+                        </li>
+                      )
                     )}
                   </ul>
                 </div>
@@ -643,9 +1062,16 @@ const AdminProjectListPage = ({ config }) => {
             <ul className="nk-block-tools g-3 align-items-center flex-wrap">
               {renderFilterItems()}
               {renderLoadButton()}
+              {renderExportButton()}
             </ul>
           </Block>
         )}
+
+        {typeof config.renderAboveList === "function" ? (
+          <Block className="mb-3">{config.renderAboveList({ perms, loadData })}</Block>
+        ) : config.renderAboveList ? (
+          <Block className="mb-3">{config.renderAboveList}</Block>
+        ) : null}
 
         <Block>
           {error && !loading ? (
@@ -653,19 +1079,24 @@ const AdminProjectListPage = ({ config }) => {
           ) : (
             <ProjectListTable
               columns={config.projectListColumns || config.columns || []}
-              rows={rows}
+              rows={visibleRows}
               idField={config.idField}
               rowKey={config.rowKey || ((row, idx) => row[config.idField] || idx)}
               onEdit={openEdit}
+              editLabel={config.editLabel || "Edit"}
               onDelete={(row) => setConfirm({ open: true, row })}
               canEdit={canEdit}
               canDelete={canDelete}
               extraActions={extraActions}
+              onRowClick={canOpenDetail ? goDetail : undefined}
               currentPage={currentPage}
               itemPerPage={itemPerPage}
               onPageChange={setCurrentPage}
               defaultSort={config.defaultSort || null}
+              stickyHeader={Boolean(config.stickyHeader)}
+              stickyMaxHeight={config.stickyMaxHeight || null}
               loading={loading}
+              footerSumKeys={config.footerSumKeys || []}
             />
           )}
         </Block>
@@ -676,22 +1107,27 @@ const AdminProjectListPage = ({ config }) => {
               isOpen={modal.open}
               variant={config.modalVariant || "default"}
               size={config.modalSize || "lg"}
+              lookupOptionsFn={resolveLookupOptions}
+              sectionColumns={scSectionColumns}
+              className={scModalClassName}
+              resolveSectionTitle={config.resolveSectionTitle}
               title={
                 modal.mode === "add"
-                  ? `${config.addButtonLabel || "Tambah"} ${config.title}`
-                  : `Ubah ${config.title}`
+                  ? config.modalAddTitle ||
+                    (config.addButtonLabel ? config.addButtonLabel : `Tambah ${config.title}`)
+                  : config.modalEditTitle || `Ubah ${config.title}`
               }
-              subtitle={config.modalSubtitle || "Lengkapi field sesuai form legacy HRD."}
+              subtitle={config.modalSubtitle || `Lengkapi data ${config.title}`}
               fields={modalFields}
               formData={formData}
               onChange={(name, value) => setFormData((prev) => ({ ...prev, [name]: value }))}
               onSubmit={handleSave}
-              onClose={() => setModal({ open: false, mode: "add" })}
+              onClose={() => setModal((prev) => ({ ...prev, open: false }))}
               loading={saving}
               submitLabel={
                 modal.mode === "add"
-                  ? config.addButtonLabel || `Simpan`
-                  : `Update`
+                  ? config.modalSubmitLabel || "Simpan"
+                  : config.modalUpdateLabel || "Update"
               }
             />
 
@@ -722,7 +1158,7 @@ const AdminProjectListPage = ({ config }) => {
     </>
   );
 
-  if (!config.moduleCode || config.readOnly) return content;
+  if (!config.moduleCode) return content;
 
   return (
     <AccessGuard moduleCode={config.moduleCode} permission="VIEW">

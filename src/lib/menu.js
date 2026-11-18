@@ -64,6 +64,10 @@ const FOLDER_LABELS = {
   REG_GRP_SCAN: "Scan Selisih Harga",
   REG_GRP_TOOLS: "Tools",
   REG_GRP_PRINT: "Print",
+  MAR_MEMBER: "Member",
+  MAR_VOUCHER: "Voucher",
+  MAR_REPORT: "Laporan",
+  MAR_MASTER: "Master",
 };
 
 /** Known folder codes (also: any module with empty/# endpoint is treated as folder). */
@@ -111,6 +115,10 @@ const FOLDER_MODULE_CODES = new Set([
   "REG_GRP_SCAN",
   "REG_GRP_TOOLS",
   "REG_GRP_PRINT",
+  "MAR_MEMBER",
+  "MAR_VOUCHER",
+  "MAR_REPORT",
+  "MAR_MASTER",
 ]);
 
 const ADMIN_FOLDER_PATHS = new Set([
@@ -130,6 +138,7 @@ const ADMIN_FOLDER_PATHS = new Set([
   "/admin/regional/analist",
   "/admin/regional/util",
   "/admin/regional/commerce",
+  "/admin/marcomm",
   "/dgs",
 ]);
 
@@ -176,7 +185,14 @@ const storeNavigationFallback = () => [
 
 const guessIcon = (moduleCode = "") => {
   const code = String(moduleCode).toUpperCase();
-  if (code.includes("ANALIST") || code.includes("GMROI") || code.includes("ANALISA")) return "growth";
+  if (
+    code.includes("ANALIST") ||
+    code.includes("GMROI") ||
+    code.includes("ANALISA") ||
+    code.includes("ANALYTICS")
+  ) {
+    return "growth";
+  }
   if (code.includes("SALES") || code.startsWith("STORE_")) return "bag";
   if (code.includes("INVENTORY") || code.includes("STOCK")) return "box";
   if (code.includes("SETORAN") || code.includes("DCR")) return "wallet";
@@ -235,7 +251,10 @@ const normalizeMenuRow = (row, options = {}) => {
     link = "#";
   }
   return {
-    text: pick(row, "module_name", "moduleName", "MODULE_NAME") || pick(row, "module_code", "moduleCode"),
+    text:
+      MODULE_LABEL_OVERRIDES[moduleCode] ||
+      pick(row, "module_name", "moduleName", "MODULE_NAME") ||
+      pick(row, "module_code", "moduleCode"),
     link,
     moduleCode,
     isFolder: asFolder,
@@ -282,7 +301,15 @@ const HIDDEN_MENU_MODULES = new Set([
   "DGS_RETUR", // Gudang Retur — pakai sidebar Pengembalian
   "DGS_RETUR_GUDANG", // alias Gudang Retur
   "DGS_RETUR_LIST", // top "Retur" — pakai sidebar Daftar retur
+  "HRD_ABS_ONLINE_LIST", // Online Attendance List — tidak dipakai
+  "MAR_MBR_INFO", // Member Info — halaman tetap untuk klik dari list/transaksi
+  "MAR_MBR_NOTIF", // Notification — hide dari menu Member
 ]);
+
+/** Display label overrides for leaf menu items. */
+const MODULE_LABEL_OVERRIDES = {
+  HRD_ABS_ALL_ATTENDANCE: "List absen Store",
+};
 
 /** Exact frontend routes to hide from AMS top menu (sidebar DGS tetap). */
 const HIDDEN_MENU_LINKS = new Set(["/dgs/retur", "/dgs/retur-list"]);

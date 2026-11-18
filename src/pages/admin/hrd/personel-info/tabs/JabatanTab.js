@@ -27,6 +27,15 @@ const JabatanTab = ({ pegawai }) => (
     columns={COLUMNS}
     sortKeys={SORT_KEYS}
     snapshotItems={snapshotItems}
+    sectionColumns={[
+      ["Dokumentasi", "Tanggal"],
+      ["Jabatan sebelumnya"],
+      ["Jabatan sekarang"],
+    ]}
+    hideSections={["Pegawai"]}
+    modalClassName="hrd-kontrak-form-anim hrd-form-modal--cols3"
+    formAuto="promosi"
+    listMode="stack"
   />
 );
 

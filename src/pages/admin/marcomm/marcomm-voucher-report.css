@@ -1,0 +1,327 @@
+/* Marcomm voucher report — ASP voucher_rpt parity, SC-styled */
+
+.mvr-page {
+  --mvr-ink: #1f2937;
+  --mvr-muted: #6b7280;
+  --mvr-line: #e5e7eb;
+  --mvr-soft: #f8fafc;
+  --mvr-accent: #0f766e;
+  --mvr-accent-soft: #ccfbf1;
+  padding-bottom: 1.5rem;
+}
+
+.mvr-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border: 1px solid var(--mvr-line);
+  border-radius: 10px;
+}
+
+.mvr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 160px;
+}
+
+.mvr-field label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mvr-muted);
+  margin: 0;
+}
+
+.mvr-keywords {
+  flex: 1;
+  min-width: 220px;
+}
+
+.mvr-keywords input {
+  width: 100%;
+  border: 1px solid var(--mvr-line);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.875rem;
+  color: var(--mvr-ink);
+  background: #fff;
+}
+
+.mvr-keywords input:focus {
+  outline: none;
+  border-color: var(--mvr-accent);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.mvr-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.mvr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mvr-card {
+  border: 1px solid var(--mvr-line);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.mvr-card.is-open {
+  border-color: #99f6e4;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.08);
+}
+
+.mvr-card__head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(72px, 0.7fr)) minmax(90px, 0.8fr) 36px;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.mvr-card__head:hover {
+  background: var(--mvr-soft);
+}
+
+.mvr-card__title {
+  font-weight: 650;
+  color: var(--mvr-ink);
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.mvr-card__meta {
+  font-size: 0.75rem;
+  color: var(--mvr-muted);
+  margin-top: 0.15rem;
+}
+
+.mvr-card__cell {
+  font-size: 0.8125rem;
+  color: var(--mvr-ink);
+}
+
+.mvr-card__cell span {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--mvr-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
+}
+
+.mvr-card__cell.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mvr-card__qtyz {
+  text-align: right;
+}
+
+.mvr-card__qtyz strong {
+  display: block;
+  color: var(--mvr-accent);
+  font-size: 0.9375rem;
+}
+
+.mvr-chev {
+  color: var(--mvr-muted);
+  display: inline-flex;
+}
+
+.mvr-body {
+  border-top: 1px solid var(--mvr-line);
+  background: var(--mvr-soft);
+  padding: 0.85rem 1rem 1rem;
+}
+
+.mvr-table-shell {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--mvr-line);
+  border-radius: 8px;
+}
+
+.mvr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  min-width: 720px;
+}
+
+.mvr-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  color: var(--mvr-muted);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 650;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--mvr-line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.mvr-table tbody td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--mvr-ink);
+  vertical-align: middle;
+}
+
+.mvr-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.mvr-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mvr-table .ctr {
+  text-align: center;
+}
+
+.mvr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.mvr-badge.is-used {
+  background: var(--mvr-accent-soft);
+  color: #115e59;
+}
+
+.mvr-badge.is-open {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mvr-badge.is-expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mvr-empty,
+.mvr-msg {
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--mvr-muted);
+  font-size: 0.875rem;
+}
+
+.mvr-msg.err {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 8px;
+}
+
+/* gift_rpt / voucher_rpt — pager di flow (bukan floating) */
+.mvr-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin: 1.25rem 0 0;
+  padding: 0.85rem 0 0.25rem;
+  border-top: 1px solid var(--mvr-line);
+  background: transparent;
+}
+
+.mvr-pager__pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mvr-pager__pages button,
+.mvr-pager__nav {
+  border: 1px solid var(--mvr-line);
+  background: #fff;
+  color: var(--mvr-ink);
+  border-radius: 6px;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.mvr-pager__pages button.is-active {
+  background: var(--mvr-accent);
+  border-color: var(--mvr-accent);
+  color: #fff;
+  font-weight: 650;
+}
+
+.mvr-pager__pages button:disabled,
+.mvr-pager__nav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mvr-pager__meta {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .mvr-card__head {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "title chev"
+      "a b"
+      "c d"
+      "e e";
+  }
+
+  .mvr-card__head > :nth-child(1) {
+    grid-area: title;
+  }
+  .mvr-card__head > :nth-child(2) {
+    grid-area: a;
+  }
+  .mvr-card__head > :nth-child(3) {
+    grid-area: b;
+  }
+  .mvr-card__head > :nth-child(4) {
+    grid-area: c;
+  }
+  .mvr-card__head > :nth-child(5) {
+    grid-area: d;
+  }
+  .mvr-card__head > :nth-child(6) {
+    grid-area: e;
+  }
+  .mvr-card__head > :nth-child(7) {
+    grid-area: chev;
+    justify-self: end;
+  }
+}

@@ -27,6 +27,13 @@ const StatusTab = ({ pegawai }) => (
     columns={COLUMNS}
     sortKeys={SORT_KEYS}
     snapshotItems={snapshotItems}
+    sectionColumns={[
+      ["Dokumentasi", "Status terdahulu"],
+      ["Status sekarang", "Tanggal"],
+    ]}
+    hideSections={["Pegawai"]}
+    modalClassName="hrd-kontrak-form-anim hrd-form-modal--cols-compact"
+    formAuto="status"
   />
 );
 

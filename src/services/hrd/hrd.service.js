@@ -44,7 +44,13 @@ export const hrdPersonelInfoService = {
   kontrak: createHrdService("abs/personel-kontrak"),
   status: createHrdService("abs/personel-status"),
   promosi: createHrdService("abs/personel-promosi"),
+  /** Last jabatan → prefill "sebelum" on add (ASP personel_promosi_last) */
+  promosiLast: (pegawaiId) =>
+    api.get(`/hrd/abs/personel-promosi/last/${encodeURIComponent(pegawaiId)}`),
   mutasi: createHrdService("abs/personel-mutasi"),
+  /** Current penempatan (ASP personel_penempatan) */
+  penempatan: (pegawaiId) =>
+    api.get(`/hrd/abs/personel-penempatan/${encodeURIComponent(pegawaiId)}`),
 };
 
 /** Used by HrdProcessPage — POST /hrd/{processPath} */
@@ -56,6 +62,10 @@ export const hrdProcessService = {
   generateAbsenNasional: (payload) => hrdProcess("abs/generate-nasional", payload),
   eom: (payload) => hrdProcess("par/eom", payload),
   monthlyPayroll: (payload) => hrdProcess("cab/monthly-process", payload),
+  /** ASP m_cabang.aspx — AKTIFKAN / NONAKTIFKAN */
+  cabangStatus: (payload) => hrdProcess("par/cabang/status", payload),
+  /** ASP Overtime_List.aspx — APPROVE selected */
+  overtimeApprove: (payload) => hrdProcess("par/overtime/approve", payload),
 };
 
 /** HRD dashboard summary — GET /hrd/dashboard/summary */
@@ -90,6 +100,7 @@ export const hrdLookupOptions = async (type, { parentId = "", keywords = "", for
     });
     const rows = Array.isArray(res?.data) ? res.data : [];
     const options = rows.map((r) => ({
+      ...r,
       value: String(r.value ?? r.code ?? r.id ?? ""),
       label: String(r.label ?? r.description ?? r.name ?? r.value ?? ""),
     }));

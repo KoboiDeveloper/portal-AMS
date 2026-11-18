@@ -88,10 +88,22 @@ const SORTABLE = [
   { key: "total_transaction", label: "TOTAL TRANSACTION", num: true },
 ];
 
-const BadgeCard = ({ title, value, pct, note }) => {
+const BADGE_ART = {
+  total: "/images/member-badges/total3.jpg",
+  active: "/images/member-badges/active3.jpg",
+  inactive: "/images/member-badges/inactive3.jpg",
+  fresh: "/images/member-badges/new3.jpg",
+};
+
+const BadgeCard = ({ title, value, pct, note, art }) => {
   const down = String(pct || "").includes("-");
   return (
     <div className="rml-badge">
+      {art ? (
+        <span className="rml-badge-art" aria-hidden="true">
+          <img src={art} alt="" />
+        </span>
+      ) : null}
       <div className="rml-badge-title">{title}</div>
       <div className="rml-badge-value">{value ?? "-"}</div>
       <div className="rml-badge-note">
@@ -126,7 +138,10 @@ const SimplePager = ({ page, total, size, onChange }) => {
   );
 };
 
-const RegMemberListPage = () => {
+const RegMemberListPage = ({
+  moduleCode = "REG_RPT_MEMBER",
+  memberInfoPath = "/admin/regional/rpt/member/info",
+}) => {
   const [fromDate, setFromDate] = useState(firstOfMonth);
   const [toDate, setToDate] = useState(() => toIso(new Date()));
   const [provOpts, setProvOpts] = useState([]);
@@ -358,7 +373,7 @@ const RegMemberListPage = () => {
   const scrollRevision = `${loading ? "l" : "r"}-${rows.length}-${page}-${locRows.length}-${bdRows.length}-${wide ? "w" : "n"}`;
 
   return (
-    <AccessGuard moduleCode="REG_RPT_MEMBER">
+    <AccessGuard moduleCode={moduleCode}>
       <Head title="Member" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll rsl-page rml-page">
@@ -387,20 +402,27 @@ const RegMemberListPage = () => {
           </BlockHead>
 
           <div className="rml-badges">
-            <BadgeCard title="Total Member" value={badge?.member_total} pct={badge?.prev_member_total_presentase} note="from last month" />
-            <BadgeCard title="Active Member" value={badge?.active_member_total} pct={badge?.prev_active_member_total_presentase} note="from last month" />
-            <BadgeCard title="Inactive Member" value={badge?.inactive_member_total} pct={badge?.prev_inactive_member_total_presentase} note="from last month" />
-            <BadgeCard title="Total New Member" value={badge?.new_member_today} pct={badge?.prev_member_total_today_presentase} note="from last day" />
+            <BadgeCard title="Total Member" art={BADGE_ART.total} value={badge?.member_total} pct={badge?.prev_member_total_presentase} note="from last month" />
+            <BadgeCard title="Active Member" art={BADGE_ART.active} value={badge?.active_member_total} pct={badge?.prev_active_member_total_presentase} note="from last month" />
+            <BadgeCard title="Inactive Member" art={BADGE_ART.inactive} value={badge?.inactive_member_total} pct={badge?.prev_inactive_member_total_presentase} note="from last month" />
+            <BadgeCard title="Total New Member" art={BADGE_ART.fresh} value={badge?.new_member_today} pct={badge?.prev_member_total_today_presentase} note="from last day" />
           </div>
 
           <Block>
             <div className="rml-card">
               <div className="rml-card-head">
                 <h6 className="rml-card-title">Member List</h6>
-                <label className="rml-switch">
-                  <input type="checkbox" checked={memberOnly} onChange={(e) => setMemberOnly(e.target.checked)} />
-                  <span>Search member only</span>
-                </label>
+                <div className="rml-switch-wrap">
+                  <label className="rml-switch">
+                    <input type="checkbox" checked={memberOnly} onChange={(e) => setMemberOnly(e.target.checked)} />
+                    <span>Search member only</span>
+                  </label>
+                  <span className="rml-switch-hint text-soft small">
+                    {memberOnly
+                      ? "Cari Nama / HP / Email / Member ID. Filter kota, brand, umur, gender nonaktif. Date range tetap dipakai."
+                      : "Mode lengkap: pakai filter kota/provinsi/brand + keywords. Untuk cari by kota, pilih dropdown Kota (jangan centang mode ini)."}
+                  </span>
+                </div>
               </div>
 
               <div className="rml-filters">
@@ -603,7 +625,7 @@ const RegMemberListPage = () => {
                       rows.map((r, i) => (
                         <tr key={`${r.id_member}-${i}`}>
                           <td>
-                            <Link to={`/admin/regional/rpt/member/info?mem=${encodeURIComponent(r.id_member || "")}`}>
+                            <Link to={`${memberInfoPath}?mem=${encodeURIComponent(r.id_member || "")}`}>
                               {r.member_id}
                             </Link>
                           </td>

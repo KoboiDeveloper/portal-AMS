@@ -9,7 +9,7 @@ const titleColumn = (titleKey, subtitleKey, label = "Name") => ({
   subtitleKey,
 });
 const badgeColumn = (key, label, size = "mb") => ({ key, label, size, type: "badge" });
-const col = (key, label, size = "md") => ({ key, label, size });
+const col = (key, label, size = "md", extra = {}) => ({ key, label, size, ...extra });
 
 const f = (name, label, type = "text", extra = {}) => ({ name, label, type, ...extra });
 const fd = (name, label, type = "text", extra = {}) => ({ name, label, type, ...extra });
@@ -28,6 +28,15 @@ const MONTH_OPTS = [
   { value: "11", label: "November" },
   { value: "12", label: "Desember" },
 ];
+
+/** Tahun berjalan + 1 tahun ke belakang (generate absen). */
+const YEAR_RECENT_OPTS = (() => {
+  const y = new Date().getFullYear();
+  return [
+    { value: String(y), label: String(y) },
+    { value: String(y - 1), label: String(y - 1) },
+  ];
+})();
 
 const OPT_ACTIVE = [
   { value: "", label: "ALL" },
@@ -68,10 +77,26 @@ const OPT_JENIS_CUTI = [
 ];
 const OPT_JENIS_LEMBUR = [
   { value: "", label: "-- Pilih --" },
-  { value: "WD", label: "Weekday" },
-  { value: "WK", label: "Weekend" },
-  { value: "HD", label: "Holiday" },
+  { value: "WEEKDAY", label: "WEEKDAY" },
+  { value: "WEEKEND", label: "WEEKEND" },
+  { value: "HOLIDAY", label: "HOLIDAY" },
 ];
+
+/** ASP Overtime_List.aspx status filter */
+const OPT_OT_STATUS = [
+  { value: "APPROVED BY MANAGERIAL", label: "APPROVED BY MANAGERIAL" },
+  { value: "APPROVED BY HRD", label: "APPROVED BY HRD" },
+  { value: "NEW", label: "NEW" },
+];
+
+const otMonthStart = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
+const otToday = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 
 const emptyForm = (fields) =>
   fields.reduce((acc, field) => {
@@ -96,6 +121,18 @@ const cfg = ({
   modalSize = "lg",
   modalSubtitle = "Lengkapi data pegawai",
   modalVariant = "sc",
+  description,
+  sectionColumns,
+  modalEntityTitle,
+  modalSectionTitle,
+  statusToggle = false,
+  statusTogglePath,
+  defaultSort,
+  selectable = false,
+  bulkApprove = false,
+  approvePath = "",
+  bulkDelete = false,
+  pendingBadge = null,
 }) => {
   const initialForm = emptyForm(fields);
   return {
@@ -116,6 +153,18 @@ const cfg = ({
     modalSize,
     modalSubtitle,
     modalVariant,
+    description,
+    sectionColumns,
+    modalEntityTitle,
+    modalSectionTitle,
+    statusToggle,
+    statusTogglePath,
+    defaultSort,
+    selectable,
+    bulkApprove,
+    approvePath,
+    bulkDelete,
+    pendingBadge,
   };
 };
 
@@ -147,7 +196,7 @@ export const hrdAbsOnlineAttendance = cfg({
 
 /** Rpt_Attendance.aspx — Keywords, Brand, Store, From, To */
 export const hrdAbsAllAttendance = cfg({
-  title: "ALL ATTENDANCE",
+  title: "List absen Store",
   moduleCode: "HRD_ABS_ALL_ATTENDANCE",
   path: "abs/all-attendance",
   columns: [
@@ -216,20 +265,14 @@ export const hrdAbsKontrak = cfg({
   fields: [
     f("nik", "NIK", "text", { required: true, section: "Pegawai" }),
     f("employee_name", "NAMA", "display", { section: "Pegawai" }),
-    f("alamat", "Alamat", "display", { section: "Pegawai" }),
+    f("alamat", "Alamat", "display", { section: "Pegawai", col: 12 }),
     f("no_kontrak", "No. Kontrak", "text", { required: true, section: "Kontrak" }),
     f("tanggal_surat", "Tanggal Surat", "date", { section: "Kontrak" }),
-    f("tanggal_berakhir_sebelumnya", "Tgl Berakhir Kontrak Sebelumnya", "date", { section: "Kontrak" }),
-    f("lama_bulan", "Lama (Bulan)", "text", { section: "Kontrak" }),
-    f("terbilang", "Terbilang", "text", { section: "Kontrak" }),
+    f("lama_bulan", "Lama (Bulan)", "number", { section: "Kontrak", min: 1, max: 120 }),
+    f("terbilang", "Terbilang", "text", { section: "Kontrak", disabled: true }),
     f("tgl_mulai", "Tgl Mulai", "date", { required: true, section: "Kontrak" }),
     f("tanggal_berakhir", "Tanggal Berakhir", "date", { required: true, section: "Kontrak" }),
-    f("department", "Department", "select", { lookupKey: "department", section: "Penempatan" }),
-    f("unit", "Unit", "select", {
-      lookupKey: "unit",
-      lookupParentField: "department",
-      section: "Penempatan",
-    }),
+    f("department", "Department", "select", { lookupKey: "department", section: "Penempatan", col: 12 }),
     f("pangkat", "Pangkat", "select", { lookupKey: "pangkat", section: "Penempatan" }),
     f("jabatan", "Jabatan", "select", { lookupKey: "jabatan", section: "Penempatan" }),
     f("golongan", "Golongan", "select", { lookupKey: "golongan", section: "Penempatan" }),
@@ -249,6 +292,7 @@ export const hrdAbsStatus = cfg({
   moduleCode: "HRD_ABS_STATUS",
   path: "abs/personel-status",
   crud: true,
+  modalSize: "lg",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("nomor", "Nomor"),
@@ -259,17 +303,22 @@ export const hrdAbsStatus = cfg({
   fields: [
     f("nik", "NIK", "text", { required: true, section: "Pegawai" }),
     f("employee_name", "NAMA", "display", { section: "Pegawai" }),
-    f("no_status", "No. Status", "text", { required: true, section: "Status" }),
-    f("tanggal_surat_status", "Tanggal Surat Status", "date", { section: "Status" }),
-    f("status_sebelum", "Status Sebelum", "display", { section: "Status" }),
-    f("group_pegawai_sebelum", "Group Pegawai Sebelum", "display", { section: "Status" }),
-    f("status_sekarang", "Status Sekarang", "select", {
+    f("no_status", "No. Status", "text", { required: true, section: "Dokumentasi", col: 12 }),
+    f("tanggal_surat_status", "Tanggal Surat", "date", { section: "Dokumentasi", col: 12 }),
+    f("status_sebelum", "Status", "display", { section: "Status terdahulu", col: 12 }),
+    f("group_pegawai_sebelum", "Group", "display", { section: "Status terdahulu", col: 12 }),
+    f("status_sekarang", "Status", "select", {
       lookupKey: "status_pegawai",
-      section: "Status",
+      section: "Status sekarang",
+      col: 12,
     }),
-    f("group_sekarang", "Group Sekarang", "select", { lookupKey: "group", section: "Status" }),
-    f("tanggal_aktif", "Tanggal Aktif", "date", { required: true, section: "Status" }),
-    f("catatan", "Catatan", "textarea", { section: "Status", col: 12 }),
+    f("group_sekarang", "Group", "select", {
+      lookupKey: "group",
+      section: "Status sekarang",
+      col: 12,
+    }),
+    f("tanggal_aktif", "Tgl. Efektif", "date", { required: true, section: "Tanggal", col: 12 }),
+    f("catatan", "Catatan", "textarea", { section: "Tanggal", col: 12 }),
   ],
 });
 
@@ -279,33 +328,38 @@ export const hrdAbsPromosi = cfg({
   moduleCode: "HRD_ABS_PROMOSI",
   path: "abs/personel-promosi",
   crud: true,
+  modalSize: "xl",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("nomor", "Nomor"),
-    col("jabatan_sebelum", "Status lama"),
-    col("jabatan_sekarang", "Status Baru"),
+    col("jabatan_sebelum", "Jabatan lama"),
+    col("jabatan_sekarang", "Jabatan baru"),
     col("tanggal_efektif", "Tanggal Efektif"),
   ],
   fields: [
-    f("nik", "NIK", "text", { required: true }),
-    f("employee_name", "NAMA", "display"),
-    f("no_promosi", "No. Promosi", "text", { required: true }),
-    f("tanggal_surat_promosi", "Tanggal Surat Promosi", "date"),
-    f("department_sebelum", "Department Sebelum", "display"),
-    f("pangkat_sebelum", "Pangkat Sebelum", "display"),
-    f("jabatan_sebelum", "Jabatan Sebelum", "display"),
-    f("golongan_sebelum", "Golongan Sebelum", "display"),
-    f("tingkat_sebelum", "Tingkat Sebelum", "display"),
-    f("department", "Department", "select", { lookupKey: "department" }),
-    f("unit", "Unit", "select", { lookupKey: "unit", lookupParentField: "department" }),
-    f("pangkat", "Pangkat", "select", { lookupKey: "pangkat" }),
-    f("jabatan", "Jabatan", "select", { lookupKey: "jabatan" }),
-    f("golongan", "Golongan", "select", { lookupKey: "golongan" }),
-    f("tingkat", "Tingkat", "select", { lookupKey: "tingkat", lookupParentField: "golongan" }),
-    f("tanggal_aktif", "Tanggal Aktif", "date", { required: true }),
-    f("catatan", "Catatan", "textarea"),
-    f("percobaan_dari", "Percobaan Dari", "date"),
-    f("percobaan_sampai", "Percobaan Sampai", "date"),
+    f("nik", "NIK", "text", { required: true, section: "Pegawai" }),
+    f("employee_name", "NAMA", "display", { section: "Pegawai" }),
+    f("no_promosi", "No. Jabatan", "text", { required: true, section: "Dokumentasi", col: 12 }),
+    f("tanggal_surat_promosi", "Tanggal Surat", "date", { section: "Dokumentasi", col: 12 }),
+    f("department_sebelum", "Department", "display", { section: "Jabatan sebelumnya", col: 12 }),
+    f("pangkat_sebelum", "Pangkat", "display", { section: "Jabatan sebelumnya", col: 12 }),
+    f("jabatan_sebelum", "Jabatan", "display", { section: "Jabatan sebelumnya", col: 12 }),
+    f("golongan_sebelum", "Golongan", "display", { section: "Jabatan sebelumnya", col: 12 }),
+    f("tingkat_sebelum", "Tingkat", "display", { section: "Jabatan sebelumnya", col: 12 }),
+    f("department", "Department", "select", { lookupKey: "department", section: "Jabatan sekarang", col: 12 }),
+    f("pangkat", "Pangkat", "select", { lookupKey: "pangkat", section: "Jabatan sekarang", col: 12 }),
+    f("jabatan", "Jabatan", "select", { lookupKey: "jabatan", section: "Jabatan sekarang", col: 12 }),
+    f("golongan", "Golongan", "select", { lookupKey: "golongan", section: "Jabatan sekarang", col: 12 }),
+    f("tingkat", "Tingkat", "select", {
+      lookupKey: "tingkat",
+      lookupParentField: "golongan",
+      section: "Jabatan sekarang",
+      col: 12,
+    }),
+    f("tanggal_aktif", "Tgl. Efektif", "date", { required: true, section: "Tanggal", col: 12 }),
+    f("percobaan_dari", "Percobaan Dari", "date", { section: "Tanggal", col: 12 }),
+    f("percobaan_sampai", "Percobaan Sampai", "date", { section: "Tanggal", col: 12 }),
+    f("catatan", "Catatan", "textarea", { section: "Tanggal", col: 12 }),
   ],
 });
 
@@ -315,6 +369,7 @@ export const hrdAbsMutasi = cfg({
   moduleCode: "HRD_ABS_MUTASI",
   path: "abs/personel-mutasi",
   crud: true,
+  modalSize: "xl",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("nomor", "Nomor"),
@@ -323,22 +378,21 @@ export const hrdAbsMutasi = cfg({
     col("tanggal_efektif", "Efektif"),
   ],
   fields: [
-    f("nik", "NIK", "text", { required: true }),
-    f("employee_name", "NAMA", "display"),
-    f("jabatan", "Jabatan", "display"),
-    f("status_sipil", "Status Sipil", "display"),
-    f("no_mutasi", "No. Mutasi", "text", { required: true }),
-    f("tanggal_mutasi", "Tanggal Mutasi", "date"),
-    f("tanggal_aktif", "Tanggal Aktif", "date", { required: true }),
-    f("cabang_sebelum", "Cabang Sebelum", "display"),
-    f("kota_sebelum", "Kota Sebelum", "display"),
-    f("provinsi_sebelum", "Provinsi Sebelum", "display"),
-    f("brand_sebelum", "Brand Sebelum", "display"),
-    f("cabang_sekarang", "Cabang", "select", { lookupKey: "cabang" }),
-    f("kota_sekarang", "Kota Sekarang", "select", { lookupKey: "kota" }),
-    f("provinsi_sekarang", "Provinsi Sekarang", "select", { lookupKey: "provinsi" }),
-    f("brand_sekarang", "Brand Sekarang", "select", { lookupKey: "brand" }),
-    f("catatan", "Catatan", "textarea"),
+    f("nik", "NIK", "text", { required: true, section: "Pegawai" }),
+    f("employee_name", "NAMA", "display", { section: "Pegawai" }),
+    f("jabatan", "Jabatan", "display", { section: "Pegawai" }),
+    f("no_mutasi", "No. Mutasi", "text", { required: true, section: "Dokumentasi", col: 12 }),
+    f("tanggal_mutasi", "Tanggal Mutasi", "date", { section: "Dokumentasi", col: 12 }),
+    f("tanggal_aktif", "Tgl. Efektif", "date", { required: true, section: "Dokumentasi", col: 12 }),
+    f("cabang_sebelum", "Cabang", "display", { section: "Penempatan sebelumnya", col: 12 }),
+    f("kota_sebelum", "Kota", "display", { section: "Penempatan sebelumnya", col: 12 }),
+    f("provinsi_sebelum", "Provinsi", "display", { section: "Penempatan sebelumnya", col: 12 }),
+    f("brand_sebelum", "Brand", "display", { section: "Penempatan sebelumnya", col: 12 }),
+    f("cabang_sekarang", "Cabang", "select", { lookupKey: "cabang", section: "Penempatan sekarang", col: 12 }),
+    f("kota_sekarang", "Kota", "display", { section: "Penempatan sekarang", col: 12 }),
+    f("provinsi_sekarang", "Provinsi", "display", { section: "Penempatan sekarang", col: 12 }),
+    f("brand_sekarang", "Brand", "display", { section: "Penempatan sekarang", col: 12 }),
+    f("catatan", "Catatan", "textarea", { section: "Penempatan sekarang", col: 12 }),
   ],
 });
 
@@ -348,6 +402,7 @@ export const hrdAbsResign = cfg({
   moduleCode: "HRD_ABS_RESIGN",
   path: "abs/personel-resign",
   crud: true,
+  modalSize: "lg",
   columns: [
     titleColumn("employee_name", "nik", "Pegawai"),
     col("department", "Departemen"),
@@ -355,16 +410,19 @@ export const hrdAbsResign = cfg({
     col("cabang", "Cabang"),
   ],
   fields: [
-    f("id", "ID", "hidden"),
-    f("nik", "NIK", "text", { required: true }),
-    f("employee_name", "Nama Pegawai", "display"),
+    f("id", "ID", "hidden", { section: "Pegawai" }),
+    f("nik", "NIK", "text", { required: true, section: "Pegawai" }),
+    f("employee_name", "Nama Pegawai", "display", { section: "Pegawai" }),
     f("tipe_resign", "Tipe Resign", "select", {
       lookupKey: "tipe_resign",
       required: true,
+      section: "Resign",
+      col: 12,
     }),
-    f("sk_no", "SK No."),
-    f("effective", "Effective", "date", { required: true }),
-    f("remark", "Remark", "textarea"),
+    f("sk_no", "SK No.", "text", { section: "Resign", col: 12 }),
+    f("sk_date", "SK Date", "date", { section: "Resign", col: 12 }),
+    f("effective", "Effective Date", "date", { required: true, section: "Resign", col: 12 }),
+    f("remark", "Remark", "textarea", { section: "Catatan", col: 12 }),
   ],
 });
 
@@ -524,6 +582,25 @@ export const hrdParOvertime = cfg({
   moduleCode: "HRD_PAR_OVERTIME",
   path: "par/overtime",
   crud: true,
+  description: "Pengajuan lembur pegawai (legacy: overtime_list.aspx).",
+  modalSize: "lg",
+  modalEntityTitle: "Overtime",
+  modalSectionTitle: "Overtime",
+  modalSubtitle: "Pegawai, jenis, jam, dan subjek kerja",
+  sectionColumns: [["Pegawai", "Jadwal"], ["Info"]],
+  pageSize: 100,
+  selectable: true,
+  bulkApprove: true,
+  approvePath: "par/overtime/approve",
+  bulkDelete: true,
+  defaultSort: { key: "tanggal", dir: "desc" },
+  pendingBadge: {
+    status: "APPROVED BY MANAGERIAL",
+    title: "Menunggu approve HRD",
+    hint: "Status APPROVED BY MANAGERIAL · klik dept untuk detail",
+    groupKey: "department",
+    emptyText: "Tidak ada overtime menunggu approve HRD pada rentang tanggal ini.",
+  },
   columns: [
     col("tanggal", "TANGGAL"),
     col("day", "DAY", "sm"),
@@ -532,22 +609,64 @@ export const hrdParOvertime = cfg({
     badgeColumn("status", "STATUS"),
   ],
   filterDefs: [
-    fd("from_date", "From", "date"),
-    fd("to_date", "To", "date"),
-    fd("status", "Status", "select", { options: OPT_STATUS_APPROVE }),
+    fd("period", "Periode", "daterange", {
+      fromKey: "from_date",
+      toKey: "to_date",
+      defaultFrom: otMonthStart(),
+      defaultTo: otToday(),
+    }),
+    fd("status", "Status", "select", {
+      options: OPT_OT_STATUS,
+      defaultValue: "APPROVED BY MANAGERIAL",
+    }),
   ],
   fields: [
     f("id", "ID", "hidden"),
-    f("nik", "NIK", "text", { required: true }),
-    f("nama", "NAMA", "display"),
-    f("department", "DEPARTMENT", "display"),
-    f("jabatan", "JABATAN", "display"),
-    f("jenis_lembur", "JENIS LEMBUR", "select", { options: OPT_JENIS_LEMBUR }),
-    f("diluar_kantor", "Diluar kantor ?", "checkbox"),
-    f("tanggal_lembur", "TANGGAL LEMBUR", "date"),
-    f("dari_jam", "DARI JAM", "time"),
-    f("sampai_jam", "SAMPAI JAM", "time"),
-    f("keterangan", "SUBJEK KERJA", "textarea", { required: true }),
+    f("nik", "NAMA / NIK", "select", {
+      required: true,
+      section: "Pegawai",
+      col: 12,
+      lookupKey: "pegawai",
+      lookupFill: { nama: "nama", department: "department", jabatan: "jabatan" },
+    }),
+    f("nama", "NAMA", "display", { section: "Pegawai", col: 12 }),
+    f("department", "DEPARTMENT", "display", { section: "Pegawai", col: 12 }),
+    f("jabatan", "JABATAN", "display", { section: "Pegawai", col: 12 }),
+    f("jenis_lembur", "JENIS LEMBUR", "select", {
+      required: true,
+      section: "Pegawai",
+      col: 12,
+      options: OPT_JENIS_LEMBUR,
+    }),
+    f("tanggal_lembur", "TANGGAL LEMBUR", "date", {
+      required: true,
+      section: "Jadwal",
+      col: 12,
+    }),
+    f("dari_jam", "DARI JAM", "text", {
+      required: true,
+      section: "Jadwal",
+      col: 6,
+      placeholder: "HH:mm:ss",
+    }),
+    f("sampai_jam", "SAMPAI JAM", "text", {
+      required: true,
+      section: "Jadwal",
+      col: 6,
+      placeholder: "HH:mm:ss",
+    }),
+    f("keterangan", "SUBJEK KERJA", "textarea", {
+      required: true,
+      section: "Jadwal",
+      col: 12,
+      maxLength: 300,
+    }),
+    f("tanggal_pengajuan", "Tgl Pengajuan", "display", { section: "Info", col: 12 }),
+    f("tanggal_approve_atasan", "Tgl approve Atasan", "display", {
+      section: "Info",
+      col: 12,
+    }),
+    f("tanggal_approve_hrd", "Tgl approve HRD", "display", { section: "Info", col: 12 }),
   ],
 });
 
@@ -569,97 +688,310 @@ export const hrdParAlfa = cfg({
   ],
 });
 
-/** master_holiday.aspx + Holiday_Info.aspx */
+/** Absen_Online/master_holiday.aspx + Holiday_Info.aspx */
+const HOLIDAY_YEAR_OPTS = (() => {
+  const y = new Date().getFullYear();
+  const opts = [];
+  for (let i = y + 1; i >= y - 7; i -= 1) {
+    opts.push({ value: String(i), label: String(i) });
+  }
+  return opts;
+})();
+
 export const hrdParHoliday = cfg({
   title: "LIST HARI LIBUR NASIONAL",
   moduleCode: "HRD_PAR_HOLIDAY",
   path: "par/holiday",
   crud: true,
+  description: "Hari libur nasional (legacy: master_holiday.aspx).",
+  modalSize: "md",
+  modalEntityTitle: "Hari Libur",
+  modalSectionTitle: "Holiday",
+  modalSubtitle: "Tanggal, deskripsi, dan potong cuti",
+  pageSize: 100,
   columns: [
     col("holiday_date", "TANGGAL"),
     col("hari", "HARI"),
     col("description", "DESCRIPTION", "lg"),
     col("potong_cuti", "POTONG CUTI", "sm"),
   ],
-  filterDefs: [fd("year", "Tahun")],
+  filterDefs: [
+    fd("year", "Tahun", "select", {
+      options: HOLIDAY_YEAR_OPTS,
+      defaultValue: String(new Date().getFullYear()),
+    }),
+  ],
   fields: [
-    f("holiday_date", "DATE", "date", { required: true }),
-    f("description", "DESCRIPTION", "textarea", { required: true }),
-    f("potong_cuti", "POTONG CUTI", "checkbox"),
+    f("id", "ID", "hidden"),
+    f("holiday_date", "DATE", "date", { required: true, section: "Holiday", col: 12 }),
+    f("description", "DESCRIPTION", "textarea", {
+      required: true,
+      section: "Holiday",
+      col: 12,
+      maxLength: 200,
+    }),
+    f("potong_cuti", "POTONG CUTI", "checkbox", {
+      section: "Holiday",
+      col: 12,
+      checkboxLabel: "POTONG CUTI",
+    }),
   ],
 });
 
-/** overtime_amount.aspx + overtime_amount_lookup.aspx */
+/** Absen_Online/overtime_amount.aspx + overtime_amount_lookup.aspx */
 export const hrdParOtAmount = cfg({
   title: "OVERTIME AMOUNT",
   moduleCode: "HRD_PAR_OT_AMOUNT",
   path: "par/overtime-amount",
   crud: true,
+  description: "Tarif lembur (legacy: overtime_amount.aspx).",
+  modalSize: "lg",
+  modalEntityTitle: "Overtime Amount",
+  modalSubtitle: "Level, jabatan, konsumsi & insentif",
+  sectionColumns: [["Level"], ["Amount"]],
+  defaultSort: { key: "level", dir: "asc" },
   columns: [
     col("level", "LEVEL"),
     col("jabatan", "JABATAN"),
-    col("konsumsi", "KONSUMSI"),
-    col("insentif", "INSENTIF"),
-    col("weekend", "WEEKEND"),
+    col("konsumsi", "KONSUMSI", "md", {
+      sortKey: "konsumsi_amount",
+      sortType: "number",
+    }),
+    col("insentif", "INSENTIF", "md", {
+      sortKey: "insentif_amount",
+      sortType: "number",
+    }),
+    col("weekend", "WEEKEND", "md", {
+      sortKey: "insentif_weekend_amount",
+      sortType: "number",
+    }),
     col("tipe_insentif", "TIPE INSENTIF"),
     col("lebih_5_jam", "LEMBUR > 5 JAM"),
   ],
   fields: [
-    f("level", "LEVEL", "select", { lookupKey: "level" }),
-    f("jabatan", "JABATAN", "select", { lookupKey: "jabatan" }),
-    f("lebih_5_jam", "LEMBUR LEBIH DARI 5 JAM", "checkbox"),
+    f("id", "ID", "hidden"),
+    f("level", "LEVEL", "select", {
+      required: true,
+      lookupKey: "overtime_level",
+      section: "Level",
+      col: 12,
+    }),
+    f("jabatan", "JABATAN", "select", {
+      required: true,
+      lookupKey: "overtime_jabatan",
+      section: "Level",
+      col: 12,
+      defaultValue: "ALL",
+    }),
+    f("lebih_5_jam", "LEMBUR LEBIH DARI 5 JAM", "checkbox", {
+      section: "Level",
+      col: 12,
+      checkboxLabel: "LEMBUR LEBIH DARI 5 JAM",
+    }),
     f("tipe_insentif", "TIPE INSENTIF", "radio", {
+      section: "Level",
+      col: 12,
+      defaultValue: "TETAP",
       options: [
-        { value: "FIXED", label: "FIXED" },
-        { value: "PERJAM", label: "PER JAM" },
+        { value: "TETAP", label: "TETAP" },
+        { value: "PER JAM", label: "PER JAM" },
       ],
     }),
-    f("konsumsi_amount", "KONSUMSI AMOUNT", "number", { required: true }),
-    f("insentif_amount", "INSENTIF AMOUNT", "number", { required: true }),
-    f("insentif_weekend", "INSENTIF WEEKEND AMOUNT", "number"),
-    f("insentif_perjam", "INSENTIF PER JAM", "number"),
+    f("konsumsi_amount", "KONSUMSI AMOUNT", "currency", {
+      required: true,
+      section: "Amount",
+      col: 12,
+      format: "currency",
+      showPrefix: false,
+    }),
+    f("insentif_amount", "INSENTIF AMOUNT", "currency", {
+      required: true,
+      section: "Amount",
+      col: 12,
+      format: "currency",
+      showPrefix: false,
+    }),
+    f("insentif_weekend_amount", "INSENTIF WEEKEND AMOUNT", "currency", {
+      required: true,
+      section: "Amount",
+      col: 12,
+      format: "currency",
+      showPrefix: false,
+    }),
   ],
 });
 
-/** masterpolicy.aspx */
+/** masterpolicylist.aspx + masterpolicy.aspx */
 export const hrdParPolicy = cfg({
   title: "Policy List",
   moduleCode: "HRD_PAR_POLICY",
   path: "par/policy",
   crud: true,
+  description: "Master policy (legacy: masterpolicylist.aspx / masterpolicy.aspx).",
+  modalSize: "xl",
+  modalEntityTitle: "Policy",
+  modalSubtitle: "Periode, salary, absent, THR & BPJS",
+  sectionColumns: [
+    ["Branch & Period", "Salary"],
+    ["Absent", "THR"],
+    ["BPJS"],
+  ],
   columns: [
-    col("salary_start", "Salary Schedule Start Date", "lg"),
-    col("salary_end", "Salary Schedule End Date", "lg"),
-    col("absent_start", "Absent Schedule Start Date", "lg"),
-    col("absent_end", "Absent Schedule End Date", "lg"),
+    col("salary_schedule_start", "Salary Schedule Start Date", "lg"),
+    col("salary_schedule_end", "Salary Schedule End Date", "lg"),
+    col("absent_schedule_start", "Absent Schedule Start Date", "lg"),
+    col("absent_schedule_end", "Absent Schedule End Date", "lg"),
   ],
   fields: [
     f("id", "ID", "hidden"),
-    f("branch", "Branch", "display"),
-    f("periode_year", "Period Year *", "text", { required: true }),
-    f("periode_month", "Period Month", "select", { options: MONTH_OPTS }),
-    f("formula_overtime", "Formula Overtime *", "text", { required: true }),
-    f("formula_thr", "Formula THR *", "text", { required: true }),
-    f("salary_schedule_start", "Salary Schedule Start Date *", "date", { required: true }),
-    f("salary_schedule_end", "Salary Schedule End Date *", "date", { required: true }),
-    f("salary_date", "Salary Date *", "date", { required: true }),
-    f("last_day_of_month", "Last Day Of The Month", "checkbox"),
-    f("absent_schedule_start", "Absent Schedule Start Date *", "date", { required: true }),
-    f("absent_schedule_end", "Absent Schedule End Date *", "date", { required: true }),
-    f("staff_probation_thr", "Staff Probation THR", "checkbox"),
-    f("staff_probation_prorate", "Staff Probation Prorate", "checkbox"),
-    f("staff_prorate_thr", "Staff Prorate THR", "checkbox"),
-    f("bpjs_kes_employee", "BPJS Kesehatan By Employee (%)", "number"),
-    f("bpjs_kes_company", "BPJS Kesehatan By Company (%)", "number"),
-    f("jht_employee", "JHT By Employee (%)", "number"),
-    f("jht_company", "JHT By Company (%)", "number"),
-    f("bpjs_jkk", "BPJS JKK By Company (%)", "number"),
-    f("bpjs_jkm", "BPJS JKM By Company (%)", "number"),
-    f("bpjs_pensiun_employee", "BPJS Pensiun By Employee (%)", "number"),
-    f("bpjs_pensiun_company", "BPJS Pensiun By Company (%)", "number"),
-    f("threshold_salary_bpjs", "Threshold Salary BPJS", "number"),
-    f("threshold_max_salary_bpjs", "Threshold MAX Salary BPJS", "number"),
-    f("threshold_salary_jp", "Threshold Salary JP", "number"),
+    f("branch", "Branch", "display", {
+      section: "Branch & Period",
+      col: 12,
+      defaultValue: "HEAD OFFICE",
+    }),
+    f("periode_year", "Period Year", "text", {
+      required: true,
+      section: "Branch & Period",
+      col: 12,
+      mask: "year",
+      validate: "year",
+      maxLength: 4,
+      inputMode: "numeric",
+      placeholder: "YYYY",
+    }),
+    f("periode_month", "Period Month", "select", {
+      options: MONTH_OPTS,
+      section: "Branch & Period",
+      col: 12,
+    }),
+    f("salary_schedule_start", "Salary Schedule Start Date", "date", {
+      required: true,
+      section: "Salary",
+      col: 12,
+    }),
+    f("salary_schedule_end", "Salary Schedule End Date", "date", {
+      required: true,
+      section: "Salary",
+      col: 12,
+    }),
+    f("salary_date", "Salary Date", "date", { required: true, section: "Salary", col: 12 }),
+    f("last_day_of_month", "Last Day Of The Month", "checkbox", {
+      section: "Salary",
+      col: 12,
+      checkboxLabel: "Last Day Of The Month",
+    }),
+    f("absent_schedule_start", "Absent Schedule Start Date", "date", {
+      required: true,
+      section: "Absent",
+      col: 12,
+    }),
+    f("absent_schedule_end", "Absent Schedule End Date", "date", {
+      required: true,
+      section: "Absent",
+      col: 12,
+    }),
+    f("staff_probation_thr", "Staff Probation THR", "checkbox", {
+      section: "THR",
+      col: 12,
+      checkboxLabel: "Staff Probation THR",
+    }),
+    f("staff_probation_prorate", "Staff Probation Prorate", "checkbox", {
+      section: "THR",
+      col: 12,
+      checkboxLabel: "Staff Probation Prorate",
+    }),
+    f("staff_prorate_thr", "Staff Prorate THR", "checkbox", {
+      section: "THR",
+      col: 12,
+      checkboxLabel: "Staff Prorate THR",
+    }),
+    f("bpjs_kes_employee", "BPJS Kesehatan By Employee (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("bpjs_kes_company", "BPJS Kesehatan By Company (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("jht_employee", "JHT By Employee (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("jht_company", "JHT By Company (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("bpjs_jkk", "BPJS JKK By Company (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("bpjs_jkm", "BPJS JKM By Company (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("bpjs_pensiun_employee", "BPJS Pensiun By Employee (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("bpjs_pensiun_company", "BPJS Pensiun By Company (%)", "percent", {
+      section: "BPJS",
+      col: 6,
+      format: "percent",
+      validate: "percent",
+      min: 0,
+      max: 100,
+      decimalScale: 2,
+    }),
+    f("threshold_salary_bpjs", "Threshold Salary BPJS", "currency", {
+      section: "BPJS",
+      col: 6,
+      format: "currency",
+    }),
+    f("threshold_max_salary_bpjs", "Threshold MAX Salary BPJS", "currency", {
+      section: "BPJS",
+      col: 6,
+      format: "currency",
+    }),
+    f("threshold_salary_jp", "Threshold Salary JP", "currency", {
+      section: "BPJS",
+      col: 6,
+      format: "currency",
+    }),
   ],
 });
 
@@ -670,29 +1002,30 @@ export const hrdParPerusahaan = cfg({
   moduleCode: "HRD_PAR_PERUSAHAAN",
   path: "par/perusahaan",
   crud: true,
+  description: "Profil perusahaan (legacy: M_perusahaan.aspx).",
   columns: [titleColumn("nama_perusahaan", "id", "Perusahaan"), col("kota", "Kota"), col("npwp", "NPWP")],
   hideSearch: true,
   fields: [
-    f("nama_perusahaan", "Nama Perusahaan :", "text", { required: true, col: 12 }),
-    f("alamat_1", "Alamat 1"),
-    f("alamat_2", "Alamat 2"),
-    f("alamat_3", "Alamat 3"),
-    f("kota_id", "Kota", "select", { lookupKey: "kota" }),
-    f("kode_pos", "Kode Pos"),
-    f("provinsi_id", "Provinsi", "select", { lookupKey: "provinsi" }),
-    f("negara_id", "Negara :", "select", { lookupKey: "negara" }),
-    f("bidang_usaha", "Bidang Usaha"),
-    f("telepon_kode", "No.TLp Kode"),
-    f("telepon_1", "No.TLp 1"),
-    f("telepon_2", "No.TLp 2"),
-    f("fax_kode", "Fax Kode"),
-    f("fax_nomor", "Fax Nomor"),
-    f("website", "Website"),
-    f("email", "Email"),
-    f("pimpinan", "Pimpinan Perusahaan"),
-    f("npwp", "NPWP"),
-    f("nomor_pkp", "Nomor Pengukuhan Pajak"),
-    f("tanggal_pkp", "Tanggal Pengukuhan Pajak", "date"),
+    f("nama_perusahaan", "Nama Perusahaan", "text", { required: true, section: "Perusahaan", col: 12 }),
+    f("alamat_1", "Alamat 1", "text", { section: "Perusahaan", col: 12 }),
+    f("alamat_2", "Alamat 2", "text", { section: "Perusahaan", col: 12 }),
+    f("alamat_3", "Alamat 3", "text", { section: "Perusahaan", col: 12 }),
+    f("kota_id", "Kota", "select", { lookupKey: "kota", section: "Perusahaan" }),
+    f("kode_pos", "Kode Pos", "text", { section: "Perusahaan" }),
+    f("provinsi_id", "Provinsi", "select", { lookupKey: "provinsi", section: "Perusahaan" }),
+    f("negara_id", "Negara", "select", { lookupKey: "negara", section: "Perusahaan" }),
+    f("bidang_usaha", "Bidang Usaha", "text", { section: "Perusahaan", col: 12 }),
+    f("telepon_kode", "No.TLp Kode", "text", { section: "Kontak" }),
+    f("telepon_1", "No.TLp 1", "text", { section: "Kontak" }),
+    f("telepon_2", "No.TLp 2", "text", { section: "Kontak" }),
+    f("fax_kode", "Fax Kode", "text", { section: "Kontak" }),
+    f("fax_nomor", "Fax Nomor", "text", { section: "Kontak" }),
+    f("website", "Website", "text", { section: "Kontak", col: 12 }),
+    f("email", "Email", "text", { section: "Kontak", col: 12 }),
+    f("pimpinan", "Pimpinan Perusahaan", "text", { section: "Kontak", col: 12 }),
+    f("npwp", "NPWP", "text", { section: "Kontak" }),
+    f("nomor_pkp", "Nomor Pengukuhan Pajak", "text", { section: "Kontak" }),
+    f("tanggal_pkp", "Tanggal Pengukuhan Pajak", "date", { section: "Kontak" }),
   ],
 });
 
@@ -702,23 +1035,35 @@ export const hrdParCabang = cfg({
   moduleCode: "HRD_PAR_CABANG",
   path: "par/cabang",
   crud: true,
-  columns: [col("brand", "BRAND"), titleColumn("nama", "kode", "CABANG"), badgeColumn("status", "STATUS")],
+  description: "Master cabang (legacy: m_cabang.aspx).",
+  modalSize: "lg",
+  modalEntityTitle: "Cabang",
+  modalSubtitle: "Data cabang & kontak",
+  /* ASP: dropdown AKTIF → NONAKTIFKAN / sebaliknya */
+  statusToggle: true,
+  statusTogglePath: "par/cabang/status",
+  sectionColumns: [["Cabang"], ["Kontak"]],
+  columns: [
+    col("brand", "BRAND"),
+    titleColumn("nama", "kode", "CABANG"),
+    { key: "status", label: "STATUS", type: "status_toggle", size: "mb" },
+  ],
   fields: [
     f("id", "ID", "hidden"),
-    f("brand", "Brand", "select", { lookupKey: "brand" }),
-    f("kode", "Kode", "text", { required: true }),
-    f("nama", "Nama", "text", { required: true }),
-    f("alamat", "Alamat", "textarea"),
-    f("kota", "Kota", "select", { lookupKey: "kota" }),
-    f("provinsi", "Provinsi", "select", { lookupKey: "provinsi" }),
-    f("negara", "Negara", "select", { lookupKey: "negara" }),
-    f("telepon", "Telepon"),
-    f("fax", "Fax"),
-    f("pimpinan", "Pimpinan"),
-    f("bank", "Bank"),
-    f("nomor_rekening", "No.Rek"),
-    f("no_id", "No.ID"),
-    f("atas_nama", "Atas Nama"),
+    f("brand", "Brand", "select", { lookupKey: "brand_id", section: "Cabang", col: 12 }),
+    f("kode", "Kode", "text", { required: true, section: "Cabang", col: 12 }),
+    f("nama", "Nama", "text", { required: true, section: "Cabang", col: 12 }),
+    f("alamat", "Alamat", "textarea", { section: "Cabang", col: 12 }),
+    f("kota", "Kota", "select", { lookupKey: "kota", section: "Cabang", col: 12 }),
+    f("provinsi", "Provinsi", "select", { lookupKey: "provinsi", section: "Cabang", col: 12 }),
+    f("negara", "Negara", "select", { lookupKey: "negara", section: "Cabang", col: 12 }),
+    f("telepon", "Telepon", "text", { section: "Kontak", col: 12 }),
+    f("fax", "Fax", "text", { section: "Kontak", col: 12 }),
+    f("pimpinan", "Pimpinan", "text", { section: "Kontak", col: 12 }),
+    f("bank", "Bank", "select", { lookupKey: "bank", section: "Kontak", col: 12 }),
+    f("nomor_rekening", "No.Rek", "text", { section: "Kontak", col: 12 }),
+    f("no_id", "No.ID", "text", { section: "Kontak", col: 12 }),
+    f("atas_nama", "Atas Nama", "text", { section: "Kontak", col: 12 }),
   ],
 });
 
@@ -728,12 +1073,17 @@ export const hrdParDivisi = cfg({
   moduleCode: "HRD_PAR_DIVISI",
   path: "par/divisi",
   crud: true,
+  description: "Master divisi (legacy: m_divisi.aspx).",
+  modalSize: "md",
+  modalEntityTitle: "Divisi",
+  modalSectionTitle: "Divisi",
+  modalSubtitle: "Kode, nama, dan keterangan divisi",
   columns: [col("kode", "Kode Divisi"), titleColumn("nama", "id", "Nama Divisi"), col("keterangan", "Keterangan", "lg")],
   fields: [
     f("id", "ID", "hidden"),
-    f("kode", "Kode", "text", { required: true }),
-    f("nama", "Divisi", "text", { required: true }),
-    f("keterangan", "Keterangan", "textarea"),
+    f("kode", "Kode", "text", { required: true, section: "Divisi", col: 12 }),
+    f("nama", "Divisi", "text", { required: true, section: "Divisi", col: 12 }),
+    f("keterangan", "Keterangan", "textarea", { section: "Divisi", col: 12 }),
   ],
 });
 
@@ -743,18 +1093,23 @@ export const hrdParDepartemen = cfg({
   moduleCode: "HRD_PAR_DEPARTEMEN",
   path: "par/departemen",
   crud: true,
+  description: "Master departemen (legacy: m_departemen.aspx).",
+  modalSize: "md",
+  modalEntityTitle: "Departemen",
+  modalSectionTitle: "Departemen",
+  modalSubtitle: "Divisi, kode, dan nama departemen",
   columns: [
     col("kode", "Kode"),
     titleColumn("nama", "id", "Nama"),
     col("keterangan", "Keterangan"),
-    col("divisi", "Divisi"),
+    col("divisi_nama", "Divisi"),
   ],
   fields: [
     f("id", "ID", "hidden"),
-    f("divisi", "Divisi", "select", { lookupKey: "divisi" }),
-    f("kode", "Kode Departemen", "text", { required: true }),
-    f("nama", "Departemen", "textarea", { required: true }),
-    f("keterangan", "keterangan", "textarea"),
+    f("divisi", "Divisi", "select", { lookupKey: "divisi", section: "Departemen", col: 12 }),
+    f("kode", "Kode Departemen", "text", { required: true, section: "Departemen", col: 12 }),
+    f("nama", "Departemen", "textarea", { required: true, section: "Departemen", col: 12 }),
+    f("keterangan", "Keterangan", "textarea", { section: "Departemen", col: 12 }),
   ],
 });
 
@@ -764,11 +1119,16 @@ export const hrdParGolongan = cfg({
   moduleCode: "HRD_PAR_GOLONGAN",
   path: "par/golongan",
   crud: true,
+  description: "Master golongan (legacy: m_golongan.aspx).",
+  modalSize: "md",
+  modalEntityTitle: "Golongan",
+  modalSectionTitle: "Golongan",
+  modalSubtitle: "Nama dan keterangan golongan",
   columns: [titleColumn("nama", "id", "Golongan"), col("keterangan", "Keterangan", "lg")],
   fields: [
     f("id", "ID", "hidden"),
-    f("nama", "Golongan", "text", { required: true }),
-    f("keterangan", "Keterangan", "textarea"),
+    f("nama", "Golongan", "text", { required: true, section: "Golongan", col: 12 }),
+    f("keterangan", "Keterangan", "textarea", { section: "Golongan", col: 12 }),
   ],
 });
 
@@ -778,12 +1138,17 @@ export const hrdParPangkat = cfg({
   moduleCode: "HRD_PAR_PANGKAT",
   path: "par/pangkat",
   crud: true,
+  description: "Master pangkat (legacy: m_pangkat.aspx).",
+  modalSize: "md",
+  modalEntityTitle: "Pangkat",
+  modalSectionTitle: "Pangkat",
+  modalSubtitle: "Kode, nama, dan keterangan pangkat",
   columns: [col("kode", "Kode"), titleColumn("nama", "id", "Pangkat"), col("keterangan", "Keterangan")],
   fields: [
     f("id", "ID", "hidden"),
-    f("kode", "Kode", "text", { required: true }),
-    f("nama", "Pangkat", "text", { required: true }),
-    f("keterangan", "Keterangan", "textarea"),
+    f("kode", "Kode", "text", { required: true, section: "Pangkat", col: 12 }),
+    f("nama", "Pangkat", "text", { required: true, section: "Pangkat", col: 12 }),
+    f("keterangan", "Keterangan", "textarea", { section: "Pangkat", col: 12 }),
   ],
 });
 
@@ -793,27 +1158,31 @@ export const hrdParJabatan = cfg({
   moduleCode: "HRD_PAR_JABATAN",
   path: "par/jabatan",
   crud: true,
+  description: "Master jabatan (legacy: m_jabatan.aspx).",
+  modalSize: "md",
+  modalEntityTitle: "Jabatan",
+  modalSectionTitle: "Jabatan",
+  modalSubtitle: "Kode dan nama jabatan",
   columns: [col("kode", "Kode"), titleColumn("nama", "id", "Jabatan")],
   fields: [
     f("id", "ID", "hidden"),
-    f("kode", "Kode", "text", { required: true }),
-    f("nama", "Jabatan", "text", { required: true }),
+    f("kode", "Kode", "text", { required: true, section: "Jabatan", col: 12 }),
+    f("nama", "Jabatan", "text", { required: true, section: "Jabatan", col: 12 }),
   ],
 });
 
-/** sm_dept_list.aspx + sm_dept_info.aspx */
+/** sm_dept_list.aspx + sm_dept_info.aspx — detail page HrdSmDeptInfoPage */
 export const hrdParSmDept = cfg({
-  title: "SENIOR MANAGER DEPARTMENT LIST",
+  title: "SM Department List",
   moduleCode: "HRD_PAR_SM_DEPT",
   path: "par/sm-dept",
   crud: true,
-  columns: [titleColumn("nama", "nik", "NAMA")],
+  description: "Senior Manager department (legacy: sm_dept_list.aspx).",
+  columns: [col("nik", "NIK"), titleColumn("nama", "nik", "NAMA")],
   fields: [
     f("id", "ID", "hidden"),
     f("nik", "NIK", "text", { required: true }),
     f("nama", "NAMA", "display"),
-    f("jabatan", "JABATAN", "display"),
-    f("department", "DEPARTMENT", "select", { lookupKey: "department" }),
   ],
 });
 
@@ -1160,9 +1529,10 @@ export const hrdAbsGenerateStoreProcess = {
   moduleCode: "HRD_ABS_GENERATE_STORE",
   processPath: "abs/generate-store",
   description: "Tarik absen store (legacy: Generate_Absen.aspx).",
+  actionLabel: "TARIK ABSEN",
   fields: [
     { name: "month", label: "BULAN", type: "select", options: MONTH_OPTS, required: true },
-    { name: "tahun", label: "TAHUN", type: "text", required: true },
+    { name: "tahun", label: "TAHUN", type: "select", options: YEAR_RECENT_OPTS, required: true },
   ],
 };
 
@@ -1171,10 +1541,11 @@ export const hrdAbsGenerateNasionalProcess = {
   moduleCode: "HRD_ABS_GENERATE_NASIONAL",
   processPath: "abs/generate-nasional",
   description: "Tarik absen nasional (legacy: Generate_Absen_NASIONAL.aspx).",
+  actionLabel: "TARIK ABSEN",
   fields: [
-    { name: "id_mesin", label: "Mesin", type: "text", required: true },
+    { name: "id_mesin", label: "LOKASI", type: "select", lookupKey: "id_mesin", required: true },
     { name: "month", label: "BULAN", type: "select", options: MONTH_OPTS, required: true },
-    { name: "tahun", label: "TAHUN", type: "text", required: true },
+    { name: "tahun", label: "TAHUN", type: "select", options: YEAR_RECENT_OPTS, required: true },
   ],
 };
 

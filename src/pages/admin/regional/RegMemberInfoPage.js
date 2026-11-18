@@ -287,7 +287,10 @@ const PurchasingBrandChart = ({ rows }) => {
   );
 };
 
-const RegMemberInfoPage = () => {
+const RegMemberInfoPage = ({
+  moduleCode = "REG_RPT_MEMBER",
+  memberListPath = "/admin/regional/rpt/member/list",
+}) => {
   const [params] = useSearchParams();
   const mem = params.get("mem") || params.get("id_member") || "";
 
@@ -451,7 +454,7 @@ const RegMemberInfoPage = () => {
   const scrollRevision = `${loading ? "l" : "r"}-${mem}-${txRows.length}-${freqRows.length}-${brandRows.length}`;
 
   return (
-    <AccessGuard moduleCode="REG_RPT_MEMBER">
+    <AccessGuard moduleCode={moduleCode}>
       <Head title="Member Info" />
       <Content>
         <PageSmoothScroll revision={scrollRevision} className="riv-page-scroll rml-page rmi-page">
@@ -466,7 +469,7 @@ const RegMemberInfoPage = () => {
                 </BlockDes>
               </BlockHeadContent>
               <BlockHeadContent>
-                <Link to="/admin/regional/rpt/member/list" className="btn btn-sm btn-outline-light">
+                <Link to={memberListPath} className="btn btn-sm btn-outline-light">
                   <Icon name="arrow-left" />
                   <span>Member List</span>
                 </Link>

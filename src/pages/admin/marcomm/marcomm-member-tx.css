@@ -1,0 +1,57 @@
+.mtx-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.mtx-filters .form-control {
+  height: 32px;
+  font-size: 0.8125rem;
+}
+
+.mtx-filters .mtx-brand,
+.mtx-filters .mtx-cat {
+  width: 168px;
+}
+
+.mtx-filters .mtx-kw {
+  width: 190px;
+}
+
+.mtx-filters .react-datepicker-wrapper,
+.mtx-filters .react-datepicker__input-container {
+  width: auto;
+}
+
+.mtx-filters .react-datepicker__input-container .form-control {
+  width: 220px;
+}
+
+.mtx-count {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: #8094ae;
+}
+
+.mtx-page .rml-badge-note .is-up {
+  color: #198754;
+  font-weight: 600;
+}
+
+.mtx-page .rml-badge-note .is-down {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.mtx-page .mtx-member-link {
+  color: #1d49a7;
+  font-weight: 600;
+}
+
+.mtx-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.35rem 0 0.45rem;
+}
