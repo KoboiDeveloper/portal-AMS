@@ -631,6 +631,377 @@ export const CrossbrandSection = ({ query, colors }) => {
 };
 
 /* ================================================================== */
+/* Brand member: brand pertama vs brand utama                          */
+/* ================================================================== */
+
+const HOME_FIRST_COLOR = "#1a4a52";
+const HOME_MAIN_COLOR = "#a34a2c";
+
+const fDec2 = (v) => num(v).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/**
+ * Pemilih daftar member tab ini: `to(first, main, baru)` menghasilkan props tombol jumlah member.
+ * first = brand pertama, main = brand utama, baru = "1" (baru) / "0" (lama); kosong = semua.
+ */
+const homePicker = (picked, onPick) => (first = "", main = "", baru = "") => ({
+  // tanpa saringan (daftar semua member) tidak ditandai, supaya angka total tidak selalu tersorot
+  active:
+    !!(first || main || baru) &&
+    (picked?.first || "") === first &&
+    (picked?.main || "") === main &&
+    (picked?.baru || "") === baru,
+  onClick: onPick ? () => onPick({ first, main, baru }) : undefined,
+});
+
+/** Jumlah member yang bisa diklik untuk membuka daftar membernya. */
+const PickBtn = ({ n, active, onClick }) =>
+  onClick ? (
+    <button type="button" className={`ma-link${active ? " is-picked" : ""}`} onClick={onClick} disabled={!num(n)}>
+      {fInt(n)}
+    </button>
+  ) : (
+    fInt(n)
+  );
+
+/** "1.234 (12,3%)" — jumlah member dulu, karena yang ditanyakan di bagian ini adalah berapa orang. */
+const NPct = ({ n, pct, pick }) => (
+  <>
+    <PickBtn n={n} {...pick} /> <span className="ma-muted">({fPct(pct)})</span>
+  </>
+);
+
+/** "12,3% (1.234)" dengan jumlah yang bisa diklik. */
+const PctPick = ({ pct, n, pick }) => (
+  <>
+    {fPct(pct)}{" "}
+    <span className="ma-muted">
+      (<PickBtn n={n} {...pick} />)
+    </span>
+  </>
+);
+
+/** Selisih jumlah member: "+35" hijau, "-115" merah, 0 polos. */
+const SignedInt = ({ value }) => {
+  const n = num(value);
+  const cls = n > 0 ? "ma-delta is-up" : n < 0 ? "ma-delta is-down" : "ma-delta";
+  return <span className={cls}>{n > 0 ? `+${fInt(n)}` : fInt(n)}</span>;
+};
+
+/** Matriks brand pertama (baris) ke brand utama (kolom). Persen dihitung terhadap baris. */
+const HomeMatrix = ({ matrix, names, rows, colors, focus, to }) => {
+  const cell = useMemo(() => {
+    const map = {};
+    (matrix || []).forEach((m) => {
+      map[`${m.brand_pertama}|${m.brand_utama}`] = m;
+    });
+    return map;
+  }, [matrix]);
+  const byBrand = useMemo(() => {
+    const map = {};
+    (rows || []).forEach((r) => {
+      map[r.brand] = r;
+    });
+    return map;
+  }, [rows]);
+  const maxMove = useMemo(
+    () => Math.max(0, ...(matrix || []).filter((m) => m.brand_pertama !== m.brand_utama).map((m) => num(m.pct_pertama))),
+    [matrix]
+  );
+  const focusCol = (name) => (focus && name === focus ? " is-focus-col" : "");
+
+  if (!names.length) return null;
+  return (
+    <div className="table-responsive ma-table-wrap">
+      <table className="table table-sm ma-table ma-matrix mb-0">
+        <thead>
+          <tr>
+            <th>Brand pertama ↓ · brand utama →</th>
+            {names.map((bu) => (
+              <th key={bu} className={`text-end${focusCol(bu)}`}>
+                <BrandCell name={bu} colors={colors} />
+              </th>
+            ))}
+            <th className="text-end">Member brand pertama</th>
+          </tr>
+        </thead>
+        <tbody>
+          {names.map((bp) => (
+            <tr key={bp} className={focus && bp === focus ? "is-focus" : undefined}>
+              <td>
+                <BrandCell name={bp} colors={colors} />
+              </td>
+              {names.map((bu) => {
+                const m = cell[`${bp}|${bu}`];
+                const n = num(m?.members);
+                const same = bp === bu;
+                const alpha = !same && n && maxMove ? 0.05 + 0.3 * (num(m.pct_pertama) / maxMove) : 0;
+                return (
+                  <td
+                    key={bu}
+                    className={`text-end${same ? " is-same" : focusCol(bu)}`}
+                    style={alpha ? { backgroundColor: `rgba(163, 74, 44, ${alpha.toFixed(3)})` } : undefined}
+                  >
+                    {n ? <PctPick pct={m.pct_pertama} n={n} pick={to(bp, bu)} /> : <span className="ma-muted">—</span>}
+                  </td>
+                );
+              })}
+              <td className="text-end">
+                <PickBtn n={byBrand[bp]?.members_pertama} {...to(bp)} />
+              </td>
+            </tr>
+          ))}
+          <tr className="is-total">
+            <td>Member brand utama</td>
+            {names.map((bu) => (
+              <td key={bu} className="text-end">
+                <PickBtn n={byBrand[bu]?.members_utama} {...to("", bu)} />
+              </td>
+            ))}
+            <td className="text-end">
+              <PickBtn n={byBrand[TOTAL_BRAND]?.members_utama} {...to()} />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const BrandHomeBody = ({ data, colors, brands, onPick, picked }) => {
+  const rows = data.rows || [];
+  const focus = data.focus_brand || "";
+  const hasLama = !!data.has_lama;
+  const to = homePicker(picked, onPick);
+  // baris SEMUA BRAND = tanpa saringan brand
+  const brandOf = (r) => (isTotal(r) ? "" : r.brand);
+  const list = useMemo(() => brandRows(data.rows), [data.rows]);
+  const names = useMemo(() => list.map((r) => r.brand), [list]);
+  const months = useMemo(() => data.months || [], [data.months]);
+
+  const chart = useMemo(
+    () => ({
+      labels: names,
+      datasets: [
+        {
+          label: "Brand pertama",
+          data: list.map((r) => num(r.members_pertama)),
+          backgroundColor: HOME_FIRST_COLOR,
+          borderRadius: 3,
+          maxBarThickness: 44,
+        },
+        {
+          label: "Brand utama",
+          data: list.map((r) => num(r.members_utama)),
+          backgroundColor: HOME_MAIN_COLOR,
+          borderRadius: 3,
+          maxBarThickness: 44,
+        },
+      ],
+    }),
+    [list, names]
+  );
+
+  const columns = [
+    brandCol(colors),
+    {
+      key: "pertama",
+      label: "Brand pertama",
+      align: "right",
+      title: "Member yang transaksi pertamanya sepanjang riwayat terjadi di brand ini",
+      render: (r) => <NPct n={r.members_pertama} pct={r.share_pertama} pick={to(brandOf(r))} />,
+    },
+    ...(hasLama
+      ? [
+          {
+            key: "baru",
+            label: "Baru di periode",
+            align: "right",
+            title: "Bagian dari brand pertama yang transaksi pertamanya jatuh di periode ini",
+            render: (r) => <NPct n={r.baru_pertama} pct={r.baru_pct} pick={to(brandOf(r), "", "1")} />,
+          },
+        ]
+      : []),
+    {
+      key: "utama",
+      label: "Brand utama",
+      align: "right",
+      title: "Member yang jumlah transaksinya di periode ini paling banyak di brand ini",
+      render: (r) => <NPct n={r.members_utama} pct={r.share_utama} pick={to("", brandOf(r))} />,
+    },
+    {
+      key: "selisih",
+      label: "Selisih",
+      align: "right",
+      title: "Member brand utama dikurangi member brand pertama",
+      render: (r) => (isTotal(r) ? <span className="ma-muted">—</span> : <SignedInt value={r.selisih} />),
+    },
+    {
+      key: "setia",
+      label: "Tetap di brand pertama",
+      align: "right",
+      title: "Member brand pertama yang brand utamanya masih brand ini",
+      // baris SEMUA BRAND tidak bisa dibuka: "brand pertama = brand utama" bukan satu saringan brand
+      render: (r) =>
+        isTotal(r) ? (
+          <PctN pct={r.setia_pct} n={r.setia} />
+        ) : (
+          <PctPick pct={r.setia_pct} n={r.setia} pick={to(r.brand, r.brand)} />
+        ),
+    },
+    ...(hasLama
+      ? [
+          {
+            key: "setia_lama",
+            label: "Tetap, member lama saja",
+            align: "right",
+            title: "Sama seperti kolom sebelumnya, hanya untuk member yang sudah bertransaksi sebelum periode ini",
+            render: (r) =>
+              num(r.lama_pertama) ? (
+                <>
+                  {fPct(r.setia_lama_pct)}{" "}
+                  <span className="ma-muted">
+                    (
+                    {isTotal(r) ? fInt(r.setia_lama) : <PickBtn n={r.setia_lama} {...to(r.brand, r.brand, "0")} />} dari{" "}
+                    <PickBtn n={r.lama_pertama} {...to(brandOf(r), "", "0")} />)
+                  </span>
+                </>
+              ) : (
+                <span className="ma-muted">—</span>
+              ),
+          },
+        ]
+      : []),
+  ];
+
+  const valueCols = [
+    brandCol(colors, "Brand utama"),
+    { key: "members", label: "Member", align: "right", render: (r) => fInt(r.members_utama) },
+    { key: "tpm", label: "Trx / member", align: "right", render: (r) => fDec2(r.trx_per_member) },
+    {
+      key: "porsi",
+      label: "Trx di brand utama",
+      align: "right",
+      title: "Porsi transaksi member yang terjadi di brand utamanya",
+      render: (r) => fPct(r.porsi_trx_utama_pct),
+    },
+    {
+      key: "satu",
+      label: "Hanya 1 transaksi",
+      align: "right",
+      title: "Member dengan satu transaksi di periode ini; brand utamanya adalah satu-satunya brand tempat ia belanja",
+      render: (r) => <PctN pct={r.satu_pct} n={r.satu_transaksi} />,
+    },
+    {
+      key: "seri",
+      label: "Seri",
+      align: "right",
+      title: "Jumlah transaksi terbanyak sama di dua brand atau lebih; brand utama ditentukan oleh omzet yang lebih besar",
+      render: (r) => <PctN pct={r.seri_pct} n={r.seri} />,
+    },
+    {
+      key: "omzet",
+      label: "Belanja member",
+      align: "right",
+      title: "Seluruh belanja member ini di semua brand pada periode ini",
+      render: (r) => fRp(r.omzet_utama),
+    },
+    { key: "spend", label: "Belanja / member", align: "right", render: (r) => fRp(r.spend_per_member) },
+  ];
+
+  const trendCell = useMemo(() => {
+    const map = {};
+    (data.trend || []).forEach((r) => {
+      map[`${r.bulan}|${r.brand}`] = num(r.members);
+    });
+    return map;
+  }, [data.trend]);
+  const trendNames = useMemo(() => [...brands, TOTAL_BRAND], [brands]);
+  const trendChart = useMemo(
+    () => ({
+      labels: months.map((m) => (m.partial ? `${m.label} *` : m.label)),
+      datasets: trendNames.map((name) => {
+        const total = name === TOTAL_BRAND;
+        return {
+          label: name,
+          data: months.map((m) => num(trendCell[`${m.bulan}|${name}`])),
+          borderColor: colors[name] || TOTAL_COLOR,
+          backgroundColor: colors[name] || TOTAL_COLOR,
+          borderWidth: focus && name === focus ? 3.5 : 2,
+          borderDash: total ? [5, 4] : undefined,
+          pointRadius: 2.5,
+          tension: 0.25,
+          hidden: total,
+        };
+      }),
+    }),
+    [months, trendNames, trendCell, colors, focus]
+  );
+  const trendRows = useMemo(() => [...months].reverse(), [months]);
+  const trendCols = [
+    {
+      key: "bulan",
+      label: "Bulan",
+      render: (m) => (
+        <>
+          {m.label}
+          {m.partial ? <span className="ma-tag">belum utuh</span> : null}
+        </>
+      ),
+    },
+    ...trendNames.map((name) => ({
+      key: name,
+      label: name === TOTAL_BRAND ? name : <BrandCell name={name} colors={colors} />,
+      align: "right",
+      brand: name,
+      render: (m) => fInt(trendCell[`${m.bulan}|${name}`]),
+    })),
+  ];
+
+  return (
+    <>
+      <SubTitle hint="Tiap member dihitung satu kali di brand pertamanya dan satu kali di brand utamanya. Klik jumlah member untuk membuka daftar membernya di bawah">
+        Member per brand
+      </SubTitle>
+      <ChartBox>
+        <Bar data={chart} options={chartOptions()} />
+      </ChartBox>
+      <DataTable columns={columns} rows={rows} focus={focus} />
+
+      <SubTitle hint="Baris = brand pertama, kolom = brand utama di periode ini. Persen dihitung terhadap member brand pertama; kotak bergaris = tetap di brand pertamanya">
+        Perpindahan brand
+      </SubTitle>
+      <HomeMatrix matrix={data.matrix} names={names} rows={rows} colors={colors} focus={focus} to={to} />
+
+      <SubTitle hint="Dikelompokkan menurut brand utama member">Kekuatan dan nilai brand utama</SubTitle>
+      <DataTable columns={valueCols} rows={rows} focus={focus} />
+
+      {months.length ? (
+        <>
+          <SubTitle hint="Member yang transaksi pertamanya jatuh di bulan itu, menurut brand pertamanya. Tanda * = bulan belum utuh">
+            Pintu masuk per bulan
+          </SubTitle>
+          {months.length >= 2 ? (
+            <ChartBox>
+              <Line data={trendChart} options={chartOptions()} />
+            </ChartBox>
+          ) : null}
+          <DataTable columns={trendCols} rows={trendRows} rowKey={(m) => m.bulan} focus={focus} />
+        </>
+      ) : null}
+    </>
+  );
+};
+
+export const BrandHomeSection = ({ query, colors, brands, onPick, picked }) => {
+  const state = useSection("brandhome", query);
+  return (
+    <SectionPanel title="Member per brand: brand pertama dan brand utama" state={state}>
+      {(d) => <BrandHomeBody data={d} colors={colors} brands={brands} onPick={onPick} picked={picked} />}
+    </SectionPanel>
+  );
+};
+
+/* ================================================================== */
 /* Voucher                                                             */
 /* ================================================================== */
 

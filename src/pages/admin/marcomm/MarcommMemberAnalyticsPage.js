@@ -22,6 +22,7 @@ import { extractRow, isSuccess } from "../../../lib/response";
 import { brandColorMap, fDate, fDateTime, toYmd } from "./analytics/maShared";
 import {
   BirthdaySection,
+  BrandHomeSection,
   CategorySection,
   CrossbrandSection,
   OverviewSection,
@@ -33,6 +34,7 @@ import {
   TrendSection,
   VoucherSection,
 } from "./analytics/maSections";
+import MaBrandMembers from "./analytics/MaBrandMembers";
 import MaSegmentMembers from "./analytics/MaSegmentMembers";
 import "./marcomm-analytics.css";
 
@@ -43,6 +45,7 @@ const TABS = [
   { id: "retensi", label: "Retensi" },
   { id: "segmen", label: "Segmen & daftar member" },
   { id: "lintas", label: "Lintas brand" },
+  { id: "brand", label: "Brand member" },
   { id: "voucher", label: "Voucher & ulang tahun" },
   { id: "tier", label: "Tier" },
   { id: "profil", label: "Profil & barang" },
@@ -107,6 +110,7 @@ const MarcommMemberAnalyticsPage = () => {
   const [draftTo, setDraftTo] = useState("");
   const [tab, setTab] = useState("ringkasan");
   const [picked, setPicked] = useState(null); // { segment, brand } untuk daftar member
+  const [brandPick, setBrandPick] = useState({ first: "", main: "", baru: "" }); // saringan daftar member tab "Brand member"
   const canExport = useCanExport();
 
   const loadMeta = useCallback(async (refresh = false) => {
@@ -163,6 +167,8 @@ const MarcommMemberAnalyticsPage = () => {
     : null;
 
   const onPick = (segment, brand) => setPicked({ segment: segment || "", brand: brand || "" });
+  // angka yang diklik di tab "Brand member": `at` membuat daftar member digulir ke layar
+  const onBrandPick = (next) => setBrandPick({ ...next, at: Date.now() });
 
   const section = { query: applied, colors, brands };
 
@@ -357,6 +363,22 @@ const MarcommMemberAnalyticsPage = () => {
                   ) : null}
 
                   {tab === "lintas" ? <CrossbrandSection {...section} /> : null}
+
+                  {tab === "brand" ? (
+                    <>
+                      <BrandHomeSection {...section} onPick={onBrandPick} picked={brandPick} />
+                      <MaBrandMembers
+                        from={applied.from}
+                        to={applied.to}
+                        nonce={applied.nonce}
+                        brands={brands}
+                        colors={colors}
+                        picked={brandPick}
+                        onPick={setBrandPick}
+                        canExport={canExport}
+                      />
+                    </>
+                  ) : null}
 
                   {tab === "voucher" ? (
                     <>
