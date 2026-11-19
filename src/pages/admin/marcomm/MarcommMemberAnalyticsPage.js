@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Spinner } from "reactstrap";
 import Head from "../../../layout/head/Head";
 import Content from "../../../layout/content/Content";
@@ -111,7 +111,21 @@ const MarcommMemberAnalyticsPage = () => {
   const [tab, setTab] = useState("ringkasan");
   const [picked, setPicked] = useState(null); // { segment, brand } untuk daftar member
   const [brandPick, setBrandPick] = useState({ first: "", main: "", baru: "" }); // saringan daftar member tab "Brand member"
+  const [wide, setWide] = useState(false);
+  const pageRef = useRef(null);
   const canExport = useCanExport();
+
+  // sama seperti daftar AR regional: perluas .container-xl supaya tabel member tidak sempit
+  useEffect(() => {
+    const container = pageRef.current?.closest(".container-xl");
+    if (!container) return undefined;
+    container.classList.toggle("ma-container-wide", wide);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 520);
+    return () => {
+      container.classList.remove("ma-container-wide");
+      window.clearTimeout(t);
+    };
+  }, [wide]);
 
   const loadMeta = useCallback(async (refresh = false) => {
     setMetaLoading(true);
@@ -177,7 +191,7 @@ const MarcommMemberAnalyticsPage = () => {
       <>
         <Head title="Analisa Member" />
         <Content>
-          <div className="ma-page">
+          <div className={`ma-page${wide ? " is-wide" : ""}`} ref={pageRef}>
             <BlockHead size="sm">
               <BlockBetween>
                 <BlockHeadContent>
@@ -188,6 +202,18 @@ const MarcommMemberAnalyticsPage = () => {
                     Semua angka dan kalimat kesimpulan dihitung ulang dari data transaksi member, per brand, sesuai periode
                     yang dipilih.
                   </BlockDes>
+                </BlockHeadContent>
+                <BlockHeadContent>
+                  <button
+                    type="button"
+                    className={`ma-wide-btn${wide ? " is-on" : ""}`}
+                    title={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-label={wide ? "Lebar normal" : "Lebar penuh"}
+                    aria-pressed={wide}
+                    onClick={() => setWide((v) => !v)}
+                  >
+                    <Icon name={wide ? "minimize" : "maximize"} />
+                  </button>
                 </BlockHeadContent>
               </BlockBetween>
             </BlockHead>

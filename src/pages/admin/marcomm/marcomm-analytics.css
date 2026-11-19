@@ -10,6 +10,39 @@
   color: var(--ma-text);
 }
 
+/* tombol "lebar penuh" di filter: perluas .container-xl Softnio */
+.nk-content .container-xl.wide-xl.ma-container-wide {
+  max-width: 100% !important;
+}
+
+/* tombol lebar penuh di ujung kanan judul halaman */
+.ma-wide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #526484;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: none;
+  transition: color 0.2s ease;
+}
+
+.ma-wide-btn:hover,
+.ma-wide-btn.is-on {
+  color: #0f2e57;
+  background: transparent;
+  border: 0;
+}
+
+.ma-wide-btn .icon {
+  font-size: 1.35rem;
+}
+
 /* ---------- filter ---------- */
 
 .ma-filter {
@@ -439,14 +472,26 @@
   padding: 0.4rem 0.65rem;
 }
 
+.ma-table tbody tr:hover td {
+  background: #f3f6fb;
+}
+
 .ma-table tr.is-total td {
   font-weight: 700;
   background: #f8fafc;
   border-top: 1px solid #cbd5e1;
 }
 
+.ma-table tr.is-total:hover td {
+  background: #eef2f7;
+}
+
 .ma-table tr.is-focus td {
   background: #eef4ff;
+}
+
+.ma-table tr.is-focus:hover td {
+  background: #e4edff;
 }
 
 .ma-table tr.is-focus td:first-child {
