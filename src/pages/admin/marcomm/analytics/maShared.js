@@ -239,6 +239,7 @@ export const InsightList = ({ insights }) => {
     <div className="ma-insights">
       {list.map((it, i) => (
         <div key={`${it.title}-${i}`} className={`ma-insight ma-insight--${it.tone || "info"}`}>
+          <span className="ma-insight__zig" aria-hidden="true" />
           <div className="ma-insight__head">
             <span className="ma-insight__tone">{TONE_LABEL[it.tone] || TONE_LABEL.info}</span>
             <span className="ma-insight__title">{it.title}</span>
