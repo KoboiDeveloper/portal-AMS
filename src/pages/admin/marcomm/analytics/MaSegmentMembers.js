@@ -41,6 +41,7 @@ const EXPORT_COLUMNS = [
   { key: "brand_dominan", label: "BRAND DOMINAN", width: 18 },
   { key: "brand_pertama", label: "BRAND PERTAMA", width: 18 },
   { key: "n_brand", label: "JUMLAH BRAND", width: 14, align: "right" },
+  { key: "brand_register", label: "BRAND REGISTER", width: 22 },
   { key: "id_member_apps", label: "ID MEMBER", width: 18 },
   { key: "nama", label: "NAMA", width: 28 },
   { key: "no_telpon", label: "NO TELEPON", width: 18 },
@@ -206,6 +207,7 @@ const MaSegmentMembers = ({ to, nonce, brands, colors, picked, onPick, canExport
                 <tr>
                   <th className="text-end">No</th>
                   <th>Segmen</th>
+                  <th>Brand register</th>
                   <th>ID member</th>
                   <th>Nama</th>
                   <th>No. telepon</th>
@@ -225,7 +227,7 @@ const MaSegmentMembers = ({ to, nonce, brands, colors, picked, onPick, canExport
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={16} className="text-soft text-center py-4">
+                    <td colSpan={17} className="text-soft text-center py-4">
                       Tidak ada member untuk pilihan ini
                     </td>
                   </tr>
@@ -236,6 +238,7 @@ const MaSegmentMembers = ({ to, nonce, brands, colors, picked, onPick, canExport
                       <td>
                         <SegmentBadge code={r.segmen} />
                       </td>
+                      <td>{r.brand_register || "—"}</td>
                       <td>{r.id_member_apps || r.id_member || "—"}</td>
                       <td>{r.nama || "—"}</td>
                       <td>{r.no_telpon || "—"}</td>

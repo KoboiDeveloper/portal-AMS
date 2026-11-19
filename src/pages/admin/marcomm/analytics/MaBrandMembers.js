@@ -35,6 +35,7 @@ const EXPORT_COLUMNS = [
   { key: "brand_pertama", label: "BRAND PERTAMA", width: 18 },
   { key: "brand_utama", label: "BRAND UTAMA", width: 18 },
   { key: "status", label: "STATUS", width: 10, align: "center" },
+  { key: "brand_register", label: "BRAND REGISTER", width: 22 },
   { key: "id_member_apps", label: "ID MEMBER", width: 18 },
   { key: "nama", label: "NAMA", width: 28 },
   { key: "no_telpon", label: "NO TELEPON", width: 18 },
@@ -247,6 +248,7 @@ const MaBrandMembers = ({ from, to, nonce, brands, colors, picked, onPick, canEx
               <thead>
                 <tr>
                   <th className="text-end">No</th>
+                  <th>Brand register</th>
                   <th>ID member</th>
                   <th>Nama</th>
                   <th>No. telepon</th>
@@ -267,7 +269,7 @@ const MaBrandMembers = ({ from, to, nonce, brands, colors, picked, onPick, canEx
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={14} className="text-soft text-center py-4">
+                    <td colSpan={15} className="text-soft text-center py-4">
                       Tidak ada member untuk pilihan ini
                     </td>
                   </tr>
@@ -275,6 +277,7 @@ const MaBrandMembers = ({ from, to, nonce, brands, colors, picked, onPick, canEx
                   rows.map((r, i) => (
                     <tr key={`${r.id_member}-${i}`}>
                       <td className="text-end">{fInt(firstNo + i + 1)}</td>
+                      <td>{r.brand_register || "—"}</td>
                       <td>{r.id_member_apps || r.id_member || "—"}</td>
                       <td>{r.nama || "—"}</td>
                       <td>{r.no_telpon || "—"}</td>
